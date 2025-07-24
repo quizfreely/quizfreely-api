@@ -8,9 +8,7 @@ https://quizfreely.org/api
 
 **Quizfreely's API Rewritten in Go**
 
-**Abstract**
-
-A free and open source studying tool runs on **1GB RAM**.
+Imagine if a free and open source studying tool ran on only **1GB RAM**.
 
 Two NodeJS server applications share the same server: a GraphQL API using Fastify with a PostgreSQL database and a web app using SvelteKit.
 
