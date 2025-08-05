@@ -14,7 +14,7 @@ import (
 	"github.com/vektah/gqlparser/v2/ast"
 )
 
-const defaultPort = "8080"
+const defaultPort = "8008"
 
 func main() {
 	port := os.Getenv("PORT")
@@ -35,9 +35,9 @@ func main() {
 		Cache: lru.New[string](100),
 	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	http.Handle("/graphiql", playground.Handler("GraphQL playground", "/graphql"))
+	http.Handle("/graphql", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Printf("http://localhost:%s/graphiql for GraphiQL", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

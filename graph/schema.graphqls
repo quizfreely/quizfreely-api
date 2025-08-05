@@ -11,8 +11,8 @@ type AuthedUser {
     oauth_google_email: String
 }
 enum AuthType {
-    username_password
-    oauth_google
+    USERNAME_PASSWORD
+    OAUTH_GOOGLE
 }
 type Studyset {
     id: ID
@@ -92,16 +92,6 @@ enum ProgressTermState {
     review
     relearning
 }
-type DBConnectionStatus {
-    connectionUp: Boolean
-    poolTotalCount: Int
-    poolIdleCount: Int
-    poolWaitingCount: Int
-}
-type CronStatus {
-    errorCount: Int
-    anyEnabled: Boolean
-}
 type Query {
     authed: Boolean
     authedUser: AuthedUser
@@ -114,8 +104,6 @@ type Query {
     myStudysets(limit: Int, offset: Int): [Studyset]
     studysetProgress(studysetId: ID!): StudysetProgress
     studysetSettings(studysetId: ID!): StudysetSettings
-    dbConnectionStatus: DBConnectionStatus
-    cronStatus: CronStatus
 }
 type Mutation {
     createStudyset(studyset: StudysetInput!): Studyset

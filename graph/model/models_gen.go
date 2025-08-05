@@ -2,25 +2,237 @@
 
 package model
 
-type Mutation struct {
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
+type AuthedUser struct {
+	ID               *string   `json:"id,omitempty"`
+	Username         *string   `json:"username,omitempty"`
+	DisplayName      *string   `json:"display_name,omitempty"`
+	AuthType         *AuthType `json:"auth_type,omitempty"`
+	OauthGoogleEmail *string   `json:"oauth_google_email,omitempty"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type CronStatus struct {
+	ErrorCount *int32 `json:"errorCount,omitempty"`
+	AnyEnabled *bool  `json:"anyEnabled,omitempty"`
+}
+
+type DBConnectionStatus struct {
+	ConnectionUp     *bool  `json:"connectionUp,omitempty"`
+	PoolTotalCount   *int32 `json:"poolTotalCount,omitempty"`
+	PoolIdleCount    *int32 `json:"poolIdleCount,omitempty"`
+	PoolWaitingCount *int32 `json:"poolWaitingCount,omitempty"`
+}
+
+type Mutation struct {
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type SearchQuery struct {
+	Query   *string `json:"query,omitempty"`
+	Subject *string `json:"subject,omitempty"`
+}
+
+type Studyset struct {
+	ID              *string       `json:"id,omitempty"`
+	Title           *string       `json:"title,omitempty"`
+	Private         *bool         `json:"private,omitempty"`
+	UpdatedAt       *string       `json:"updated_at,omitempty"`
+	UserID          *string       `json:"user_id,omitempty"`
+	UserDisplayName *string       `json:"user_display_name,omitempty"`
+	Data            *StudysetData `json:"data,omitempty"`
+	TermsCount      *int32        `json:"terms_count,omitempty"`
+}
+
+type StudysetData struct {
+	Terms [][]*string `json:"terms,omitempty"`
+}
+
+type StudysetDataInput struct {
+	Terms [][]*string `json:"terms,omitempty"`
+}
+
+type StudysetInput struct {
+	Title   string             `json:"title"`
+	Private bool               `json:"private"`
+	Data    *StudysetDataInput `json:"data"`
+}
+
+type StudysetProgress struct {
+	ID         string                  `json:"id"`
+	UserID     string                  `json:"user_id"`
+	StudysetID string                  `json:"studyset_id"`
+	Terms      []*StudysetProgressTerm `json:"terms"`
+	UpdatedAt  *string                 `json:"updated_at,omitempty"`
+}
+
+type StudysetProgressTerm struct {
+	Term                         string             `json:"term"`
+	Def                          string             `json:"def"`
+	TermCorrect                  int32              `json:"termCorrect"`
+	TermIncorrect                int32              `json:"termIncorrect"`
+	DefCorrect                   int32              `json:"defCorrect"`
+	DefIncorrect                 int32              `json:"defIncorrect"`
+	TermState                    *ProgressTermState `json:"termState,omitempty"`
+	DefState                     *ProgressTermState `json:"defState,omitempty"`
+	SessionsSinceTermStateChange *int32             `json:"sessionsSinceTermStateChange,omitempty"`
+	SessionsSinceDefStateChange  *int32             `json:"sessionsSinceDefStateChange,omitempty"`
+	FirstReviewedAt              string             `json:"firstReviewedAt"`
+	LastReviewedAt               string             `json:"lastReviewedAt"`
+	ReviewSessionsCount          int32              `json:"reviewSessionsCount"`
+	ConfusedTerms                [][]*string        `json:"confusedTerms,omitempty"`
+	ConfusedDefs                 [][]*string        `json:"confusedDefs,omitempty"`
+}
+
+type StudysetProgressTermInput struct {
+	Term           string             `json:"term"`
+	Def            string             `json:"def"`
+	TermCorrect    *int32             `json:"termCorrect,omitempty"`
+	TermIncorrect  *int32             `json:"termIncorrect,omitempty"`
+	DefCorrect     *int32             `json:"defCorrect,omitempty"`
+	DefIncorrect   *int32             `json:"defIncorrect,omitempty"`
+	TermState      *ProgressTermState `json:"termState,omitempty"`
+	DefState       *ProgressTermState `json:"defState,omitempty"`
+	LastReviewedAt string             `json:"lastReviewedAt"`
+	ConfusedTerms  [][]*string        `json:"confusedTerms,omitempty"`
+	ConfusedDefs   [][]*string        `json:"confusedDefs,omitempty"`
+}
+
+type StudysetSettings struct {
+	GoodAcc                  *float64 `json:"goodAcc,omitempty"`
+	BadAcc                   *float64 `json:"badAcc,omitempty"`
+	LearningMinSessionsCount *int32   `json:"learningMinSessionsCount,omitempty"`
+}
+
+type StudysetSettingsInput struct {
+	GoodAcc                  *float64 `json:"goodAcc,omitempty"`
+	BadAcc                   *float64 `json:"badAcc,omitempty"`
+	LearningMinSessionsCount *int32   `json:"learningMinSessionsCount,omitempty"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          *string `json:"id,omitempty"`
+	Username    *string `json:"username,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
+}
+
+type AuthType string
+
+const (
+	AuthTypeUsernamePassword AuthType = "username_password"
+	AuthTypeOauthGoogle      AuthType = "oauth_google"
+)
+
+var AllAuthType = []AuthType{
+	AuthTypeUsernamePassword,
+	AuthTypeOauthGoogle,
+}
+
+func (e AuthType) IsValid() bool {
+	switch e {
+	case AuthTypeUsernamePassword, AuthTypeOauthGoogle:
+		return true
+	}
+	return false
+}
+
+func (e AuthType) String() string {
+	return string(e)
+}
+
+func (e *AuthType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AuthType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AuthType", str)
+	}
+	return nil
+}
+
+func (e AuthType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *AuthType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e AuthType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type ProgressTermState string
+
+const (
+	ProgressTermStateNew        ProgressTermState = "new"
+	ProgressTermStateLearning   ProgressTermState = "learning"
+	ProgressTermStateReview     ProgressTermState = "review"
+	ProgressTermStateRelearning ProgressTermState = "relearning"
+)
+
+var AllProgressTermState = []ProgressTermState{
+	ProgressTermStateNew,
+	ProgressTermStateLearning,
+	ProgressTermStateReview,
+	ProgressTermStateRelearning,
+}
+
+func (e ProgressTermState) IsValid() bool {
+	switch e {
+	case ProgressTermStateNew, ProgressTermStateLearning, ProgressTermStateReview, ProgressTermStateRelearning:
+		return true
+	}
+	return false
+}
+
+func (e ProgressTermState) String() string {
+	return string(e)
+}
+
+func (e *ProgressTermState) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ProgressTermState(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ProgressTermState", str)
+	}
+	return nil
+}
+
+func (e ProgressTermState) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *ProgressTermState) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e ProgressTermState) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }
