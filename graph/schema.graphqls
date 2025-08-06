@@ -1,28 +1,116 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
-}
-
-type User {
-  id: ID!
-  name: String!
-}
-
 type Query {
-  todos: [Todo!]!
+    authed: Boolean
+    authedUser: AuthedUser
+    studyset(id: ID!): Studyset
+    user(id: ID!): User
+    featuredStudysets(limit: Int, offset: Int): [Studyset]
+    recentStudysets(limit: Int, offset: Int): [Studyset]
+    searchStudysets(q: String!, limit: Int, offset: Int): [Studyset]
+    searchQueries(q: String!, limit: Int, offset: Int): [SearchQuery]
+    myStudysets(limit: Int, offset: Int): [Studyset]
+    studysetProgress(studysetId: ID!): StudysetProgress
+    studysetSettings(studysetId: ID!): StudysetSettings
 }
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+    createStudyset(studyset: StudysetInput!): Studyset
+    updateStudyset(id: ID!, studyset: StudysetInput): Studyset
+    deleteStudyset(id: ID!): ID
+    updateUser(display_name: String): AuthedUser
+    updateStudysetProgress(studysetId: ID!, progressChanges: [StudysetProgressTermInput!]!): StudysetProgress
+    deleteStudysetProgress(studysetId: ID!): ID
+    updateStudysetSettings(studysetId: ID!, changedSettings: StudysetSettingsInput!): StudysetSettings
+}
+type User {
+    id: ID
+    username: String
+    display_name: String
+}
+type AuthedUser {
+    id: ID
+    username: String
+    display_name: String
+    auth_type: AuthType
+    oauth_google_email: String
+}
+enum AuthType {
+    username_password
+    oauth_google
+}
+type Studyset {
+    id: ID
+    title: String
+    private: Boolean
+    updated_at: String
+    user_id: ID
+    user_display_name: String
+    data: StudysetData
+    terms_count: Int
+}
+type StudysetData {
+    terms: [[String]]
+}
+input StudysetInput {
+    title: String!
+    private: Boolean!
+    data: StudysetDataInput!
+}
+input StudysetDataInput {
+    terms: [[String]]
+}
+type SearchQuery {
+    query: String
+    subject: String
+}
+type StudysetSettings {
+    goodAcc: Float
+    badAcc: Float
+    learningMinSessionsCount: Int
+}
+input StudysetSettingsInput {
+    goodAcc: Float
+    badAcc: Float
+    learningMinSessionsCount: Int
+}
+type StudysetProgress {
+    id: ID!
+    user_id: ID!
+    studyset_id: ID!
+    terms: [StudysetProgressTerm!]!
+    updated_at: String
+}
+type StudysetProgressTerm {
+    term: String!
+    def: String!
+    termCorrect: Int!
+    termIncorrect: Int!
+    defCorrect: Int!
+    defIncorrect: Int!
+    termState: ProgressTermState
+    defState: ProgressTermState
+    sessionsSinceTermStateChange: Int
+    sessionsSinceDefStateChange: Int
+    firstReviewedAt: String!
+    lastReviewedAt: String!
+    reviewSessionsCount: Int!
+    confusedTerms: [[String]]
+    confusedDefs: [[String]]
+}
+input StudysetProgressTermInput {
+    term: String!
+    def: String!
+    termCorrect: Int
+    termIncorrect: Int
+    defCorrect: Int
+    defIncorrect: Int
+    termState: ProgressTermState
+    defState: ProgressTermState
+    lastReviewedAt: String!
+    confusedTerms: [[String]]
+    confusedDefs: [[String]]
+}
+enum ProgressTermState {
+    new
+    learning
+    review
+    relearning
 }
