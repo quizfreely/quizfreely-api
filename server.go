@@ -56,6 +56,10 @@ check your environment variables`,
 		"/auth/sign-up",
 		auth.SignUpHandler,
 	)
+	router.Post(
+		"/auth/sign-in",
+		auth.SignInHandler,
+	)
 
 	router.Group(func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
