@@ -52,6 +52,11 @@ check your environment variables`,
 
 	router := chi.NewRouter()
 
+	router.Handle(
+		"/auth/sign-up",
+		auth.SignUpHandler
+	)
+
 	router.Use(auth.AuthMiddleware)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
