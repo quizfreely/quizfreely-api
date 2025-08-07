@@ -30,7 +30,7 @@ grant delete on auth.users to quizfreely_api;
 
 create table auth.sessions (
   id BIGSERIAL PRIMARY KEY,
-  token text primary key default encode(gen_random_bytes(32), 'base64'),
+  token text not null default encode(gen_random_bytes(32), 'base64'),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   expire_at timestamptz default now() + '10 days'::interval
 );

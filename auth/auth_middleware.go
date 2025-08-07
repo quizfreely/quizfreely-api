@@ -38,7 +38,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				/* split `Bearer abc123def456` by space,
 				then check if "Bearer" and actual token both exist */
 				headerParts := strings.SplitN(header, " ", 2)
-				if len(headerParts) == 2 && strings.EqualFold(headerParts[0], "Bearer ") {
+				if len(headerParts) == 2 && strings.EqualFold(headerParts[0], "Bearer") {
 					token = headerParts[1]
 				} else {
 					/* only send an error if the header exists but is wrong,
