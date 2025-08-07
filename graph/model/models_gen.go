@@ -9,14 +9,6 @@ import (
 	"strconv"
 )
 
-type AuthedUser struct {
-	ID               *string   `json:"id,omitempty"`
-	Username         *string   `json:"username,omitempty"`
-	DisplayName      *string   `json:"display_name,omitempty"`
-	AuthType         *AuthType `json:"auth_type,omitempty"`
-	OauthGoogleEmail *string   `json:"oauth_google_email,omitempty"`
-}
-
 type Mutation struct {
 }
 

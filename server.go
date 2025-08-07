@@ -80,6 +80,6 @@ check your environment variables`,
 		"http://localhost:" + port + "/graphiql for GraphiQL",
 	)
 	log.Fatal().Err(
-		http.ListenAndServe(":"+port, nil),
+		http.ListenAndServe(":"+port, router),
 	).Msgf("Error starting server")
 }

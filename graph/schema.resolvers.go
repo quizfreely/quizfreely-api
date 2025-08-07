@@ -7,15 +7,13 @@ package graph
 import (
 	"context"
 	"fmt"
+	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
-	"quizfreely/api/dbpool"
-
-	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
-	
+	panic(fmt.Errorf("not implemented: CreateStudyset - createStudyset"))
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
@@ -55,7 +53,7 @@ func (r *queryResolver) Authed(ctx context.Context) (*bool, error) {
 
 // AuthedUser is the resolver for the authedUser field.
 func (r *queryResolver) AuthedUser(ctx context.Context) (*model.AuthedUser, error) {
-	panic(fmt.Errorf("not implemented: AuthedUser - authedUser"))
+	return auth.ForContext(ctx), nil
 }
 
 // Studyset is the resolver for the studyset field.
@@ -111,18 +109,3 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
-}
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
-}
-*/

@@ -3,8 +3,12 @@ package auth
 import (
 	"net/http"
 	"context"
+	"strings"
+	"errors"
 	"quizfreely/api/dbpool"
+	"quizfreely/api/graph/model"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/rs/zerolog/log"
 )
@@ -12,14 +16,6 @@ import (
 var authedUserCtxKey = &contextKey{"authedUser"}
 type contextKey = struct {
 	name string
-}
-
-type AuthedUser struct {
-	ID               *string `db:"id"`
-	Username         *string `db:"username"`
-	DisplayName      *string `db:"display_name"`
-	AuthType         *AuthType `db:"auth_type"`
-	OauthGoogleEmail *string `db:"oauth_google_email"`
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -62,7 +58,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			/* if token is NOT empty,
 			AFTER checking the cookie & header with the 2 if-statements above,
 			use it to get their account */
-			var authedUser *AuthedUser
+			var authedUser *model.AuthedUser
 			err = pgxscan.Get(
 				context.Background(),
 				dbpool.Pool,
@@ -93,7 +89,7 @@ WHERE s.token = $1 AND s.expire_at > now()`,
 	})
 }
 
-func ForContext(ctx context.Context) *AuthedUser {
-	raw, _ := ctx.Value(authedUserCtxKey).(*AuthedUser)
+func ForContext(ctx context.Context) *model.AuthedUser {
+	raw, _ := ctx.Value(authedUserCtxKey).(*model.AuthedUser)
 	return raw
 }
