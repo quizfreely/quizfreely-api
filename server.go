@@ -52,34 +52,36 @@ check your environment variables`,
 
 	router := chi.NewRouter()
 
-	router.Handle(
+	router.Post(
 		"/auth/sign-up",
-		auth.SignUpHandler
+		auth.SignUpHandler,
 	)
 
-	router.Use(auth.AuthMiddleware)
+	router.Group(func(r chi.Router) {
+		r.Use(auth.AuthMiddleware)
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+		srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
-	srv.AddTransport(transport.Options{})
-	srv.AddTransport(transport.GET{})
-	srv.AddTransport(transport.POST{})
+		srv.AddTransport(transport.Options{})
+		srv.AddTransport(transport.GET{})
+		srv.AddTransport(transport.POST{})
 
-	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
+		srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
-	srv.Use(extension.Introspection{})
-	srv.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New[string](100),
+		srv.Use(extension.Introspection{})
+		srv.Use(extension.AutomaticPersistedQuery{
+			Cache: lru.New[string](100),
+		})
+
+		r.Handle(
+			"/graphiql",
+			playground.Handler(
+				"Quizfreely API GraphiQL",
+				"/graphql",
+			),
+		)
+		r.Handle("/graphql", srv)
 	})
-
-	router.Handle(
-		"/graphiql",
-		playground.Handler(
-			"Quizfreely API GraphiQL",
-			"/graphql",
-		),
-	)
-	router.Handle("/graphql", srv)
 
 	log.Info().Msg(
 		"http://localhost:" + port + "/graphiql for GraphiQL",
