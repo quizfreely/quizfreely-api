@@ -162,3 +162,147 @@ VALUES ($1) RETURNING token`,
 		},
 	})
 }
+
+type SignInReqBody struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type TokenAndAuthedUser struct {
+	Token *string `db:"token"`,
+	ID *string `db:"id"`
+	Username         *string   `db:"username"`
+	DisplayName      *string   `db:"display_name"`
+	AuthType         *AuthType `db:"auth_type"`
+	OauthGoogleEmail *string   `db:"oauth_google_email"`
+}
+
+func SignInHandler(w http.ResponseWriter, r *http.Request) {
+	var reqBody SignInReqBody
+	err := json.NewDecoder(r.Body).Decode(&reqBody)
+	if err != nil {
+		render.Status(r, 400)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 400,
+				"message": "Error parsing JSON",
+			},
+		})
+		return
+	}
+	if len(reqBody.Username) == 0 || len(reqBody.Username) >= 100 {
+		render.Status(r, 400)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"code": "INCORRECT_USERNAME",
+				"statusCode": 400,
+				"message": "Invalid/wrong username",
+			},
+		})
+		return
+	}
+
+	var tokenAndAuthedUser TokenAndAuthedUser
+	err = pgxscan.Get(
+		context.Background(),
+		dbpool.Pool,
+		&tokenAndAuthedUser,
+		`WITH u AS (
+	SELECT id, username, display_name, auth_type, oauth_google_email
+	FROM auth.users
+	WHERE username = $1 AND
+		encrypted_password = crypt($2, encrypted_password)
+), s AS (
+	INSERT INTO auth.sessions (user_id)
+	SELECT id FROM u
+	RETURNING token
+) SELECT s.token, u.id, u.username, u.display_name,
+	u.auth_type, u.oauth_google_email
+FROM s, u`,
+		reqBody.Username,
+		reqBody.Password,
+	)
+	if err != nil && errors.Is(err, pgx.ErrNoRows) {
+		var usernameExists bool = false
+		err2 := pgxscan.Get(
+			context.Background(),
+			dbpool.Pool,
+			&usernameExists,
+			`SELECT EXISTS (
+	SELECT 1 FROM auth.users
+	WHERE username = $1 )`,
+			reqBody.Username
+		)
+		/* `select exists` always returns 1 row (true or false, but not pgx.ErrNoRows) */
+		if err2 != nil {
+			log.Error().Err(err2).Msg("Database err while double-checking username in SignInHandler")
+			render.Status(r, 500)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"statusCode": 500,
+					"message": "Database error while double-checking username while signing in",
+				},
+			})
+			return
+		}
+
+		/* `select exists` always returns 1 row (true or false, but not pgx.ErrNoRows)
+		so we check if usernameExists is true or false */
+		if (usernameExists) {
+			render.Status(r, 400)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"code": "INCORRECT_PASSWORD",
+					"statusCode": 400,
+					"message": "Incorrect password",
+				},
+			})
+			return
+		} else {
+			render.Status(r, 400)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"code": "INCORRECT_USERNAME",
+					"statusCode": 400,
+					"message": "Incorrect username",
+				},
+			})
+			return
+		}
+	} else if err != nil {
+		log.Error().Err(err).Msg("Database err in SignInHandler")
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message": "Database error while signing in",
+			},
+		})
+		return
+	}
+
+	cookie := http.Cookie{
+		Name: "auth",
+		Value: tokenAndAuthedUser.Token,
+		Path: "/",
+		/* 10 days * 24 hours per day * 60 mins per hour * 60s per min
+		= 864000 seconds = 10 days */
+		MaxAge: 864000,
+		Secure: true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookie)
+	render.JSON(w, r, map[string]interface{}{
+		"error": false,
+		"data": map[string]interface{}{
+			"user": map[string]interface{}{
+				"id": tokenAndAuthedUser.ID,
+				"username": tokenAndAuthedUser.Username,
+				"display_name": tokenAndAuthedUser.DisplayName,
+				"auth_type": tokenAndAuthedUser.AuthType,
+				"oauth_google_email": tokenAndAuthedUser.OauthGoogleEmail,
+			}
+		},
+	})
+}
