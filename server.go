@@ -1,19 +1,22 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"quizfreely/api/graph"
 	"quizfreely/api/dbpool"
+	"quizfreely/api/auth"
 
 	"github.com/joho/godotenv"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/go-chi/chi/v5"
 )
 
 const defaultPort = "8008"
@@ -22,6 +25,14 @@ func main() {
 	_ = godotenv.Load()
 	/* godotenv means go dotenv, not godot env*/
 
+	if os.Getenv("PRETTY_LOG") == "true" {
+		log.Logger = log.Output(
+			zerolog.ConsoleWriter{Out: os.Stderr},
+		)
+	} else {
+		zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -29,7 +40,8 @@ func main() {
 
 	dbUrl := os.Getenv("DB_URL")
 	if dbUrl == "" {
-		log.Fatal(`DB_URL is not set
+		log.Fatal().Msgf(
+			`DB_URL is not set
 Copy .env.example to .env and/or
 check your environment variables`,
 		)
@@ -37,6 +49,10 @@ check your environment variables`,
 
 	dbpool.Init(dbUrl)
 	defer dbpool.Pool.Close()
+
+	router := chi.NewRouter()
+
+	router.Use(auth.AuthMiddleware)
 
 	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
 
@@ -51,9 +67,19 @@ check your environment variables`,
 		Cache: lru.New[string](100),
 	})
 
-	http.Handle("/graphiql", playground.Handler("Quizfreely API GraphiQL", "/graphql"))
-	http.Handle("/graphql", srv)
+	router.Handle(
+		"/graphiql",
+		playground.Handler(
+			"Quizfreely API GraphiQL",
+			"/graphql",
+		),
+	)
+	router.Handle("/graphql", srv)
 
-	log.Printf("http://localhost:%s/graphiql for GraphiQL", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Info().Msg(
+		"http://localhost:" + port + "/graphiql for GraphiQL",
+	)
+	log.Fatal().Err(
+		http.ListenAndServe(":"+port, nil),
+	).Msgf("Error starting server")
 }
