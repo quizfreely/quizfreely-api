@@ -5,7 +5,6 @@ import (
 	"context"
 	"quizfreely/api/dbpool"
 
-	"github.com/google/uuid"
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/rs/zerolog/log"
 )
@@ -53,10 +52,16 @@ func AuthMiddleware(next http.Handler) http.Handler {
 				}
 			}
 		}
+		/* this AuthMiddleware should only send an error if the structure of the req
+		is broken. stuff like invalid/expired tokens should NOT cause an error response
+		because this middleware should only populate authedUser context stuff
+		each handler controls any error responses if not logged in based on auth context,
+		because some handlers allow not-logged-in users while others might not */
 
 		if token != "" {
-			/* if token is NOT empty, use it to get their account
-			(doesn't matter if it's from the `auth` cookie or `Authorization` header) */
+			/* if token is NOT empty,
+			AFTER checking the cookie & header with the 2 if-statements above,
+			use it to get their account */
 			var authedUser *AuthedUser
 			err = pgxscan.Get(
 				context.Background(),
@@ -66,16 +71,29 @@ func AuthMiddleware(next http.Handler) http.Handler {
 FROM auth.sessions s
 JOIN auth.users u ON s.user_id = u.id
 WHERE s.token = $1 AND s.expire_at > now()`,
-				token
+				token,
 			)
-			if err != nil {
+			if err == nil {
 				ctx := context.WithValue(r.Context(), authedUserCtxKey, authedUser)
 				r = r.WithContext(ctx)
 			} else {
-				log.Error().Err(err).Msg("Database error in AuthMiddleware")
+				/* if err is pgx.ErrNoRows, that means the token is invalid or expired,
+				don't throw an error for that, just continue as a not-logged-in user,
+				expired tokens shouldn't cause an error when querying public data for example */
+				if !errors.Is(err, pgx.ErrNoRows) {
+					log.Error().Err(err).Msg("Database error in AuthMiddleware")
+					/* unlike pgx.ErrNoRows, which is probably a client error
+					like an invalid or expired token,
+					other errors should be logged because it might be the api's fault */
+				}
 			}
 		}
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func ForContext(ctx context.Context) *AuthedUser {
+	raw, _ := ctx.Value(authedUserCtxKey).(*AuthedUser)
+	return raw
 }

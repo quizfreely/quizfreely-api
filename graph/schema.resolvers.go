@@ -8,11 +8,14 @@ import (
 	"context"
 	"fmt"
 	"quizfreely/api/graph/model"
+	"quizfreely/api/dbpool"
+
+	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: CreateStudyset - createStudyset"))
+	
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
