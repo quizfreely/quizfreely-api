@@ -58,11 +58,11 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			/* if token is NOT empty,
 			AFTER checking the cookie & header with the 2 if-statements above,
 			use it to get their account */
-			var authedUser *model.AuthedUser
+			authedUser := &model.AuthedUser{}
 			err = pgxscan.Get(
 				context.Background(),
 				dbpool.Pool,
-				&authedUser,
+				authedUser,
 				`SELECT u.id, u.username, u.display_name, u.auth_type, u.oauth_google_email
 FROM auth.sessions s
 JOIN auth.users u ON s.user_id = u.id
