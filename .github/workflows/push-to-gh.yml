@@ -6,8 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clone from Codeberg
-        run: git clone https://codeberg.org/quizfreely/quizfreely-api.git
+        run: git clone https://codeberg.org/quizfreely/api.git
       - name: Push to GitHub
         run: |
-          cd quizfreely-api
-          git push https://ehanahamed:${{ secrets.GH_TOKEN }}@github.com/quizfreely/quizfreely-api.git --all
+          cd api
+          git push https://ehanahamed:${{ secrets.GH_TOKEN }}@github.com/quizfreely/api.git --all
