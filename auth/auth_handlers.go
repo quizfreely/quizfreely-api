@@ -169,11 +169,11 @@ type SignInReqBody struct {
 }
 
 type TokenAndAuthedUser struct {
-	Token *string `db:"token"`,
+	Token string `db:"token"`
 	ID *string `db:"id"`
 	Username         *string   `db:"username"`
 	DisplayName      *string   `db:"display_name"`
-	AuthType         *AuthType `db:"auth_type"`
+	AuthType         *model.AuthType `db:"auth_type"`
 	OauthGoogleEmail *string   `db:"oauth_google_email"`
 }
 
@@ -231,7 +231,7 @@ FROM s, u`,
 			`SELECT EXISTS (
 	SELECT 1 FROM auth.users
 	WHERE username = $1 )`,
-			reqBody.Username
+			reqBody.Username,
 		)
 		/* `select exists` always returns 1 row (true or false, but not pgx.ErrNoRows) */
 		if err2 != nil {
@@ -302,7 +302,7 @@ FROM s, u`,
 				"display_name": tokenAndAuthedUser.DisplayName,
 				"auth_type": tokenAndAuthedUser.AuthType,
 				"oauth_google_email": tokenAndAuthedUser.OauthGoogleEmail,
-			}
+			},
 		},
 	})
 }
