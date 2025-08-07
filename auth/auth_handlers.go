@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"context"
 	"errors"
+	"unicode"
 	"regexp"
+	"encoding/json"
 	"quizfreely/api/dbpool"
 	"quizfreely/api/graph/model"
 
@@ -19,26 +21,45 @@ type SignUpReqBody struct {
 	NewPassword string `json:"password"`
 }
 
+/* usernames can have letters and numbers from any alphabet, but no uppercase
+underscores, dots, or dashes,
+and must be less than 100 characters */
+var usernameRegex = regexp.MustCompile(`^[\p{L}\p{M}\p{N}._-]+$`)
+/* keep regexp.MustCompile outside of functions/handlers,
+cause it's resource-expensive, we only want it to run once */
+func IsUsernameValid(s string) bool {
+	if len(s) == 0 || len(s) >= 100 {
+		return false;
+	}
+	for _, r := range s {
+		if unicode.Is(unicode.Upper, r) {
+			return false
+		}
+	}
+	return usernameRegex.MatchString(s)
+}
+
 func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	var reqBody SignUpReqBody
-	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+	err := json.NewDecoder(r.Body).Decode(&reqBody)
+	if err != nil {
 		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 400,
 				"message": "Error parsing JSON",
-			}
+			},
 		})
 		return
 	}
 
-	if len(reqBody.Username) >= 100 || !regexp.MustCompile(`^(?!.*\p{Lu})[\p{L}\p{M}\p{N}._-]+$`).MatchString(reqBody.Username) {
+	if !IsUsernameValid(reqBody.Username) {
 		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"code": "USERNAME_INVALID",
 				"statusCode": 400,
-				"message": "Usernames must be less than 100 characters & can only have letters/numbers (any alphabet), underscores, dots, or dashes",
+				"message": "Usernames must be less than 100 characters & can only have letters/numbers (any alphabet, but no uppercase), underscores, dots, or dashes",
 			},
 		})
 		return
@@ -61,19 +82,19 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 			"error": map[string]interface{}{
 				"statusCode": 400,
 				"message": "Database error while checking if username is taken in SignUpHandler",
-			}
+			},
 		})
 		return
 	}
 
 	if isUsernameTaken {
-		render.Status(400)
+		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"code": "USERNAME_TAKEN",
 				"statusCode": 400,
-				"message": "Username taken/already being used"
-			}
+				"message": "Username taken/already being used",
+			},
 		})
 		return
 	}
@@ -82,7 +103,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	err = pgxscan.Get(
 		context.Background(),
 		dbpool.Pool,
-		&isUsernameTaken,
+		&newUser,
 		`INSERT INTO auth.users (username, encrypted_password, display_name, auth_type)
 VALUES ($1, crypt($2, gen_salt('bf')), $1, 'USERNAME_PASSWORD')
 RETURNING id, username, display_name, auth_type`,
@@ -96,7 +117,7 @@ RETURNING id, username, display_name, auth_type`,
 			"error": map[string]interface{}{
 				"statusCode": 500,
 				"message": "Database error while creating account in SignUpHandler",
-			}
+			},
 		})
 		return
 	}
@@ -108,7 +129,7 @@ RETURNING id, username, display_name, auth_type`,
 		&newToken,
 		`INSERT INTO auth.sessions (user_id)
 VALUES ($1) RETURNING token`,
-		newUser.ID
+		newUser.ID,
 	)
 	if err != nil {
 		log.Error().Err(err).Msg("Database err while adding session in SignUpHandler")
@@ -117,7 +138,7 @@ VALUES ($1) RETURNING token`,
 			"error": map[string]interface{}{
 				"statusCode": 500,
 				"message": "Database error while adding session in SignUpHandler",
-			}
+			},
 		})
 		return
 	}
