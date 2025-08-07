@@ -38,6 +38,7 @@ create table auth.sessions (
 grant select on auth.sessions to quizfreely_api;
 grant insert on auth.sessions to quizfreely_api;
 grant delete on auth.sessions to quizfreely_api;
+grant usage, select on auth.sessions_id_seq to quizfreely_api;
 
 create table public.studysets (
   id uuid primary key default gen_random_uuid(),
