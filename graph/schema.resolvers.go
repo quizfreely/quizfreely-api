@@ -337,7 +337,7 @@ func (r *queryResolver) Studyset(ctx context.Context, id string) (*model.Studyse
 		sql := `
 			SELECT id, user_id, title, private, data, terms_count,
 				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-				(SELECT display_name FROM auth.users WHERE id = studysets..user_id) AS user_display_name
+				(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
 			FROM public.studysets
 			WHERE id = $1 AND private = false`
 		err = pgxscan.Get(ctx, tx, &studyset, sql, id)
