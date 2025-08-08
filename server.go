@@ -3,12 +3,14 @@ package main
 import (
 	"net/http"
 	"os"
+	"context"
 	"quizfreely/api/graph"
 	"quizfreely/api/auth"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
