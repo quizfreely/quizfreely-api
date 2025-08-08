@@ -1,24 +1,24 @@
 package auth
 
 import (
-	"net/http"
 	"context"
-	"strings"
 	"errors"
-	"quizfreely/api/dbpool"
+	"net/http"
 	"quizfreely/api/graph/model"
+	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"github.com/rs/zerolog/log"
 )
 
 var authedUserCtxKey = &contextKey{"authedUser"}
-type contextKey = struct {
+
+type contextKey struct {
 	name string
 }
 
-func AuthMiddleware(next http.Handler) http.Handler {
+func (ah *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(
 		w http.ResponseWriter,
 		r *http.Request,
@@ -61,7 +61,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			authedUser := &model.AuthedUser{}
 			err = pgxscan.Get(
 				context.Background(),
-				dbpool.Pool,
+				ah.DB,
 				authedUser,
 				`SELECT u.id, u.username, u.display_name, u.auth_type, u.oauth_google_email
 FROM auth.sessions s

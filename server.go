@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 	"quizfreely/api/graph"
-	"quizfreely/api/dbpool"
 	"quizfreely/api/auth"
 
 	"github.com/joho/godotenv"
@@ -47,24 +46,34 @@ check your environment variables`,
 		)
 	}
 
-	dbpool.Init(dbUrl)
-	defer dbpool.Pool.Close()
+	var err error
+	var dbPool *pgxpool.Pool
+	dbPool, err = pgxpool.New(
+		context.Background(),
+		dbUrl,
+	)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("Error creating database pool")
+	}
+	defer dbPool.Close()
 
 	router := chi.NewRouter()
 
+	authHandler := &auth.AuthHandler{DB: dbPool}
+
 	router.Post(
 		"/auth/sign-up",
-		auth.SignUpHandler,
+		authHandler.SignUpHandler,
 	)
 	router.Post(
 		"/auth/sign-in",
-		auth.SignInHandler,
+		authHandler.SignInHandler,
 	)
 
 	router.Group(func(r chi.Router) {
-		r.Use(auth.AuthMiddleware)
+		r.Use(authHandler.AuthMiddleware)
 
-		srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+		srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: dbPool}}))
 
 		srv.AddTransport(transport.Options{})
 		srv.AddTransport(transport.GET{})

@@ -1,23 +1,27 @@
 package auth
 
 import (
-	"net/http"
 	"context"
-	"errors"
-	"unicode"
-	"regexp"
 	"encoding/json"
-	"quizfreely/api/dbpool"
+	"errors"
+	"net/http"
 	"quizfreely/api/graph/model"
+	"regexp"
+	"unicode"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/go-chi/render"
 	"github.com/jackc/pgx/v5"
-	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 )
 
+type AuthHandler struct {
+	DB *pgxpool.Pool
+}
+
 type SignUpReqBody struct {
-	Username string `json:"username"`
+	Username    string `json:"username"`
 	NewPassword string `json:"password"`
 }
 
@@ -25,11 +29,12 @@ type SignUpReqBody struct {
 underscores, dots, or dashes,
 and must be less than 100 characters */
 var usernameRegex = regexp.MustCompile(`^[\p{L}\p{M}\p{N}._-]+$`)
+
 /* keep regexp.MustCompile outside of functions/handlers,
 cause it's resource-expensive, we only want it to run once */
 func IsUsernameValid(s string) bool {
 	if len(s) == 0 || len(s) >= 100 {
-		return false;
+		return false
 	}
 	for _, r := range s {
 		if unicode.Is(unicode.Upper, r) {
@@ -39,7 +44,7 @@ func IsUsernameValid(s string) bool {
 	return usernameRegex.MatchString(s)
 }
 
-func SignUpHandler(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	var reqBody SignUpReqBody
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
@@ -47,7 +52,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 400,
-				"message": "Error parsing JSON",
+				"message":    "Error parsing JSON",
 			},
 		})
 		return
@@ -57,9 +62,9 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
-				"code": "USERNAME_INVALID",
+				"code":       "USERNAME_INVALID",
 				"statusCode": 400,
-				"message": "Usernames must be less than 100 characters & can only have letters/numbers (any alphabet, but no uppercase), underscores, dots, or dashes",
+				"message":    "Usernames must be less than 100 characters & can only have letters/numbers (any alphabet, but no uppercase), underscores, dots, or dashes",
 			},
 		})
 		return
@@ -68,7 +73,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	var isUsernameTaken bool = false
 	err = pgxscan.Get(
 		context.Background(),
-		dbpool.Pool,
+		ah.DB,
 		&isUsernameTaken,
 		`SELECT EXISTS (
 	SELECT 1 FROM auth.users
@@ -81,7 +86,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 400,
-				"message": "Database error while checking if username is taken in SignUpHandler",
+				"message":    "Database error while checking if username is taken in SignUpHandler",
 			},
 		})
 		return
@@ -91,9 +96,9 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
-				"code": "USERNAME_TAKEN",
+				"code":       "USERNAME_TAKEN",
 				"statusCode": 400,
-				"message": "Username taken/already being used",
+				"message":    "Username taken/already being used",
 			},
 		})
 		return
@@ -102,7 +107,7 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	var newUser model.AuthedUser
 	err = pgxscan.Get(
 		context.Background(),
-		dbpool.Pool,
+		ah.DB,
 		&newUser,
 		`INSERT INTO auth.users (username, encrypted_password, display_name, auth_type)
 VALUES ($1, crypt($2, gen_salt('bf')), $1, 'USERNAME_PASSWORD')
@@ -116,7 +121,7 @@ RETURNING id, username, display_name, auth_type`,
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 500,
-				"message": "Database error while creating account in SignUpHandler",
+				"message":    "Database error while creating account in SignUpHandler",
 			},
 		})
 		return
@@ -125,7 +130,7 @@ RETURNING id, username, display_name, auth_type`,
 	var newToken string
 	err = pgxscan.Get(
 		context.Background(),
-		dbpool.Pool,
+		ah.DB,
 		&newToken,
 		`INSERT INTO auth.sessions (user_id)
 VALUES ($1) RETURNING token`,
@@ -137,20 +142,20 @@ VALUES ($1) RETURNING token`,
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 500,
-				"message": "Database error while adding session in SignUpHandler",
+				"message":    "Database error while adding session in SignUpHandler",
 			},
 		})
 		return
 	}
 
 	cookie := http.Cookie{
-		Name: "auth",
+		Name:  "auth",
 		Value: newToken,
-		Path: "/",
+		Path:  "/",
 		/* 10 days * 24 hours per day * 60 mins per hour * 60s per min
 		= 864000 seconds = 10 days */
-		MaxAge: 864000,
-		Secure: true,
+		MaxAge:   864000,
+		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
@@ -169,15 +174,15 @@ type SignInReqBody struct {
 }
 
 type TokenAndAuthedUser struct {
-	Token string `db:"token"`
-	ID *string `db:"id"`
-	Username         *string   `db:"username"`
-	DisplayName      *string   `db:"display_name"`
+	Token            string          `db:"token"`
+	ID               *string         `db:"id"`
+	Username         *string         `db:"username"`
+	DisplayName      *string         `db:"display_name"`
 	AuthType         *model.AuthType `db:"auth_type"`
-	OauthGoogleEmail *string   `db:"oauth_google_email"`
+	OauthGoogleEmail *string         `db:"oauth_google_email"`
 }
 
-func SignInHandler(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	var reqBody SignInReqBody
 	err := json.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
@@ -185,7 +190,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 400,
-				"message": "Error parsing JSON",
+				"message":    "Error parsing JSON",
 			},
 		})
 		return
@@ -194,9 +199,9 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 		render.Status(r, 400)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
-				"code": "INCORRECT_USERNAME",
+				"code":       "INCORRECT_USERNAME",
 				"statusCode": 400,
-				"message": "Invalid/wrong username",
+				"message":    "Invalid/wrong username",
 			},
 		})
 		return
@@ -205,7 +210,7 @@ func SignInHandler(w http.ResponseWriter, r *http.Request) {
 	var tokenAndAuthedUser TokenAndAuthedUser
 	err = pgxscan.Get(
 		context.Background(),
-		dbpool.Pool,
+		ah.DB,
 		&tokenAndAuthedUser,
 		`WITH u AS (
 	SELECT id, username, display_name, auth_type, oauth_google_email
@@ -226,7 +231,7 @@ FROM s, u`,
 		var usernameExists bool = false
 		err2 := pgxscan.Get(
 			context.Background(),
-			dbpool.Pool,
+			ah.DB,
 			&usernameExists,
 			`SELECT EXISTS (
 	SELECT 1 FROM auth.users
@@ -240,7 +245,7 @@ FROM s, u`,
 			render.JSON(w, r, map[string]interface{}{
 				"error": map[string]interface{}{
 					"statusCode": 500,
-					"message": "Database error while double-checking username while signing in",
+					"message":    "Database error while double-checking username while signing in",
 				},
 			})
 			return
@@ -248,13 +253,13 @@ FROM s, u`,
 
 		/* `select exists` always returns 1 row (true or false, but not pgx.ErrNoRows)
 		so we check if usernameExists is true or false */
-		if (usernameExists) {
+		if usernameExists {
 			render.Status(r, 400)
 			render.JSON(w, r, map[string]interface{}{
 				"error": map[string]interface{}{
-					"code": "INCORRECT_PASSWORD",
+					"code":       "INCORRECT_PASSWORD",
 					"statusCode": 400,
-					"message": "Incorrect password",
+					"message":    "Incorrect password",
 				},
 			})
 			return
@@ -262,9 +267,9 @@ FROM s, u`,
 			render.Status(r, 400)
 			render.JSON(w, r, map[string]interface{}{
 				"error": map[string]interface{}{
-					"code": "INCORRECT_USERNAME",
+					"code":       "INCORRECT_USERNAME",
 					"statusCode": 400,
-					"message": "Incorrect username",
+					"message":    "Incorrect username",
 				},
 			})
 			return
@@ -275,20 +280,20 @@ FROM s, u`,
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 500,
-				"message": "Database error while signing in",
+				"message":    "Database error while signing in",
 			},
 		})
 		return
 	}
 
 	cookie := http.Cookie{
-		Name: "auth",
+		Name:  "auth",
 		Value: tokenAndAuthedUser.Token,
-		Path: "/",
+		Path:  "/",
 		/* 10 days * 24 hours per day * 60 mins per hour * 60s per min
 		= 864000 seconds = 10 days */
-		MaxAge: 864000,
-		Secure: true,
+		MaxAge:   864000,
+		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
@@ -297,10 +302,10 @@ FROM s, u`,
 		"error": false,
 		"data": map[string]interface{}{
 			"user": map[string]interface{}{
-				"id": tokenAndAuthedUser.ID,
-				"username": tokenAndAuthedUser.Username,
-				"display_name": tokenAndAuthedUser.DisplayName,
-				"auth_type": tokenAndAuthedUser.AuthType,
+				"id":                 tokenAndAuthedUser.ID,
+				"username":           tokenAndAuthedUser.Username,
+				"display_name":       tokenAndAuthedUser.DisplayName,
+				"auth_type":          tokenAndAuthedUser.AuthType,
 				"oauth_google_email": tokenAndAuthedUser.OauthGoogleEmail,
 			},
 		},

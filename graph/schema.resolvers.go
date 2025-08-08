@@ -7,13 +7,69 @@ package graph
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
+
+	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: CreateStudyset - createStudyset"))
+	authedUser := auth.ForContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	title := "Untitled Studyset"
+	// The JS implementation uses a regex to ensure the title contains at least one letter, mark, or number.
+	// This prevents titles that are only whitespace or symbols.
+	validTitleRegex := regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
+	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
+		title = studyset.Title
+	}
+
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	_, err = tx.Exec(ctx, "SELECT set_config('qzfr_api.scope', 'user', true)")
+	if err != nil {
+		return nil, fmt.Errorf("failed to set scope for transaction: %w", err)
+	}
+	_, err = tx.Exec(ctx, "SELECT set_config('qzfr_api.user_id', $1, true)", authedUser.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set user_id for transaction: %w", err)
+	}
+
+	termsCount := 0
+	if studyset.Data != nil && studyset.Data.Terms != nil {
+		termsCount = len(studyset.Data.Terms)
+	}
+
+	sql := `
+		INSERT INTO public.studysets (user_id, title, private, data, terms_count)
+		VALUES ($1, $2, $3, $4, $5)
+		RETURNING id, user_id, title, private, data, terms_count,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+	`
+	var newStudyset model.Studyset
+	err = pgxscan.Get(ctx, tx, &newStudyset, sql, authedUser.ID, title, studyset.Private, studyset.Data, termsCount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create studyset: %w", err)
+	}
+
+	// The user_display_name is not returned from the INSERT...RETURNING statement.
+	// We can set it from the authenticated user in the context.
+	newStudyset.UserDisplayName = authedUser.DisplayName
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return &newStudyset, nil
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
