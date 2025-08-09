@@ -111,7 +111,7 @@ check your environment variables`,
 
 		r.Get(
 			"/v0/search-queries",
-			restHandler.GetSearchQueries
+			restHandler.GetSearchQueries,
 		)
 	})
 
