@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -70,7 +69,7 @@ func (rh *RESTHandler) GetSearchQueries(w http.ResponseWriter, r *http.Request) 
 
 	var isUsernameTaken bool = false
 	err = pgxscan.Get(
-		context.Background(),
+		r.Context(),
 		ah.DB,
 		&isUsernameTaken,
 		`SELECT EXISTS (
@@ -104,7 +103,7 @@ func (rh *RESTHandler) GetSearchQueries(w http.ResponseWriter, r *http.Request) 
 
 	var newUser model.AuthedUser
 	err = pgxscan.Get(
-		context.Background(),
+		r.Context(),
 		ah.DB,
 		&newUser,
 		`INSERT INTO auth.users (username, encrypted_password, display_name, auth_type)
@@ -127,7 +126,7 @@ RETURNING id, username, display_name, auth_type`,
 
 	var newToken string
 	err = pgxscan.Get(
-		context.Background(),
+		r.Context(),
 		ah.DB,
 		&newToken,
 		`INSERT INTO auth.sessions (user_id)
@@ -207,7 +206,7 @@ func (ah *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	var tokenAndAuthedUser TokenAndAuthedUser
 	err = pgxscan.Get(
-		context.Background(),
+		r.Context(),
 		ah.DB,
 		&tokenAndAuthedUser,
 		`WITH u AS (
@@ -228,7 +227,7 @@ FROM s, u`,
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
 		var usernameExists bool = false
 		err2 := pgxscan.Get(
-			context.Background(),
+			r.Context(),
 			ah.DB,
 			&usernameExists,
 			`SELECT EXISTS (
