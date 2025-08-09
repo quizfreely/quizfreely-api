@@ -311,3 +311,150 @@ FROM s, u`,
 		},
 	})
 }
+
+type DeleteAccountRequest struct {
+	DeleteAllMyStudysets bool   `json:"deleteAllMyStudysets"`
+	ConfirmPassword      string `json:"confirmPassword"`
+}
+
+func (ah *AuthHandler) DeleteAccountHandler(w http.ResponseWriter, r *http.Request) {
+	var req DeleteAccountRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		render.Status(r, 400)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 400,
+				"message":    "Error parsing JSON",
+			},
+		})
+		return
+	}
+
+	authedUser := AuthedUserContext(r.Context())
+	if authedUser == nil {
+		render.Status(r, 401)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"code":       "NOT_AUTHED",
+				"statusCode": 401,
+				"message":    "You are not signed in, so you cannot delete your account",
+			},
+		})
+		return
+	}
+
+	tx, err := ah.DB.Begin(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("Database err while starting transaction in DeleteAccountHandler")
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message":    "Database error while deleting account",
+			},
+		})
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	// Delete studysets based on user preference
+	if req.DeleteAllMyStudysets {
+		_, err = tx.Exec(r.Context(), "delete from public.studysets where user_id = $1", authedUser.ID)
+	} else {
+		_, err = tx.Exec(r.Context(), "delete from public.studysets where user_id = $1 and private = true", authedUser.ID)
+	}
+	if err != nil {
+		log.Error().Err(err).Msg("Database err while deleting studysets in DeleteAccountHandler")
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message":    "Database error while deleting account",
+			},
+		})
+		return
+	}
+
+	// Set auth context before deleting user
+	_, err = tx.Exec(r.Context(), "select set_config('qzfr_api.scope', 'auth', true)")
+	if err != nil {
+		log.Error().Err(err).Msg("Database err while setting auth context in DeleteAccountHandler")
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message":    "Database error while deleting account",
+			},
+		})
+		return
+	}
+
+	// Delete user based on auth type
+	if authedUser.AuthType != nil && *authedUser.AuthType == model.AuthTypeOauthGoogle {
+		_, err = tx.Exec(r.Context(), "delete from auth.users where id = $1", authedUser.ID)
+		if err != nil {
+			log.Error().Err(err).Msg("Database err while deleting user in DeleteAccountHandler")
+			render.Status(r, 500)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"statusCode": 500,
+					"message":    "Database error while deleting account",
+				},
+			})
+			return
+		}
+	} else {
+		if req.ConfirmPassword == "" {
+			render.Status(r, 403)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"code":       "INCORRECT_PASSWORD",
+					"statusCode": 403,
+					"message":    "Password confirmation is required",
+				},
+			})
+			return
+		}
+
+		var deleted bool
+		err = tx.QueryRow(
+			r.Context(),
+			"delete from auth.users where id = $1 and encrypted_password = crypt($2, encrypted_password) RETURNING true",
+			authedUser.ID, req.ConfirmPassword,
+		).Scan(&deleted)
+
+		if err != nil || !deleted {
+			log.Error().Err(err).Msg("Database err while deleting user with password in DeleteAccountHandler")
+			render.Status(r, 403)
+			render.JSON(w, r, map[string]interface{}{
+				"error": map[string]interface{}{
+					"code":       "INCORRECT_PASSWORD",
+					"statusCode": 403,
+					"message":    "Wrong password confirmation while trying to delete account",
+				},
+			})
+			return
+		}
+	}
+
+	err = tx.Commit(r.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("Database err while committing transaction in DeleteAccountHandler")
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message":    "Database error while deleting account",
+			},
+		})
+		return
+	}
+
+	render.JSON(w, r, map[string]interface{}{
+		"error": false,
+		"data": map[string]interface{}{
+			"authed": false,
+		},
+	})
+}

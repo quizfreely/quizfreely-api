@@ -33,8 +33,8 @@ type AuthedUser {
     oauth_google_email: String
 }
 enum AuthType {
-    username_password
-    oauth_google
+    USERNAME_PASSWORD
+    OAUTH_GOOGLE
 }
 type Studyset {
     id: ID
@@ -109,8 +109,8 @@ input StudysetProgressTermInput {
     confusedDefs: [[String]]
 }
 enum ProgressTermState {
-    new
-    learning
-    review
-    relearning
+    NEW
+    LEARNING
+    REVIEW
+    RELEARNING
 }

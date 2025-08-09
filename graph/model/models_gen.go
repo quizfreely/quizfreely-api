@@ -106,8 +106,8 @@ type User struct {
 type AuthType string
 
 const (
-	AuthTypeUsernamePassword AuthType = "username_password"
-	AuthTypeOauthGoogle      AuthType = "oauth_google"
+	AuthTypeUsernamePassword AuthType = "USERNAME_PASSWORD"
+	AuthTypeOauthGoogle      AuthType = "OAUTH_GOOGLE"
 )
 
 var AllAuthType = []AuthType{
@@ -161,10 +161,10 @@ func (e AuthType) MarshalJSON() ([]byte, error) {
 type ProgressTermState string
 
 const (
-	ProgressTermStateNew        ProgressTermState = "new"
-	ProgressTermStateLearning   ProgressTermState = "learning"
-	ProgressTermStateReview     ProgressTermState = "review"
-	ProgressTermStateRelearning ProgressTermState = "relearning"
+	ProgressTermStateNew        ProgressTermState = "NEW"
+	ProgressTermStateLearning   ProgressTermState = "LEARNING"
+	ProgressTermStateReview     ProgressTermState = "REVIEW"
+	ProgressTermStateRelearning ProgressTermState = "RELEARNING"
 )
 
 var AllProgressTermState = []ProgressTermState{

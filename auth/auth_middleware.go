@@ -89,7 +89,7 @@ WHERE s.token = $1 AND s.expire_at > now()`,
 	})
 }
 
-func ForContext(ctx context.Context) *model.AuthedUser {
+func AuthedUserContext(ctx context.Context) *model.AuthedUser {
 	raw, _ := ctx.Value(authedUserCtxKey).(*model.AuthedUser)
 	return raw
 }

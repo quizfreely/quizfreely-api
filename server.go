@@ -64,12 +64,18 @@ check your environment variables`,
 	authHandler := &auth.AuthHandler{DB: dbPool}
 
 	router.Post(
-		"/auth/sign-up",
+		"/v0/auth/sign-up",
 		authHandler.SignUpHandler,
 	)
 	router.Post(
-		"/auth/sign-in",
+		"/v0/auth/sign-in",
 		authHandler.SignInHandler,
+	)
+	router.With(
+		authHandler.AuthMiddleware,
+	).Post(
+		"/v0/auth/delete-account",
+		authHandler.DeleteAccountHandler,
 	)
 
 	router.Group(func(r chi.Router) {

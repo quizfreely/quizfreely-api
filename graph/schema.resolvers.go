@@ -8,18 +8,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"regexp"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
+	"regexp"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
-	"github.com/jackc/pgx/v5"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -68,7 +68,7 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 
 // UpdateStudyset is the resolver for the updateStudyset field.
 func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput) (*model.Studyset, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -129,7 +129,7 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 
 // DeleteStudyset is the resolver for the deleteStudyset field.
 func (r *mutationResolver) DeleteStudyset(ctx context.Context, id string) (*string, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -158,7 +158,7 @@ func (r *mutationResolver) DeleteStudyset(ctx context.Context, id string) (*stri
 
 // UpdateUser is the resolver for the updateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -202,7 +202,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, displayName *string) 
 
 // UpdateStudysetProgress is the resolver for the updateStudysetProgress field.
 func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetID string, progressChanges []*model.StudysetProgressTermInput) (*model.StudysetProgress, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -239,7 +239,7 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 
 // DeleteStudysetProgress is the resolver for the deleteStudysetProgress field.
 func (r *mutationResolver) DeleteStudysetProgress(ctx context.Context, studysetID string) (*string, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -268,7 +268,7 @@ func (r *mutationResolver) DeleteStudysetProgress(ctx context.Context, studysetI
 
 // UpdateStudysetSettings is the resolver for the updateStudysetSettings field.
 func (r *mutationResolver) UpdateStudysetSettings(ctx context.Context, studysetID string, changedSettings model.StudysetSettingsInput) (*model.StudysetSettings, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -303,18 +303,18 @@ func (r *mutationResolver) UpdateStudysetSettings(ctx context.Context, studysetI
 
 // Authed is the resolver for the authed field.
 func (r *queryResolver) Authed(ctx context.Context) (*bool, error) {
-	authed := auth.ForContext(ctx) != nil
+	authed := auth.AuthedUserContext(ctx) != nil
 	return &authed, nil
 }
 
 // AuthedUser is the resolver for the authedUser field.
 func (r *queryResolver) AuthedUser(ctx context.Context) (*model.AuthedUser, error) {
-	return auth.ForContext(ctx), nil
+	return auth.AuthedUserContext(ctx), nil
 }
 
 // Studyset is the resolver for the studyset field.
 func (r *queryResolver) Studyset(ctx context.Context, id string) (*model.Studyset, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 
 	// A transaction is used here to ensure that the RLS settings are applied
 	// for the duration of the query.
@@ -516,7 +516,7 @@ func (r *queryResolver) SearchQueries(ctx context.Context, q string, limit *int3
 
 // MyStudysets is the resolver for the myStudysets field.
 func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
 	}
@@ -557,7 +557,7 @@ func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *i
 
 // StudysetProgress is the resolver for the studysetProgress field.
 func (r *queryResolver) StudysetProgress(ctx context.Context, studysetID string) (*model.StudysetProgress, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, nil // Return nil, nil if the user is not authenticated
 	}
@@ -604,7 +604,7 @@ func (r *queryResolver) StudysetProgress(ctx context.Context, studysetID string)
 
 // StudysetSettings is the resolver for the studysetSettings field.
 func (r *queryResolver) StudysetSettings(ctx context.Context, studysetID string) (*model.StudysetSettings, error) {
-	authedUser := auth.ForContext(ctx)
+	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, nil
 	}
