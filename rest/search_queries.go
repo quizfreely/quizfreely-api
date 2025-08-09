@@ -1,13 +1,14 @@
-package auth
+package rest
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
-	"quizfreely/api/graph/model"
 	"regexp"
 	"unicode"
+	"strconv"
+	"quizfreely/api/graph/model"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/go-chi/render"
@@ -16,63 +17,60 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type AuthHandler struct {
-	DB *pgxpool.Pool
-}
+func (rh *RESTHandler) GetSearchQueries(w http.ResponseWriter, r *http.Request) {
+	searchParams := r.URL.Query() /* query string */
+	q := searchParams.Get("q")
+	limit := searchParams.Get("limit")
+	offset := searchParams.Get("offset")
 
-type SignUpReqBody struct {
-	Username    string `json:"username"`
-	NewPassword string `json:"password"`
-}
-
-/* usernames can have letters and numbers from any alphabet, but no uppercase
-underscores, dots, or dashes,
-and must be less than 100 characters */
-var usernameRegex = regexp.MustCompile(`^[\p{L}\p{M}\p{N}._-]+$`)
-
-/* keep regexp.MustCompile outside of functions/handlers,
-cause it's resource-expensive, we only want it to run once */
-func IsUsernameValid(s string) bool {
-	if len(s) == 0 || len(s) >= 100 {
-		return false
-	}
-	for _, r := range s {
-		if unicode.Is(unicode.Upper, r) {
-			return false
+	l := 5
+	if limit != "" {
+		lInt, err := strconv.Atoi(limit)
+		if err == nil && lInt > 0 && lInt < 5 {
+			l = lInt
 		}
 	}
-	return usernameRegex.MatchString(s)
-}
 
-func (ah *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var reqBody SignUpReqBody
-	err := json.NewDecoder(r.Body).Decode(&reqBody)
+	o := 0
+	if offset != "" {
+		oInt, err := strconv.Atoi(offset)
+		if err == nil && oInt > 0 {
+			o = oInt
+		}
+	}
+
+	var searchQueries []*model.SearchQuery
+	sql := `
+		SELECT
+			id,
+			query,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
+			(SELECT display_name FROM auth.users WHERE id = search_queries.user_id) AS user_display_name,
+			(SELECT COUNT(*) FROM public.studysets WHERE document @@ websearch_to_tsquery('english', search_queries.query)) AS studyset_count
+		FROM public.search_queries
+		WHERE query ILIKE $1
+		ORDER BY (SELECT COUNT(*) FROM public.studysets WHERE document @@ websearch_to_tsquery('english', search_queries.query)) DESC
+		LIMIT $2 OFFSET $3
+	`
+	err := pgxscan.Select(r.Context(), rh.DB, &searchQueries, sql, "%"+q+"%", l, o)
 	if err != nil {
-		render.Status(r, 400)
+		log.Error().Err(err).Msg("Database err in GetSearchQueries")
+		render.Status(r, 500)
 		render.JSON(w, r, map[string]interface{}{
 			"error": map[string]interface{}{
 				"statusCode": 400,
-				"message":    "Error parsing JSON",
+				"message":    "Database error in GetSearchQueries",
 			},
 		})
 		return
 	}
 
-	if !IsUsernameValid(reqBody.Username) {
-		render.Status(r, 400)
-		render.JSON(w, r, map[string]interface{}{
-			"error": map[string]interface{}{
-				"code":       "USERNAME_INVALID",
-				"statusCode": 400,
-				"message":    "Usernames must be less than 100 characters & can only have letters/numbers (any alphabet, but no uppercase), underscores, dots, or dashes",
-			},
-		})
-		return
-	}
+	return searchQueries, nil
+
 
 	var isUsernameTaken bool = false
 	err = pgxscan.Get(
-		r.Context(),
+		context.Background(),
 		ah.DB,
 		&isUsernameTaken,
 		`SELECT EXISTS (
@@ -106,7 +104,7 @@ func (ah *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	var newUser model.AuthedUser
 	err = pgxscan.Get(
-		r.Context(),
+		context.Background(),
 		ah.DB,
 		&newUser,
 		`INSERT INTO auth.users (username, encrypted_password, display_name, auth_type)
@@ -129,7 +127,7 @@ RETURNING id, username, display_name, auth_type`,
 
 	var newToken string
 	err = pgxscan.Get(
-		r.Context(),
+		context.Background(),
 		ah.DB,
 		&newToken,
 		`INSERT INTO auth.sessions (user_id)
@@ -209,7 +207,7 @@ func (ah *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	var tokenAndAuthedUser TokenAndAuthedUser
 	err = pgxscan.Get(
-		r.Context(),
+		context.Background(),
 		ah.DB,
 		&tokenAndAuthedUser,
 		`WITH u AS (
@@ -230,7 +228,7 @@ FROM s, u`,
 	if err != nil && errors.Is(err, pgx.ErrNoRows) {
 		var usernameExists bool = false
 		err2 := pgxscan.Get(
-			r.Context(),
+			context.Background(),
 			ah.DB,
 			&usernameExists,
 			`SELECT EXISTS (

@@ -60,7 +60,7 @@ func (ah *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 			use it to get their account */
 			authedUser := &model.AuthedUser{}
 			err = pgxscan.Get(
-				context.Background(),
+				r.Context(),
 				ah.DB,
 				authedUser,
 				`SELECT u.id, u.username, u.display_name, u.auth_type, u.oauth_google_email

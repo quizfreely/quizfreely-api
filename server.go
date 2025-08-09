@@ -4,8 +4,9 @@ import (
 	"net/http"
 	"os"
 	"context"
-	"quizfreely/api/graph"
 	"quizfreely/api/auth"
+	"quizfreely/api/graph"
+	"quizfreely/api/rest"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
@@ -62,20 +63,21 @@ check your environment variables`,
 	router := chi.NewRouter()
 
 	authHandler := &auth.AuthHandler{DB: dbPool}
+	restHandler := &rest.RESTHandler{DB: dbPool}
 
 	router.Post(
 		"/v0/auth/sign-up",
-		authHandler.SignUpHandler,
+		authHandler.SignUp,
 	)
 	router.Post(
 		"/v0/auth/sign-in",
-		authHandler.SignInHandler,
+		authHandler.SignIn,
 	)
 	router.With(
 		authHandler.AuthMiddleware,
 	).Post(
 		"/v0/auth/delete-account",
-		authHandler.DeleteAccountHandler,
+		authHandler.DeleteAccount,
 	)
 
 	router.Group(func(r chi.Router) {
@@ -102,6 +104,15 @@ check your environment variables`,
 			),
 		)
 		r.Handle("/graphql", srv)
+	})
+
+	router.Group(func(r chi.Router) {
+		r.Use(authHandler.AuthMiddleware)
+
+		r.Get(
+			"/v0/search-queries",
+			restHandler.GetSearchQueries
+		)
 	})
 
 	log.Info().Msg(
