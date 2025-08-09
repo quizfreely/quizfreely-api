@@ -398,6 +398,7 @@ func (r *queryResolver) FeaturedStudysets(ctx context.Context, limit *int32, off
 			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
 		FROM public.studysets
 		WHERE private = false
+			AND featured = true
 		ORDER BY terms_count DESC
 		LIMIT $1 OFFSET $2
 	`
