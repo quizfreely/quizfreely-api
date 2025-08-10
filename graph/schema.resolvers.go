@@ -480,39 +480,6 @@ func (r *queryResolver) SearchStudysets(ctx context.Context, q string, limit *in
 	return studysets, nil
 }
 
-// SearchQueries is the resolver for the searchQueries field.
-func (r *queryResolver) SearchQueries(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.SearchQuery, error) {
-	l := 5
-	if limit != nil && *limit > 0 && *limit < 5 {
-		l = int(*limit)
-	}
-
-	o := 0
-	if offset != nil && *offset > 0 {
-		o = int(*offset)
-	}
-
-	var searchQueries []*model.SearchQuery
-	sql := `
-		SELECT
-			id,
-			query,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-			(SELECT display_name FROM auth.users WHERE id = search_queries.user_id) AS user_display_name,
-			(SELECT COUNT(*) FROM public.studysets WHERE document @@ websearch_to_tsquery('english', search_queries.query)) AS studyset_count
-		FROM public.search_queries
-		WHERE query ILIKE $1
-		ORDER BY (SELECT COUNT(*) FROM public.studysets WHERE document @@ websearch_to_tsquery('english', search_queries.query)) DESC
-		LIMIT $2 OFFSET $3
-	`
-	err := pgxscan.Select(ctx, r.DB, &searchQueries, sql, "%"+q+"%", l, o)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search queries: %w", err)
-	}
-
-	return searchQueries, nil
-}
-
 // MyStudysets is the resolver for the myStudysets field.
 func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
 	authedUser := auth.AuthedUserContext(ctx)
