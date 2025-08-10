@@ -78,6 +78,9 @@ create table public.search_queries (
 );
 
 grant select on public.search_queries to quizfreely_api;
+grant insert on public.search_queries to quizfreely_api;
+grant update on public.search_queries to quizfreely_api;
+grant delete on public.search_queries to quizfreely_api;
 
 create table public.studyset_settings (
   id uuid primary key default gen_random_uuid(),
