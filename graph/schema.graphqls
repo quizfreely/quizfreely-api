@@ -6,7 +6,6 @@ type Query {
     featuredStudysets(limit: Int, offset: Int): [Studyset]
     recentStudysets(limit: Int, offset: Int): [Studyset]
     searchStudysets(q: String!, limit: Int, offset: Int): [Studyset]
-    searchQueries(q: String!, limit: Int, offset: Int): [SearchQuery]
     myStudysets(limit: Int, offset: Int): [Studyset]
     studysetProgress(studysetId: ID!): StudysetProgress
     studysetSettings(studysetId: ID!): StudysetSettings
@@ -56,10 +55,6 @@ input StudysetInput {
 }
 input StudysetDataInput {
     terms: [[String]]
-}
-type SearchQuery {
-    query: String
-    subject: String
 }
 type StudysetSettings {
     goodAcc: Float
