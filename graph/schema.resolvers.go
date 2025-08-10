@@ -17,6 +17,10 @@ import (
 	pgx "github.com/jackc/pgx/v5"
 )
 
+// This regex makes sure our title has at least
+// one letter/number (any alphabet) or mark.
+// This prevents titles that are only whitespace or symbols.
+var validTitleRegex = regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
 	authedUser := auth.AuthedUserContext(ctx)
@@ -25,9 +29,6 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 	}
 
 	title := "Untitled Studyset"
-	// The JS implementation uses a regex to ensure the title contains at least one letter, mark, or number.
-	// This prevents titles that are only whitespace or symbols.
-	validTitleRegex := regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
 	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
 		title = studyset.Title
 	}
@@ -81,9 +82,6 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 	}
 
 	title := "Untitled Studyset"
-	// The JS implementation uses a regex to ensure the title contains at least one letter, mark, or number.
-	// This prevents titles that are only whitespace or symbols.
-	validTitleRegex := regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
 	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
 		title = studyset.Title
 	}
