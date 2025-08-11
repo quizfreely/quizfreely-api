@@ -80,6 +80,15 @@ check your environment variables`,
 		authHandler.DeleteAccount,
 	)
 
+	router.Get(
+		"/oauth/google",
+		authHandler.OAuthGoogleRedirect,
+	)
+	router.Get(
+		"/oauth/google/callback",
+		authHandler.OAuthGoogleCallback,
+	)
+
 	router.Group(func(r chi.Router) {
 		r.Use(authHandler.AuthMiddleware)
 

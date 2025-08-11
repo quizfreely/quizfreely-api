@@ -17,7 +17,7 @@ create table auth.users (
   encrypted_password text,
   display_name text not null,
   auth_type auth_type_enum not null,
-  oauth_google_id text,
+  oauth_google_sub text,
   oauth_google_email text,
   unique (username),
   unique (oauth_google_id)
