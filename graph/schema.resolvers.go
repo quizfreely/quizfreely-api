@@ -10,17 +10,12 @@ import (
 	"fmt"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
-	"regexp"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	pgx "github.com/jackc/pgx/v5"
 )
 
-// This regex makes sure our title has at least
-// one letter/number (any alphabet) or mark.
-// This prevents titles that are only whitespace or symbols.
-var validTitleRegex = regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
 	authedUser := auth.AuthedUserContext(ctx)
@@ -468,8 +463,8 @@ func (r *queryResolver) SearchStudysets(ctx context.Context, q string, limit *in
 			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
 			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
 		FROM public.studysets
-		WHERE document @@ websearch_to_tsquery('english', $1) AND private = false
-		ORDER BY ts_rank(document, websearch_to_tsquery('english', $1)) DESC
+		WHERE tsvector_title @@ websearch_to_tsquery('english', $1) AND private = false
+		ORDER BY ts_rank(tsvector_title, websearch_to_tsquery('english', $1)) DESC
 		LIMIT $2 OFFSET $3
 	`
 	err := pgxscan.Select(ctx, r.DB, &studysets, sql, q, l, o)

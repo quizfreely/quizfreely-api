@@ -6,7 +6,13 @@ package graph
 //
 // It serves as dependency injection for your app, add any dependencies you require here.
 
-import "github.com/jackc/pgx/v5/pgxpool"
+import (
+	"regexp"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+var validTitleRegex = regexp.MustCompile(`[\p{L}\p{M}\p{N}]`)
 
 type Resolver struct {
 	DB *pgxpool.Pool

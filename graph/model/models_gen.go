@@ -15,11 +15,6 @@ type Mutation struct {
 type Query struct {
 }
 
-type SearchQuery struct {
-	Query   *string `json:"query,omitempty"`
-	Subject *string `json:"subject,omitempty"`
-}
-
 type Studyset struct {
 	ID              *string       `json:"id,omitempty"`
 	Title           *string       `json:"title,omitempty"`

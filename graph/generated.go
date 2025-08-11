@@ -71,17 +71,11 @@ type ComplexityRoot struct {
 		FeaturedStudysets func(childComplexity int, limit *int32, offset *int32) int
 		MyStudysets       func(childComplexity int, limit *int32, offset *int32) int
 		RecentStudysets   func(childComplexity int, limit *int32, offset *int32) int
-		SearchQueries     func(childComplexity int, q string, limit *int32, offset *int32) int
 		SearchStudysets   func(childComplexity int, q string, limit *int32, offset *int32) int
 		Studyset          func(childComplexity int, id string) int
 		StudysetProgress  func(childComplexity int, studysetID string) int
 		StudysetSettings  func(childComplexity int, studysetID string) int
 		User              func(childComplexity int, id string) int
-	}
-
-	SearchQuery struct {
-		Query   func(childComplexity int) int
-		Subject func(childComplexity int) int
 	}
 
 	Studyset struct {
@@ -155,7 +149,6 @@ type QueryResolver interface {
 	FeaturedStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
 	RecentStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
 	SearchStudysets(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.Studyset, error)
-	SearchQueries(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.SearchQuery, error)
 	MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
 	StudysetProgress(ctx context.Context, studysetID string) (*model.StudysetProgress, error)
 	StudysetSettings(ctx context.Context, studysetID string) (*model.StudysetSettings, error)
@@ -349,18 +342,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.RecentStudysets(childComplexity, args["limit"].(*int32), args["offset"].(*int32)), true
 
-	case "Query.searchQueries":
-		if e.complexity.Query.SearchQueries == nil {
-			break
-		}
-
-		args, err := ec.field_Query_searchQueries_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.SearchQueries(childComplexity, args["q"].(string), args["limit"].(*int32), args["offset"].(*int32)), true
-
 	case "Query.searchStudysets":
 		if e.complexity.Query.SearchStudysets == nil {
 			break
@@ -420,20 +401,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
-
-	case "SearchQuery.query":
-		if e.complexity.SearchQuery.Query == nil {
-			break
-		}
-
-		return e.complexity.SearchQuery.Query(childComplexity), true
-
-	case "SearchQuery.subject":
-		if e.complexity.SearchQuery.Subject == nil {
-			break
-		}
-
-		return e.complexity.SearchQuery.Subject(childComplexity), true
 
 	case "Studyset.data":
 		if e.complexity.Studyset.Data == nil {
@@ -956,27 +923,6 @@ func (ec *executionContext) field_Query_recentStudysets_args(ctx context.Context
 		return nil, err
 	}
 	args["offset"] = arg1
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_searchQueries_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "q", ec.unmarshalNString2string)
-	if err != nil {
-		return nil, err
-	}
-	args["q"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint32)
-	if err != nil {
-		return nil, err
-	}
-	args["limit"] = arg1
-	arg2, err := graphql.ProcessArgField(ctx, rawArgs, "offset", ec.unmarshalOInt2ᚖint32)
-	if err != nil {
-		return nil, err
-	}
-	args["offset"] = arg2
 	return args, nil
 }
 
@@ -2168,64 +2114,6 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_searchQueries(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_searchQueries(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().SearchQueries(rctx, fc.Args["q"].(string), fc.Args["limit"].(*int32), fc.Args["offset"].(*int32))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.SearchQuery)
-	fc.Result = res
-	return ec.marshalOSearchQuery2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐSearchQuery(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_searchQueries(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "query":
-				return ec.fieldContext_SearchQuery_query(ctx, field)
-			case "subject":
-				return ec.fieldContext_SearchQuery_subject(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SearchQuery", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_searchQueries_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_myStudysets(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_myStudysets(ctx, field)
 	if err != nil {
@@ -2546,88 +2434,6 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SearchQuery_query(ctx context.Context, field graphql.CollectedField, obj *model.SearchQuery) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SearchQuery_query(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Query, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SearchQuery_query(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SearchQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SearchQuery_subject(ctx context.Context, field graphql.CollectedField, obj *model.SearchQuery) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SearchQuery_subject(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Subject, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SearchQuery_subject(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SearchQuery",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6574,25 +6380,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "searchQueries":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_searchQueries(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "myStudysets":
 			field := field
 
@@ -6658,44 +6445,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var searchQueryImplementors = []string{"SearchQuery"}
-
-func (ec *executionContext) _SearchQuery(ctx context.Context, sel ast.SelectionSet, obj *model.SearchQuery) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, searchQueryImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SearchQuery")
-		case "query":
-			out.Values[i] = ec._SearchQuery_query(ctx, field, obj)
-		case "subject":
-			out.Values[i] = ec._SearchQuery_subject(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7893,54 +7642,6 @@ func (ec *executionContext) marshalOProgressTermState2ᚖquizfreelyᚋapiᚋgrap
 		return graphql.Null
 	}
 	return v
-}
-
-func (ec *executionContext) marshalOSearchQuery2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐSearchQuery(ctx context.Context, sel ast.SelectionSet, v []*model.SearchQuery) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOSearchQuery2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐSearchQuery(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOSearchQuery2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐSearchQuery(ctx context.Context, sel ast.SelectionSet, v *model.SearchQuery) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._SearchQuery(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕᚕᚖstring(ctx context.Context, v any) ([][]*string, error) {
