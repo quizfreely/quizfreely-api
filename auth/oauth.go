@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
@@ -11,11 +10,12 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"github.com/rs/zerolog/log"
+	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
 var googleOauthConfig = &oauth2.Config{
-	ClientID:     os.Getenv("OAUTH_GOOGLE_ID"),
-	ClientSecret: os.Getenv("OAUTH_GOOGLE_SECRET"),
+	ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
+	ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
 	RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
 	Scopes: []string{
 		"openid",
@@ -53,7 +53,7 @@ func (ah *AuthHandler) OAuthGoogleRedirect(w http.ResponseWriter, r *http.Reques
 		Secure:   true, // only over HTTPS
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
-		MaxAge: 300 /* 5 mins * 60s/min = 300 sec = 5 min */
+		MaxAge: 300, /* 5 mins * 60s/min = 300 sec = 5 min */
 	})
 
 	// Redirect to Google
@@ -104,9 +104,9 @@ func (ah *AuthHandler) OAuthGoogleCallback(w http.ResponseWriter, r *http.Reques
 	}
 	
 	var qzfrUserID string
-	err := pgxscan.Get(
+	err = pgxscan.Get(
 		r.Context(),
-		ah.DBPool,
+		ah.DB,
 		&qzfrUserID,
 		`INSERT INTO auth.users (oauth_google_sub, auth_type, oauth_google_email, display_name)
 VALUES ($1, 'OAUTH_GOOGLE', $2, $3) ON CONFLICT (oauth_google_sub) DO UPDATE
@@ -124,10 +124,10 @@ SET oauth_google_email = $3 RETURNING id`,
 	var qzfrToken string
 	err = pgxscan.Get(
 		r.Context(),
-		ah.DBPool,
+		ah.DB,
 		&qzfrToken,
 		`INSERT INTO auth.sessions (user_id)
-VALUES ($1) RETURNING token`
+VALUES ($1) RETURNING token`,
 		qzfrUserID,
 	)
 	if err != nil {

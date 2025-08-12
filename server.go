@@ -73,6 +73,10 @@ check your environment variables`,
 		"/v0/auth/sign-in",
 		authHandler.SignIn,
 	)
+	router.Post(
+		"/v0/auth/sign-out",
+		authHandler.SignOut,
+	)
 	router.With(
 		authHandler.AuthMiddleware,
 	).Post(

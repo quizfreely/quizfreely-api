@@ -311,6 +311,40 @@ FROM s, u`,
 	})
 }
 
+func (ah *AuthHandler) SignOut(w http.ResponseWriter, r *http.Request) {
+	authCookie, err := r.Cookie("auth")
+	if err != nil {
+		render.Status(r, 400)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 400,
+				"message":    "Error getting auth cookie",
+			},
+		})
+		return
+	}
+	_, err = ah.DB.Exec(
+		r.Context(),
+		`DELETE FROM auth.sessions WHERE token = $1`,
+		authCookie.Value,
+	)
+	if err != nil {
+		render.Status(r, 500)
+		render.JSON(w, r, map[string]interface{}{
+			"error": map[string]interface{}{
+				"statusCode": 500,
+				"message":    "Database error while deleting session",
+			},
+		})
+		return
+	}
+	render.JSON(w, r, map[string]interface{}{
+		"error": false,
+		"data": map[string]interface{}{
+		},
+	})
+}
+
 type DeleteAccountRequest struct {
 	DeleteAllMyStudysets bool   `json:"deleteAllMyStudysets"`
 	ConfirmPassword      string `json:"confirmPassword"`
