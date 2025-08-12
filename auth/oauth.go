@@ -13,7 +13,7 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
-var googleOauthConfig = *oauth2.Config
+var googleOauthConfig *oauth2.Config
 
 func InitOAuthGoogle() {
 	/* this gets called after env vars are loaded by main() in server.go */
