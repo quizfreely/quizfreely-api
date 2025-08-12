@@ -13,16 +13,22 @@ import (
 	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
-var googleOauthConfig = &oauth2.Config{
-	ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
-	ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
-	RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
-	Scopes: []string{
-		"openid",
-		"profile",
-		"email",
-	},
-	Endpoint: google.Endpoint,
+var googleOauthConfig = *oauth2.Config
+
+func InitOAuthGoogle() {
+	/* this gets called after env vars are loaded by main() in server.go */
+
+	googleOauthConfig = &oauth2.Config{
+		ClientID:     os.Getenv("OAUTH_GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("OAUTH_GOOGLE_CALLBACK_URL"),
+		Scopes: []string{
+			"openid",
+			"profile",
+			"email",
+		},
+		Endpoint: google.Endpoint,
+	}
 }
 
 func generateStateParam(length int) (string, error) {

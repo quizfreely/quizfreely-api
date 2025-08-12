@@ -85,6 +85,10 @@ check your environment variables`,
 	)
 
 	if os.Getenv("ENABLE_OAUTH_GOOGLE") == "true" {
+		/* init oauth config here,
+		after env vars are loaded */
+		auth.InitOAuthGoogle()
+
 		router.Get(
 			"/oauth/google",
 			authHandler.OAuthGoogleRedirect,
