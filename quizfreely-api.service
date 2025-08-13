@@ -1,0 +1,17 @@
+[Unit]
+Description=Quizfreely API
+After=network.target
+StartLimitBurst=3
+StartLimitIntervalSec=10
+
+[Service]
+User=quizfreely
+WorkingDirectory=/home/quizfreely/api/
+EnvironmentFile=/home/quizfreely/api/.env
+ExecStart=/home/quizfreely/api/api-server
+Restart=always
+RestartSec=1
+TimeoutStopSec=1
+
+[Install]
+WantedBy=multi-user.target
