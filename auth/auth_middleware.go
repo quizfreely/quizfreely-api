@@ -40,16 +40,10 @@ func (ah *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 				headerParts := strings.SplitN(header, " ", 2)
 				if len(headerParts) == 2 && strings.EqualFold(headerParts[0], "Bearer") {
 					token = headerParts[1]
-				} else {
-					/* only send an error if the header exists but is wrong,
-					if it doesn't exist, they're not logged in, which is fine, no err */
-					http.Error(w, "Authorization header exists, but it's invalid", 400)
-					return
 				}
 			}
 		}
-		/* this AuthMiddleware should only send an error if the structure of the req
-		is broken. stuff like invalid/expired tokens should NOT cause an error response
+		/* stuff like invalid/expired tokens should NOT cause an error response
 		because this middleware should only populate authedUser context stuff
 		each handler controls any error responses if not logged in based on auth context,
 		because some handlers allow not-logged-in users while others might not */
