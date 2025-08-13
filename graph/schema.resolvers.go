@@ -646,21 +646,13 @@ func (r *queryResolver) StudysetProgress(ctx context.Context, studysetID string)
 	var studysetProgress model.StudysetProgress
 	sql := `
 		SELECT
+			id,
 			studyset_id,
 			user_id,
-			(
-				SELECT json_agg(json_build_object(
-					'term_id', term_id,
-					'correct_count', correct_count,
-					'incorrect_count', incorrect_count,
-					'updated_at', to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM')
-				))
-				FROM public.studyset_progress
-				WHERE studyset_id = $1 AND user_id = $2
-			) as terms
+			terms,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 		FROM public.studyset_progress
 		WHERE studyset_id = $1 AND user_id = $2
-		GROUP BY studyset_id, user_id
 	`
 	err = pgxscan.Get(ctx, tx, &studysetProgress, sql, studysetID, authedUser.ID)
 	if err != nil {
