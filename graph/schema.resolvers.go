@@ -11,6 +11,7 @@ import (
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
 	"strings"
+	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	pgx "github.com/jackc/pgx/v5"
@@ -200,34 +201,147 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		return nil, fmt.Errorf("not authenticated")
 	}
 
+	// Ensure all progress changes have valid numbers (convert nil to 0)
+	for _, change := range progressChanges {
+		if change.TermCorrect == nil { var zero int32 = 0; change.TermCorrect = &zero }
+		if change.TermIncorrect == nil { var zero int32 = 0; change.TermIncorrect = &zero }
+		if change.DefCorrect == nil { var zero int32 = 0; change.DefCorrect = &zero }
+		if change.DefIncorrect == nil { var zero int32 = 0; change.DefIncorrect = &zero }
+	}
+
 	tx, err := r.DB.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	for _, progressChange := range progressChanges {
-		sql := `
-			INSERT INTO public.studyset_progress (studyset_id, user_id, term, def, term_correct, term_incorrect, def_correct, def_incorrect, last_reviewed_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-			ON CONFLICT (studyset_id, user_id, term, def) DO UPDATE SET
-				term_correct = studyset_progress.term_correct + $5,
-				term_incorrect = studyset_progress.term_incorrect + $6,
-				def_correct = studyset_progress.def_correct + $7,
-				def_incorrect = studyset_progress.def_incorrect + $8,
-				last_reviewed_at = $9
+	// Check if progress already exists for this user/studyset
+	var existingProgress struct {
+		ID        string `db:"id"`
+		Terms     []*model.StudysetProgressTerm `db:"terms"`
+	}
+	sql := `
+		SELECT id, terms 
+		FROM public.studyset_progress 
+		WHERE user_id = $1 AND studyset_id = $2
+	`
+	err = pgxscan.Get(ctx, tx, &existingProgress, sql, authedUser.ID, studysetID)
+	
+	var result *model.StudysetProgress
+	
+	if err == nil {
+		// Update existing progress
+		updatedProgress := existingProgress.Terms
+		existingProgressMap := make(map[[2]string]int)
+		for i, term := range updatedProgress {
+			existingProgressMap[[2]string{term.Term, term.Def}] = i
+		}
+		
+		rnDateTimeString := time.Now().UTC().Format(time.RFC3339)
+		for _, change := range progressChanges {
+			key := [2]string{change.Term, change.Def}
+			if idx, exists := existingProgressMap[key]; exists {
+				// Update existing term stats
+				updatedProgress[idx].TermCorrect += *change.TermCorrect
+				updatedProgress[idx].TermIncorrect += *change.TermIncorrect
+				updatedProgress[idx].DefCorrect += *change.DefCorrect
+				updatedProgress[idx].DefIncorrect += *change.DefIncorrect
+				updatedProgress[idx].LastReviewedAt = rnDateTimeString
+				updatedProgress[idx].ReviewSessionsCount++
+			} else {
+				// Add new term
+				updatedProgress = append(updatedProgress, &model.StudysetProgressTerm{
+					Term: change.Term,
+					Def: change.Def,
+					TermCorrect: *change.TermCorrect,
+					TermIncorrect: *change.TermIncorrect,
+					DefCorrect: *change.DefCorrect,
+					DefIncorrect: *change.DefIncorrect,
+					FirstReviewedAt: rnDateTimeString,
+					LastReviewedAt: rnDateTimeString,
+					ReviewSessionsCount: 1,
+				})
+			}
+		}
+		
+		// Update record in database
+		var updatedRecord struct {
+			ID          string  `db:"id"`
+			StudysetID  string  `db:"studyset_id"`
+			UserID      string  `db:"user_id"`
+			UpdatedAt   string  `db:"updated_at"`
+		}
+		sql = `
+			UPDATE public.studyset_progress 
+			SET terms = $2, updated_at = clock_timestamp() 
+			WHERE id = $1 
+			RETURNING id, studyset_id, user_id, to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 		`
-		_, err := tx.Exec(ctx, sql, studysetID, authedUser.ID, progressChange.Term, progressChange.Def, progressChange.TermCorrect, progressChange.TermIncorrect, progressChange.DefCorrect, progressChange.DefIncorrect, progressChange.LastReviewedAt)
+		err = pgxscan.Get(ctx, tx, &updatedRecord, sql, existingProgress.ID, updatedProgress)
 		if err != nil {
 			return nil, fmt.Errorf("failed to update studyset progress: %w", err)
 		}
+		
+		updatedAtPtr := &updatedRecord.UpdatedAt
+		result = &model.StudysetProgress{
+			ID:          updatedRecord.ID,
+			StudysetID:  updatedRecord.StudysetID,
+			UserID:      updatedRecord.UserID,
+			Terms:       updatedProgress,
+			UpdatedAt:   updatedAtPtr,
+		}
+	} else if pgxscan.NotFound(err) {
+		// Create new progress record
+		rnDateTimeString := time.Now().UTC().Format(time.RFC3339)
+		progress := make([]*model.StudysetProgressTerm, len(progressChanges))
+		for i, change := range progressChanges {
+			progress[i] = &model.StudysetProgressTerm{
+				Term: change.Term,
+				Def: change.Def,
+				TermCorrect: *change.TermCorrect,
+				TermIncorrect: *change.TermIncorrect,
+				DefCorrect: *change.DefCorrect,
+				DefIncorrect: *change.DefIncorrect,
+				FirstReviewedAt: rnDateTimeString,
+				LastReviewedAt: rnDateTimeString,
+				ReviewSessionsCount: 1,
+			}
+		}
+		
+		// Insert new record
+		var newRecord struct {
+			ID          string  `db:"id"`
+			StudysetID  string  `db:"studyset_id"`
+			UserID      string  `db:"user_id"`
+			UpdatedAt   string  `db:"updated_at"`
+		}
+		sql = `
+			INSERT INTO public.studyset_progress (studyset_id, user_id, terms, updated_at) 
+			VALUES ($1, $2, $3, clock_timestamp()) 
+			RETURNING id, studyset_id, user_id, to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		`
+		err = pgxscan.Get(ctx, tx, &newRecord, sql, studysetID, authedUser.ID, progress)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create studyset progress: %w", err)
+		}
+		
+		updatedAtPtr := &newRecord.UpdatedAt
+		result = &model.StudysetProgress{
+			ID:          newRecord.ID,
+			StudysetID:  newRecord.StudysetID,
+			UserID:      newRecord.UserID,
+			Terms:       progress,
+			UpdatedAt:   updatedAtPtr,
+		}
+	} else {
+		return nil, fmt.Errorf("failed to check existing progress: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return r.Query().StudysetProgress(ctx, studysetID)
+	return result, nil
 }
 
 // DeleteStudysetProgress is the resolver for the deleteStudysetProgress field.
