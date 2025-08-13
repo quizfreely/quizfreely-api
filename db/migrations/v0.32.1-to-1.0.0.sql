@@ -37,5 +37,3 @@ ALTER TABLE public.studyset_settings DISABLE ROW LEVEL SECURITY;
 
 ALTER TYPE auth_type_enum RENAME VALUE 'username_password' TO 'USERNAME_PASSWORD';
 ALTER TYPE auth_type_enum RENAME VALUE 'oauth_google' TO 'OAUTH_GOOGLE';
-
-
