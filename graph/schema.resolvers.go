@@ -465,8 +465,8 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 	sql := `
 		SELECT
 			id,
+			username,
 			display_name,
-			(SELECT COUNT(*) FROM studysets WHERE user_id = $1) as studyset_count
 		FROM auth.users
 		WHERE id = $1
 	`
