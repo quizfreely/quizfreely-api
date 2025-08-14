@@ -44,6 +44,7 @@ type Term {
     id: ID
     term: String
     def: String
+    progress: TermProgress
     created_at: String
     updated_at: String
 }
@@ -55,4 +56,15 @@ input StudysetInput {
 input TermInput {
     term: String
     def: String
+}
+type TermProgress {
+    id: ID
+    term_first_reviewed_at: String
+    term_last_reviewed_at: String
+    term_review_count: Int
+    def_first_reviewed_at: String
+    def_last_reviewed_at: String
+    def_review_count: Int
+    term_leitner_system_box: Int
+    def_leitner_system_box: Int
 }
