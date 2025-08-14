@@ -91,7 +91,32 @@ func (r *queryResolver) AuthedUser(ctx context.Context) (*model.AuthedUser, erro
 
 // Studyset is the resolver for the studyset field.
 func (r *queryResolver) Studyset(ctx context.Context, id string) (*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: Studyset - studyset"))
+	authedUser := auth.AuthedUserContext(ctx)
+
+	var studyset model.Studyset
+	if authedUser != nil {
+		sql := `
+			SELECT id, user_id, title, private,
+				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+			FROM public.studysets
+			WHERE id = $1 AND (private = false OR (private = true AND user_id = $2))`
+		err = pgxscan.Get(ctx, r.DB, &studyset, sql, id, authedUser.ID)
+	} else {
+		sql := `
+			SELECT id, user_id, title, private,
+				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+			FROM public.studysets
+			WHERE id = $1 AND private = false`
+		err = pgxscan.Get(ctx, r.DB, &studyset, sql, id)
+	}
+	if err != nil {
+		if pgxscan.NotFound(err) {
+			return nil, fmt.Errorf("studyset not found")
+		}
+		return nil, fmt.Errorf("failed to fetch studyset: %w", err)
+	}
+
+	return &studyset, nil
 }
 
 // User is the resolver for the user field.
@@ -184,12 +209,73 @@ func (r *queryResolver) RecentStudysets(ctx context.Context, limit *int32, offse
 
 // SearchStudysets is the resolver for the searchStudysets field.
 func (r *queryResolver) SearchStudysets(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: SearchStudysets - searchStudysets"))
+	l := 20
+	if limit != nil && *limit > 0 && *limit < 20 {
+		l = int(*limit)
+	}
+
+	o := 0
+	if offset != nil && *offset > 0 {
+		o = int(*offset)
+	}
+
+	var studysets []*model.Studyset
+	sql := `
+		SELECT
+			id,
+			user_id,
+			title,
+			private,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		FROM public.studysets
+		WHERE tsvector_title @@ websearch_to_tsquery('english', $1) AND private = false
+		ORDER BY ts_rank(tsvector_title, websearch_to_tsquery('english', $1)) DESC
+		LIMIT $2 OFFSET $3
+	`
+	err := pgxscan.Select(ctx, r.DB, &studysets, sql, q, l, o)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search studysets: %w", err)
+	}
+
+	return studysets, nil
 }
 
 // MyStudysets is the resolver for the myStudysets field.
 func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: MyStudysets - myStudysets"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	l := 20
+	if limit != nil && *limit > 0 && *limit < 20 {
+		l = int(*limit)
+	}
+
+	o := 0
+	if offset != nil && *offset > 0 {
+		o = int(*offset)
+	}
+
+	var studysets []*model.Studyset
+	sql := `
+		SELECT
+			id,
+			user_id,
+			title,
+			private,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		FROM public.studysets
+		WHERE user_id = $1
+		ORDER BY updated_at DESC
+		LIMIT $2 OFFSET $3
+	`
+	err := pgxscan.Select(ctx, r.DB, &studysets, sql, authedUser.ID, l, o)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch my studysets: %w", err)
+	}
+
+	return studysets, nil
 }
 
 // User is the resolver for the user field.
