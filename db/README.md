@@ -21,6 +21,7 @@ CREATE ROLE quizfreely_db_admin NOINHERIT LOGIN;
 
 ALTER DATABASE quizfreely_db OWNER TO quizfreely_db_admin;
 
+ALTER SCHEMA public OWNER TO quizfreely_db_admin;
 ALTER SCHEMA auth OWNER TO quizfreely_db_admin;
 ALTER TYPE auth_type_enum OWNER TO quizfreely_db_admin;
 ALTER TABLE auth.users OWNER TO quizfreely_db_admin;
