@@ -19,11 +19,13 @@ jobs:
           ssh-keyscan -H server.quizfreely.org >> ~/.ssh/known_hosts
       - name: Use SCP to upload api-server executable
         run: scp api-server quizfreely@server.quizfreely.org:/home/quizfreely/api/api-server
+      - name: Use SCP to upload db folder
+        run: scp -r db quizfreely@server.quizfreely.org:/home/quizfreely/api
       - name: SSH into server, update DB, & restart systemd service
         run: |
           ssh -i ~/.ssh/id_ed25519 \
             quizfreely@server.quizfreely.org \
             "cd ~/api \
             sudo systemctl stop quizfreely-api.service \
-            api-server migrate-db \
+            dbmate -e DB_MIGRATION_URL migrate \
             sudo systemctl start quizfreely-api.service"
