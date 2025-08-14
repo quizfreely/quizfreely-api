@@ -12,6 +12,11 @@ import (
 type Mutation struct {
 }
 
+type NewTermInput struct {
+	Term *string `json:"term,omitempty"`
+	Def  *string `json:"def,omitempty"`
+}
+
 type Query struct {
 }
 
@@ -25,9 +30,8 @@ type Studyset struct {
 }
 
 type StudysetInput struct {
-	Title   string       `json:"title"`
-	Private bool         `json:"private"`
-	Terms   []*TermInput `json:"terms,omitempty"`
+	Title   string `json:"title"`
+	Private bool   `json:"private"`
 }
 
 type Term struct {
@@ -40,12 +44,24 @@ type Term struct {
 }
 
 type TermInput struct {
+	ID   string  `json:"id"`
 	Term *string `json:"term,omitempty"`
 	Def  *string `json:"def,omitempty"`
 }
 
 type TermProgress struct {
 	ID                   *string `json:"id,omitempty"`
+	TermFirstReviewedAt  *string `json:"term_first_reviewed_at,omitempty"`
+	TermLastReviewedAt   *string `json:"term_last_reviewed_at,omitempty"`
+	TermReviewCount      *int32  `json:"term_review_count,omitempty"`
+	DefFirstReviewedAt   *string `json:"def_first_reviewed_at,omitempty"`
+	DefLastReviewedAt    *string `json:"def_last_reviewed_at,omitempty"`
+	DefReviewCount       *int32  `json:"def_review_count,omitempty"`
+	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
+	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
+}
+
+type TermProgressInput struct {
 	TermFirstReviewedAt  *string `json:"term_first_reviewed_at,omitempty"`
 	TermLastReviewedAt   *string `json:"term_last_reviewed_at,omitempty"`
 	TermReviewCount      *int32  `json:"term_review_count,omitempty"`

@@ -6,147 +6,27 @@ package graph
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
-	pgx "github.com/jackc/pgx/v5"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
-func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput) (*model.Studyset, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
-	}
-
-	title := "Untitled Studyset"
-	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
-		title = studyset.Title
-	}
-
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	termsCount := 0
-	if studyset.Data != nil && studyset.Data.Terms != nil {
-		termsCount = len(studyset.Data.Terms)
-	}
-
-	sql := `
-		INSERT INTO public.studysets (user_id, title, private, data, terms_count)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, user_id, title, private, data, terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
-	`
-	var newStudyset model.Studyset
-	err = pgxscan.Get(ctx, tx, &newStudyset, sql, authedUser.ID, title, studyset.Private, studyset.Data, termsCount)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create studyset: %w", err)
-	}
-
-	// The user_display_name is not returned from the INSERT...RETURNING statement.
-	// We can set it from the authenticated user in the context.
-	newStudyset.UserDisplayName = authedUser.DisplayName
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return &newStudyset, nil
+func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput, terms []*model.NewTermInput) (*model.Studyset, error) {
+	panic(fmt.Errorf("not implemented: CreateStudyset - createStudyset"))
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
-func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput) (*model.Studyset, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
-	}
-
-	if studyset == nil {
-		// Per schema, studyset input is optional. If it's not provided, we don't
-		// have anything to update. We'll fetch the existing studyset and return it.
-		// We can use the Studyset query resolver for this.
-		return r.Query().Studyset(ctx, id)
-	}
-
-	title := "Untitled Studyset"
-	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
-		title = studyset.Title
-	}
-
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	termsCount := 0
-	if studyset.Data != nil && studyset.Data.Terms != nil {
-		termsCount = len(studyset.Data.Terms)
-	}
-
-	sql := `
-		UPDATE public.studysets
-		SET title = $1, private = $2, data = $3, terms_count = $4
-		WHERE id = $5 AND user_id = $6
-		RETURNING id, user_id, title, private, data, terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
-	`
-	var updatedStudyset model.Studyset
-	err = pgxscan.Get(ctx, tx, &updatedStudyset, sql, title, studyset.Private, studyset.Data, termsCount, id, authedUser.ID)
-	if err != nil {
-		if pgxscan.NotFound(err) {
-			return nil, fmt.Errorf("studyset not found")
-		}
-		return nil, fmt.Errorf("failed to update studyset: %w", err)
-	}
-
-	// The user_display_name is not returned from the UPDATE...RETURNING statement.
-	// We can set it from the authenticated user in the context. The query now
-	// ensures that only the owner can update the studyset.
-	updatedStudyset.UserDisplayName = authedUser.DisplayName
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return &updatedStudyset, nil
+func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput) (*model.Studyset, error) {
+	panic(fmt.Errorf("not implemented: UpdateStudyset - updateStudyset"))
 }
 
 // DeleteStudyset is the resolver for the deleteStudyset field.
 func (r *mutationResolver) DeleteStudyset(ctx context.Context, id string) (*string, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
-	}
-
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	var deletedID string
-	err = tx.QueryRow(ctx, "DELETE FROM public.studysets WHERE id = $1 AND user_id = $2 RETURNING id", id, authedUser.ID).Scan(&deletedID)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, fmt.Errorf("studyset not found")
-		}
-		return nil, fmt.Errorf("failed to delete studyset: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return &deletedID, nil
+	panic(fmt.Errorf("not implemented: DeleteStudyset - deleteStudyset"))
 }
 
 // UpdateUser is the resolver for the updateUser field.
@@ -193,6 +73,11 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, displayName *string) 
 	return &updatedUser, nil
 }
 
+// UpdateTermProgress is the resolver for the updateTermProgress field.
+func (r *mutationResolver) UpdateTermProgress(ctx context.Context, id string, progress model.TermProgressInput) (*model.TermProgress, error) {
+	panic(fmt.Errorf("not implemented: UpdateTermProgress - updateTermProgress"))
+}
+
 // Authed is the resolver for the authed field.
 func (r *queryResolver) Authed(ctx context.Context) (*bool, error) {
 	authed := auth.AuthedUserContext(ctx) != nil
@@ -206,42 +91,7 @@ func (r *queryResolver) AuthedUser(ctx context.Context) (*model.AuthedUser, erro
 
 // Studyset is the resolver for the studyset field.
 func (r *queryResolver) Studyset(ctx context.Context, id string) (*model.Studyset, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-
-	// A transaction is used here to ensure that the RLS settings are applied
-	// for the duration of the query.
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	var studyset model.Studyset
-	if authedUser != nil {
-		sql := `
-			SELECT id, user_id, title, private, data, terms_count,
-				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-				(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-			FROM public.studysets
-			WHERE id = $1 AND (private = false OR (private = true AND user_id = $2))`
-		err = pgxscan.Get(ctx, tx, &studyset, sql, id, authedUser.ID)
-	} else {
-		sql := `
-			SELECT id, user_id, title, private, data, terms_count,
-				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-				(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-			FROM public.studysets
-			WHERE id = $1 AND private = false`
-		err = pgxscan.Get(ctx, tx, &studyset, sql, id)
-	}
-	if err != nil {
-		if pgxscan.NotFound(err) {
-			return nil, fmt.Errorf("studyset not found")
-		}
-		return nil, fmt.Errorf("failed to fetch studyset: %w", err)
-	}
-
-	return &studyset, nil
+	panic(fmt.Errorf("not implemented: Studyset - studyset"))
 }
 
 // User is the resolver for the user field.
@@ -267,152 +117,22 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 
 // FeaturedStudysets is the resolver for the featuredStudysets field.
 func (r *queryResolver) FeaturedStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	l := 20
-	if limit != nil && *limit > 0 && *limit < 20 {
-		l = int(*limit)
-	}
-
-	o := 0
-	if offset != nil && *offset > 0 {
-		o = int(*offset)
-	}
-
-	var studysets []*model.Studyset
-	sql := `
-		SELECT
-			id,
-			user_id,
-			title,
-			private,
-			data,
-			terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-		FROM public.studysets
-		WHERE private = false
-			AND featured = true
-		ORDER BY terms_count DESC
-		LIMIT $1 OFFSET $2
-	`
-	err := pgxscan.Select(ctx, r.DB, &studysets, sql, l, o)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch featured studysets: %w", err)
-	}
-
-	return studysets, nil
+	panic(fmt.Errorf("not implemented: FeaturedStudysets - featuredStudysets"))
 }
 
 // RecentStudysets is the resolver for the recentStudysets field.
 func (r *queryResolver) RecentStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	l := 20
-	if limit != nil && *limit > 0 && *limit < 20 {
-		l = int(*limit)
-	}
-
-	o := 0
-	if offset != nil && *offset > 0 {
-		o = int(*offset)
-	}
-
-	var studysets []*model.Studyset
-	sql := `
-		SELECT
-			id,
-			user_id,
-			title,
-			private,
-			data,
-			terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-		FROM public.studysets
-		WHERE private = false
-		ORDER BY updated_at DESC
-		LIMIT $1 OFFSET $2
-	`
-	err := pgxscan.Select(ctx, r.DB, &studysets, sql, l, o)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch recent studysets: %w", err)
-	}
-
-	return studysets, nil
+	panic(fmt.Errorf("not implemented: RecentStudysets - recentStudysets"))
 }
 
 // SearchStudysets is the resolver for the searchStudysets field.
 func (r *queryResolver) SearchStudysets(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	l := 20
-	if limit != nil && *limit > 0 && *limit < 20 {
-		l = int(*limit)
-	}
-
-	o := 0
-	if offset != nil && *offset > 0 {
-		o = int(*offset)
-	}
-
-	var studysets []*model.Studyset
-	sql := `
-		SELECT
-			id,
-			user_id,
-			title,
-			private,
-			data,
-			terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-		FROM public.studysets
-		WHERE tsvector_title @@ websearch_to_tsquery('english', $1) AND private = false
-		ORDER BY ts_rank(tsvector_title, websearch_to_tsquery('english', $1)) DESC
-		LIMIT $2 OFFSET $3
-	`
-	err := pgxscan.Select(ctx, r.DB, &studysets, sql, q, l, o)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search studysets: %w", err)
-	}
-
-	return studysets, nil
+	panic(fmt.Errorf("not implemented: SearchStudysets - searchStudysets"))
 }
 
 // MyStudysets is the resolver for the myStudysets field.
 func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
-	}
-
-	l := 20
-	if limit != nil && *limit > 0 && *limit < 20 {
-		l = int(*limit)
-	}
-
-	o := 0
-	if offset != nil && *offset > 0 {
-		o = int(*offset)
-	}
-
-	var studysets []*model.Studyset
-	sql := `
-		SELECT
-			id,
-			user_id,
-			title,
-			private,
-			data,
-			terms_count,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at,
-			(SELECT display_name FROM auth.users WHERE id = studysets.user_id) AS user_display_name
-		FROM public.studysets
-		WHERE user_id = $1
-		ORDER BY updated_at DESC
-		LIMIT $2 OFFSET $3
-	`
-	err := pgxscan.Select(ctx, r.DB, &studysets, sql, authedUser.ID, l, o)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch my studysets: %w", err)
-	}
-
-	return studysets, nil
+	panic(fmt.Errorf("not implemented: MyStudysets - myStudysets"))
 }
 
 // Mutation returns MutationResolver implementation.
