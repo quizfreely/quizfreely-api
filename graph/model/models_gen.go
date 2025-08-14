@@ -20,15 +20,6 @@ type NewTermInput struct {
 type Query struct {
 }
 
-type Studyset struct {
-	ID        *string `json:"id,omitempty"`
-	Title     *string `json:"title,omitempty"`
-	Private   *bool   `json:"private,omitempty"`
-	UpdatedAt *string `json:"updated_at,omitempty"`
-	User      *User   `json:"user,omitempty"`
-	Terms     []*Term `json:"terms,omitempty"`
-}
-
 type StudysetInput struct {
 	Title   string `json:"title"`
 	Private bool   `json:"private"`

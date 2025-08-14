@@ -41,6 +41,7 @@ type Config struct {
 type ResolverRoot interface {
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Studyset() StudysetResolver
 }
 
 type DirectiveRoot struct {
@@ -127,6 +128,10 @@ type QueryResolver interface {
 	RecentStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
 	SearchStudysets(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.Studyset, error)
 	MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
+}
+type StudysetResolver interface {
+	User(ctx context.Context, obj *model.Studyset) (*model.User, error)
+	Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error)
 }
 
 type executableSchema struct {
@@ -2172,7 +2177,7 @@ func (ec *executionContext) _Studyset_user(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.User, nil
+		return ec.resolvers.Studyset().User(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2190,8 +2195,8 @@ func (ec *executionContext) fieldContext_Studyset_user(_ context.Context, field 
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -2221,7 +2226,7 @@ func (ec *executionContext) _Studyset_terms(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Terms, nil
+		return ec.resolvers.Studyset().Terms(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2239,8 +2244,8 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -5492,9 +5497,71 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 		case "updated_at":
 			out.Values[i] = ec._Studyset_updated_at(ctx, field, obj)
 		case "user":
-			out.Values[i] = ec._Studyset_user(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studyset_user(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "terms":
-			out.Values[i] = ec._Studyset_terms(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studyset_terms(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

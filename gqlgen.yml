@@ -157,3 +157,9 @@ models:
     model:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
+  Studyset:
+    fields:
+      user:
+        resolver: true
+      terms:
+        resolver: true

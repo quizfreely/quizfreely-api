@@ -135,11 +135,25 @@ func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *i
 	panic(fmt.Errorf("not implemented: MyStudysets - myStudysets"))
 }
 
+// User is the resolver for the user field.
+func (r *studysetResolver) User(ctx context.Context, obj *model.Studyset) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: User - user"))
+}
+
+// Terms is the resolver for the terms field.
+func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error) {
+	panic(fmt.Errorf("not implemented: Terms - terms"))
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Studyset returns StudysetResolver implementation.
+func (r *Resolver) Studyset() StudysetResolver { return &studysetResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type studysetResolver struct{ *Resolver }
