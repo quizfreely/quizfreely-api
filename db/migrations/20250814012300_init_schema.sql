@@ -1,8 +1,6 @@
 create extension if not exists pgcrypto;
 create extension if not exists pg_trgm;
 
-create role quizfreely_api noinherit login;
-
 create schema auth;
 
 grant usage on schema auth to quizfreely_api;

@@ -16,3 +16,7 @@ CREATE ROLE quizfreely_db_admin LOGIN PASSWORD 'REAL_PASSWORD_GOES_HERE';
 
 ALTER DATABASE quizfreely_db OWNER TO quizfreely_db_admin;
 ```
+
+## search-queries.sql
+
+optionally, to populate `search_queries`, you can manually run `search-queries.sql`.
