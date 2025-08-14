@@ -40,46 +40,6 @@ type StudysetInput struct {
 	Data    *StudysetDataInput `json:"data"`
 }
 
-type StudysetProgress struct {
-	ID         string                  `json:"id"`
-	UserID     string                  `json:"user_id"`
-	StudysetID string                  `json:"studyset_id"`
-	Terms      []*StudysetProgressTerm `json:"terms"`
-	UpdatedAt  *string                 `json:"updated_at,omitempty"`
-}
-
-type StudysetProgressTerm struct {
-	Term                         string             `json:"term"`
-	Def                          string             `json:"def"`
-	TermCorrect                  int32              `json:"termCorrect"`
-	TermIncorrect                int32              `json:"termIncorrect"`
-	DefCorrect                   int32              `json:"defCorrect"`
-	DefIncorrect                 int32              `json:"defIncorrect"`
-	TermState                    *ProgressTermState `json:"termState,omitempty"`
-	DefState                     *ProgressTermState `json:"defState,omitempty"`
-	SessionsSinceTermStateChange *int32             `json:"sessionsSinceTermStateChange,omitempty"`
-	SessionsSinceDefStateChange  *int32             `json:"sessionsSinceDefStateChange,omitempty"`
-	FirstReviewedAt              string             `json:"firstReviewedAt"`
-	LastReviewedAt               string             `json:"lastReviewedAt"`
-	ReviewSessionsCount          int32              `json:"reviewSessionsCount"`
-	ConfusedTerms                [][]*string        `json:"confusedTerms,omitempty"`
-	ConfusedDefs                 [][]*string        `json:"confusedDefs,omitempty"`
-}
-
-type StudysetProgressTermInput struct {
-	Term           string             `json:"term"`
-	Def            string             `json:"def"`
-	TermCorrect    *int32             `json:"termCorrect,omitempty"`
-	TermIncorrect  *int32             `json:"termIncorrect,omitempty"`
-	DefCorrect     *int32             `json:"defCorrect,omitempty"`
-	DefIncorrect   *int32             `json:"defIncorrect,omitempty"`
-	TermState      *ProgressTermState `json:"termState,omitempty"`
-	DefState       *ProgressTermState `json:"defState,omitempty"`
-	LastReviewedAt string             `json:"lastReviewedAt"`
-	ConfusedTerms  [][]*string        `json:"confusedTerms,omitempty"`
-	ConfusedDefs   [][]*string        `json:"confusedDefs,omitempty"`
-}
-
 type User struct {
 	ID          *string `json:"id,omitempty"`
 	Username    *string `json:"username,omitempty"`
@@ -136,65 +96,6 @@ func (e *AuthType) UnmarshalJSON(b []byte) error {
 }
 
 func (e AuthType) MarshalJSON() ([]byte, error) {
-	var buf bytes.Buffer
-	e.MarshalGQL(&buf)
-	return buf.Bytes(), nil
-}
-
-type ProgressTermState string
-
-const (
-	ProgressTermStateNew        ProgressTermState = "NEW"
-	ProgressTermStateLearning   ProgressTermState = "LEARNING"
-	ProgressTermStateReview     ProgressTermState = "REVIEW"
-	ProgressTermStateRelearning ProgressTermState = "RELEARNING"
-)
-
-var AllProgressTermState = []ProgressTermState{
-	ProgressTermStateNew,
-	ProgressTermStateLearning,
-	ProgressTermStateReview,
-	ProgressTermStateRelearning,
-}
-
-func (e ProgressTermState) IsValid() bool {
-	switch e {
-	case ProgressTermStateNew, ProgressTermStateLearning, ProgressTermStateReview, ProgressTermStateRelearning:
-		return true
-	}
-	return false
-}
-
-func (e ProgressTermState) String() string {
-	return string(e)
-}
-
-func (e *ProgressTermState) UnmarshalGQL(v any) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ProgressTermState(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ProgressTermState", str)
-	}
-	return nil
-}
-
-func (e ProgressTermState) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
-func (e *ProgressTermState) UnmarshalJSON(b []byte) error {
-	s, err := strconv.Unquote(string(b))
-	if err != nil {
-		return err
-	}
-	return e.UnmarshalGQL(s)
-}
-
-func (e ProgressTermState) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil
