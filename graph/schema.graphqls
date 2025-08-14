@@ -37,17 +37,22 @@ type Studyset {
     updated_at: String
     user_id: ID
     user_display_name: String
-    data: StudysetData
+    terms: [Term]
     terms_count: Int
 }
-type StudysetData {
-    terms: [[String]]
+type Term {
+    id: ID
+    term: String
+    def: String
+    created_at: String
+    updated_at: String
 }
 input StudysetInput {
     title: String!
     private: Boolean!
-    data: StudysetDataInput!
+    terms: [TermInput]
 }
-input StudysetDataInput {
-    terms: [[String]]
+input TermInput {
+    term: String
+    def: String
 }
