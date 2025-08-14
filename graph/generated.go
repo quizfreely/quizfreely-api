@@ -74,9 +74,9 @@ type ComplexityRoot struct {
 	}
 
 	Studyset struct {
-		Data            func(childComplexity int) int
 		ID              func(childComplexity int) int
 		Private         func(childComplexity int) int
+		Terms           func(childComplexity int) int
 		TermsCount      func(childComplexity int) int
 		Title           func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
@@ -84,8 +84,25 @@ type ComplexityRoot struct {
 		UserID          func(childComplexity int) int
 	}
 
-	StudysetData struct {
-		Terms func(childComplexity int) int
+	Term struct {
+		CreatedAt func(childComplexity int) int
+		Def       func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Progress  func(childComplexity int) int
+		Term      func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+	}
+
+	TermProgress struct {
+		DefFirstReviewedAt   func(childComplexity int) int
+		DefLastReviewedAt    func(childComplexity int) int
+		DefLeitnerSystemBox  func(childComplexity int) int
+		DefReviewCount       func(childComplexity int) int
+		ID                   func(childComplexity int) int
+		TermFirstReviewedAt  func(childComplexity int) int
+		TermLastReviewedAt   func(childComplexity int) int
+		TermLeitnerSystemBox func(childComplexity int) int
+		TermReviewCount      func(childComplexity int) int
 	}
 
 	User struct {
@@ -300,13 +317,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
-	case "Studyset.data":
-		if e.complexity.Studyset.Data == nil {
-			break
-		}
-
-		return e.complexity.Studyset.Data(childComplexity), true
-
 	case "Studyset.id":
 		if e.complexity.Studyset.ID == nil {
 			break
@@ -320,6 +330,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Studyset.Private(childComplexity), true
+
+	case "Studyset.terms":
+		if e.complexity.Studyset.Terms == nil {
+			break
+		}
+
+		return e.complexity.Studyset.Terms(childComplexity), true
 
 	case "Studyset.terms_count":
 		if e.complexity.Studyset.TermsCount == nil {
@@ -356,12 +373,110 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.UserID(childComplexity), true
 
-	case "StudysetData.terms":
-		if e.complexity.StudysetData.Terms == nil {
+	case "Term.created_at":
+		if e.complexity.Term.CreatedAt == nil {
 			break
 		}
 
-		return e.complexity.StudysetData.Terms(childComplexity), true
+		return e.complexity.Term.CreatedAt(childComplexity), true
+
+	case "Term.def":
+		if e.complexity.Term.Def == nil {
+			break
+		}
+
+		return e.complexity.Term.Def(childComplexity), true
+
+	case "Term.id":
+		if e.complexity.Term.ID == nil {
+			break
+		}
+
+		return e.complexity.Term.ID(childComplexity), true
+
+	case "Term.progress":
+		if e.complexity.Term.Progress == nil {
+			break
+		}
+
+		return e.complexity.Term.Progress(childComplexity), true
+
+	case "Term.term":
+		if e.complexity.Term.Term == nil {
+			break
+		}
+
+		return e.complexity.Term.Term(childComplexity), true
+
+	case "Term.updated_at":
+		if e.complexity.Term.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Term.UpdatedAt(childComplexity), true
+
+	case "TermProgress.def_first_reviewed_at":
+		if e.complexity.TermProgress.DefFirstReviewedAt == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefFirstReviewedAt(childComplexity), true
+
+	case "TermProgress.def_last_reviewed_at":
+		if e.complexity.TermProgress.DefLastReviewedAt == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefLastReviewedAt(childComplexity), true
+
+	case "TermProgress.def_leitner_system_box":
+		if e.complexity.TermProgress.DefLeitnerSystemBox == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefLeitnerSystemBox(childComplexity), true
+
+	case "TermProgress.def_review_count":
+		if e.complexity.TermProgress.DefReviewCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefReviewCount(childComplexity), true
+
+	case "TermProgress.id":
+		if e.complexity.TermProgress.ID == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.ID(childComplexity), true
+
+	case "TermProgress.term_first_reviewed_at":
+		if e.complexity.TermProgress.TermFirstReviewedAt == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermFirstReviewedAt(childComplexity), true
+
+	case "TermProgress.term_last_reviewed_at":
+		if e.complexity.TermProgress.TermLastReviewedAt == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermLastReviewedAt(childComplexity), true
+
+	case "TermProgress.term_leitner_system_box":
+		if e.complexity.TermProgress.TermLeitnerSystemBox == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermLeitnerSystemBox(childComplexity), true
+
+	case "TermProgress.term_review_count":
+		if e.complexity.TermProgress.TermReviewCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermReviewCount(childComplexity), true
 
 	case "User.display_name":
 		if e.complexity.User.DisplayName == nil {
@@ -392,8 +507,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputStudysetDataInput,
 		ec.unmarshalInputStudysetInput,
+		ec.unmarshalInputTermInput,
 	)
 	first := true
 
@@ -966,8 +1081,8 @@ func (ec *executionContext) fieldContext_Mutation_createStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1036,8 +1151,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1316,8 +1431,8 @@ func (ec *executionContext) fieldContext_Query_studyset(ctx context.Context, fie
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1446,8 +1561,8 @@ func (ec *executionContext) fieldContext_Query_featuredStudysets(ctx context.Con
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1516,8 +1631,8 @@ func (ec *executionContext) fieldContext_Query_recentStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1586,8 +1701,8 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -1656,8 +1771,8 @@ func (ec *executionContext) fieldContext_Query_myStudysets(ctx context.Context, 
 				return ec.fieldContext_Studyset_user_id(ctx, field)
 			case "user_display_name":
 				return ec.fieldContext_Studyset_user_display_name(ctx, field)
-			case "data":
-				return ec.fieldContext_Studyset_data(ctx, field)
+			case "terms":
+				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
@@ -2055,8 +2170,8 @@ func (ec *executionContext) fieldContext_Studyset_user_display_name(_ context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _Studyset_data(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_data(ctx, field)
+func (ec *executionContext) _Studyset_terms(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_terms(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2069,7 +2184,7 @@ func (ec *executionContext) _Studyset_data(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Data, nil
+		return obj.Terms, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2078,12 +2193,12 @@ func (ec *executionContext) _Studyset_data(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.StudysetData)
+	res := resTmp.([]*model.Term)
 	fc.Result = res
-	return ec.marshalOStudysetData2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetData(ctx, field.Selections, res)
+	return ec.marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studyset_data(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
@@ -2091,10 +2206,20 @@ func (ec *executionContext) fieldContext_Studyset_data(_ context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "terms":
-				return ec.fieldContext_StudysetData_terms(ctx, field)
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type StudysetData", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
 	}
 	return fc, nil
@@ -2141,8 +2266,8 @@ func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _StudysetData_terms(ctx context.Context, field graphql.CollectedField, obj *model.StudysetData) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StudysetData_terms(ctx, field)
+func (ec *executionContext) _Term_id(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_id(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2155,7 +2280,7 @@ func (ec *executionContext) _StudysetData_terms(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Terms, nil
+		return obj.ID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2164,19 +2289,613 @@ func (ec *executionContext) _StudysetData_terms(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([][]*string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_StudysetData_terms(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "StudysetData",
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_term(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_def(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_def(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Def, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_def(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_progress(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_progress(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Progress, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.TermProgress)
+	fc.Result = res
+	return ec.marshalOTermProgress2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermProgress(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_progress(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TermProgress_id(ctx, field)
+			case "term_first_reviewed_at":
+				return ec.fieldContext_TermProgress_term_first_reviewed_at(ctx, field)
+			case "term_last_reviewed_at":
+				return ec.fieldContext_TermProgress_term_last_reviewed_at(ctx, field)
+			case "term_review_count":
+				return ec.fieldContext_TermProgress_term_review_count(ctx, field)
+			case "def_first_reviewed_at":
+				return ec.fieldContext_TermProgress_def_first_reviewed_at(ctx, field)
+			case "def_last_reviewed_at":
+				return ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
+			case "def_review_count":
+				return ec.fieldContext_TermProgress_def_review_count(ctx, field)
+			case "term_leitner_system_box":
+				return ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
+			case "def_leitner_system_box":
+				return ec.fieldContext_TermProgress_def_leitner_system_box(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TermProgress", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_updated_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_id(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_first_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_first_reviewed_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermFirstReviewedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_first_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_last_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_last_reviewed_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermLastReviewedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_last_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_review_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_review_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermReviewCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_review_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_first_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_first_reviewed_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefFirstReviewedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_first_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_last_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefLastReviewedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_last_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_review_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_review_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefReviewCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_review_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_leitner_system_box(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermLeitnerSystemBox, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_leitner_system_box(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_leitner_system_box(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_leitner_system_box(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefLeitnerSystemBox, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_leitner_system_box(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4256,33 +4975,6 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputStudysetDataInput(ctx context.Context, obj any) (model.StudysetDataInput, error) {
-	var it model.StudysetDataInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"terms"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "terms":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("terms"))
-			data, err := ec.unmarshalOString2ᚕᚕᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Terms = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputStudysetInput(ctx context.Context, obj any) (model.StudysetInput, error) {
 	var it model.StudysetInput
 	asMap := map[string]any{}
@@ -4290,7 +4982,7 @@ func (ec *executionContext) unmarshalInputStudysetInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "private", "data"}
+	fieldsInOrder := [...]string{"title", "private", "terms"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4311,13 +5003,47 @@ func (ec *executionContext) unmarshalInputStudysetInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Private = data
-		case "data":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-			data, err := ec.unmarshalNStudysetDataInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetDataInput(ctx, v)
+		case "terms":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("terms"))
+			data, err := ec.unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Data = data
+			it.Terms = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any) (model.TermInput, error) {
+	var it model.TermInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "def"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "def":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Def = data
 		}
 	}
 
@@ -4659,8 +5385,8 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Studyset_user_id(ctx, field, obj)
 		case "user_display_name":
 			out.Values[i] = ec._Studyset_user_display_name(ctx, field, obj)
-		case "data":
-			out.Values[i] = ec._Studyset_data(ctx, field, obj)
+		case "terms":
+			out.Values[i] = ec._Studyset_terms(ctx, field, obj)
 		case "terms_count":
 			out.Values[i] = ec._Studyset_terms_count(ctx, field, obj)
 		default:
@@ -4686,19 +5412,81 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
-var studysetDataImplementors = []string{"StudysetData"}
+var termImplementors = []string{"Term"}
 
-func (ec *executionContext) _StudysetData(ctx context.Context, sel ast.SelectionSet, obj *model.StudysetData) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, studysetDataImplementors)
+func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj *model.Term) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, termImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("StudysetData")
-		case "terms":
-			out.Values[i] = ec._StudysetData_terms(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("Term")
+		case "id":
+			out.Values[i] = ec._Term_id(ctx, field, obj)
+		case "term":
+			out.Values[i] = ec._Term_term(ctx, field, obj)
+		case "def":
+			out.Values[i] = ec._Term_def(ctx, field, obj)
+		case "progress":
+			out.Values[i] = ec._Term_progress(ctx, field, obj)
+		case "created_at":
+			out.Values[i] = ec._Term_created_at(ctx, field, obj)
+		case "updated_at":
+			out.Values[i] = ec._Term_updated_at(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var termProgressImplementors = []string{"TermProgress"}
+
+func (ec *executionContext) _TermProgress(ctx context.Context, sel ast.SelectionSet, obj *model.TermProgress) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, termProgressImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TermProgress")
+		case "id":
+			out.Values[i] = ec._TermProgress_id(ctx, field, obj)
+		case "term_first_reviewed_at":
+			out.Values[i] = ec._TermProgress_term_first_reviewed_at(ctx, field, obj)
+		case "term_last_reviewed_at":
+			out.Values[i] = ec._TermProgress_term_last_reviewed_at(ctx, field, obj)
+		case "term_review_count":
+			out.Values[i] = ec._TermProgress_term_review_count(ctx, field, obj)
+		case "def_first_reviewed_at":
+			out.Values[i] = ec._TermProgress_def_first_reviewed_at(ctx, field, obj)
+		case "def_last_reviewed_at":
+			out.Values[i] = ec._TermProgress_def_last_reviewed_at(ctx, field, obj)
+		case "def_review_count":
+			out.Values[i] = ec._TermProgress_def_review_count(ctx, field, obj)
+		case "term_leitner_system_box":
+			out.Values[i] = ec._TermProgress_term_leitner_system_box(ctx, field, obj)
+		case "def_leitner_system_box":
+			out.Values[i] = ec._TermProgress_def_leitner_system_box(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5145,11 +5933,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNStudysetDataInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetDataInput(ctx context.Context, v any) (*model.StudysetDataInput, error) {
-	res, err := ec.unmarshalInputStudysetDataInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNStudysetInput2quizfreelyᚋapiᚋgraphᚋmodelᚐStudysetInput(ctx context.Context, v any) (model.StudysetInput, error) {
 	res, err := ec.unmarshalInputStudysetInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5497,66 +6280,6 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalOString2ᚕᚕᚖstring(ctx context.Context, v any) ([][]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([][]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚕᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v [][]*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚕᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []any
-	vSlice = graphql.CoerceList(v)
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -5623,19 +6346,93 @@ func (ec *executionContext) marshalOStudyset2ᚖquizfreelyᚋapiᚋgraphᚋmodel
 	return ec._Studyset(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOStudysetData2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetData(ctx context.Context, sel ast.SelectionSet, v *model.StudysetData) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._StudysetData(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOStudysetInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetInput(ctx context.Context, v any) (*model.StudysetInput, error) {
 	if v == nil {
 		return nil, nil
 	}
 	res, err := ec.unmarshalInputStudysetInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx context.Context, sel ast.SelectionSet, v []*model.Term) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx context.Context, sel ast.SelectionSet, v *model.Term) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Term(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx context.Context, v any) ([]*model.TermInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.TermInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx context.Context, v any) (*model.TermInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTermInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTermProgress2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermProgress(ctx context.Context, sel ast.SelectionSet, v *model.TermProgress) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TermProgress(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {

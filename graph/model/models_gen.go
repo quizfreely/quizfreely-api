@@ -16,28 +16,46 @@ type Query struct {
 }
 
 type Studyset struct {
-	ID              *string       `json:"id,omitempty"`
-	Title           *string       `json:"title,omitempty"`
-	Private         *bool         `json:"private,omitempty"`
-	UpdatedAt       *string       `json:"updated_at,omitempty"`
-	UserID          *string       `json:"user_id,omitempty"`
-	UserDisplayName *string       `json:"user_display_name,omitempty"`
-	Data            *StudysetData `json:"data,omitempty"`
-	TermsCount      *int32        `json:"terms_count,omitempty"`
-}
-
-type StudysetData struct {
-	Terms [][]*string `json:"terms,omitempty"`
-}
-
-type StudysetDataInput struct {
-	Terms [][]*string `json:"terms,omitempty"`
+	ID              *string `json:"id,omitempty"`
+	Title           *string `json:"title,omitempty"`
+	Private         *bool   `json:"private,omitempty"`
+	UpdatedAt       *string `json:"updated_at,omitempty"`
+	UserID          *string `json:"user_id,omitempty"`
+	UserDisplayName *string `json:"user_display_name,omitempty"`
+	Terms           []*Term `json:"terms,omitempty"`
+	TermsCount      *int32  `json:"terms_count,omitempty"`
 }
 
 type StudysetInput struct {
-	Title   string             `json:"title"`
-	Private bool               `json:"private"`
-	Data    *StudysetDataInput `json:"data"`
+	Title   string       `json:"title"`
+	Private bool         `json:"private"`
+	Terms   []*TermInput `json:"terms,omitempty"`
+}
+
+type Term struct {
+	ID        *string       `json:"id,omitempty"`
+	Term      *string       `json:"term,omitempty"`
+	Def       *string       `json:"def,omitempty"`
+	Progress  *TermProgress `json:"progress,omitempty"`
+	CreatedAt *string       `json:"created_at,omitempty"`
+	UpdatedAt *string       `json:"updated_at,omitempty"`
+}
+
+type TermInput struct {
+	Term *string `json:"term,omitempty"`
+	Def  *string `json:"def,omitempty"`
+}
+
+type TermProgress struct {
+	ID                   *string `json:"id,omitempty"`
+	TermFirstReviewedAt  *string `json:"term_first_reviewed_at,omitempty"`
+	TermLastReviewedAt   *string `json:"term_last_reviewed_at,omitempty"`
+	TermReviewCount      *int32  `json:"term_review_count,omitempty"`
+	DefFirstReviewedAt   *string `json:"def_first_reviewed_at,omitempty"`
+	DefLastReviewedAt    *string `json:"def_last_reviewed_at,omitempty"`
+	DefReviewCount       *int32  `json:"def_review_count,omitempty"`
+	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
+	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
 }
 
 type User struct {
