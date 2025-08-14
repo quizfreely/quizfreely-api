@@ -16,7 +16,55 @@ import (
 
 // CreateStudyset is the resolver for the createStudyset field.
 func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.StudysetInput, terms []*model.NewTermInput) (*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: CreateStudyset - createStudyset"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	title := "Untitled Studyset"
+	if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
+		title = studyset.Title
+	}
+
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	sql := `
+		INSERT INTO public.studysets (user_id, title, private)
+		VALUES ($1, $2, $3)
+		RETURNING id, user_id, title, private,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+	`
+	var newStudyset model.Studyset
+	err = pgxscan.Get(ctx, tx, &newStudyset, sql, authedUser.ID, title, studyset.Private)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create studyset: %w", err)
+	}
+
+	if len(terms) > 0 {
+	    values := make([]interface{}, 0, len(terms)*3)
+	    placeholders := make([]string, 0, len(terms))
+	    
+	    for i, t := range terms {
+	        placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
+	        values = append(values, newStudyset.ID, t.Term, t.Def)
+	    }
+	
+	    sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
+	    _, err := tx.Exec(ctx, sql, values...)
+	    if err != nil {
+	        return nil, fmt.Errorf("failed to insert terms: %w", err)
+	    }
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return &newStudyset, nil
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
@@ -94,6 +142,7 @@ func (r *queryResolver) Studyset(ctx context.Context, id string) (*model.Studyse
 	authedUser := auth.AuthedUserContext(ctx)
 
 	var studyset model.Studyset
+	var err error
 	if authedUser != nil {
 		sql := `
 			SELECT id, user_id, title, private,
