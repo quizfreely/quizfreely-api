@@ -17,7 +17,7 @@ GRANT CONNECT ON DATABASE quizfreely_db TO quizfreely_api;
 
 if your/our database already exists with our `quizfreely_api` user, but no `quizfreely_db_admin` user:
 ```sql
-CREATE ROLE quizfreely_db_admin LOGIN PASSWORD 'REAL_PASSWORD_GOES_HERE';
+CREATE ROLE quizfreely_db_admin NOINHERIT LOGIN;
 
 ALTER DATABASE quizfreely_db OWNER TO quizfreely_db_admin;
 
