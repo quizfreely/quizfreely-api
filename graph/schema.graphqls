@@ -9,8 +9,8 @@ type Query {
     myStudysets(limit: Int, offset: Int): [Studyset]
 }
 type Mutation {
-    createStudyset(studyset: StudysetInput!): Studyset
-    updateStudyset(id: ID!, studyset: StudysetInput): Studyset
+    createStudyset(studyset: StudysetInput!, terms: [NewTermInput]): Studyset
+    updateStudyset(id: ID!, studyset: StudysetInput, terms: [TermInput]): Studyset
     deleteStudyset(id: ID!): ID
     updateUser(display_name: String): AuthedUser
     updateTermProgress(id: ID!, progress: TermProgressInput!): TermProgress
@@ -50,9 +50,13 @@ type Term {
 input StudysetInput {
     title: String!
     private: Boolean!
-    terms: [TermInput]
+}
+input NewTermInput {
+    term: String
+    def: String
 }
 input TermInput {
+    id: ID!
     term: String
     def: String
 }
