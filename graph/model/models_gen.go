@@ -80,18 +80,6 @@ type StudysetProgressTermInput struct {
 	ConfusedDefs   [][]*string        `json:"confusedDefs,omitempty"`
 }
 
-type StudysetSettings struct {
-	GoodAcc                  *float64 `json:"goodAcc,omitempty"`
-	BadAcc                   *float64 `json:"badAcc,omitempty"`
-	LearningMinSessionsCount *int32   `json:"learningMinSessionsCount,omitempty"`
-}
-
-type StudysetSettingsInput struct {
-	GoodAcc                  *float64 `json:"goodAcc,omitempty"`
-	BadAcc                   *float64 `json:"badAcc,omitempty"`
-	LearningMinSessionsCount *int32   `json:"learningMinSessionsCount,omitempty"`
-}
-
 type User struct {
 	ID          *string `json:"id,omitempty"`
 	Username    *string `json:"username,omitempty"`

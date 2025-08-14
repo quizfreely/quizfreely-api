@@ -61,7 +61,6 @@ type ComplexityRoot struct {
 		DeleteStudysetProgress func(childComplexity int, studysetID string) int
 		UpdateStudyset         func(childComplexity int, id string, studyset *model.StudysetInput) int
 		UpdateStudysetProgress func(childComplexity int, studysetID string, progressChanges []*model.StudysetProgressTermInput) int
-		UpdateStudysetSettings func(childComplexity int, studysetID string, changedSettings model.StudysetSettingsInput) int
 		UpdateUser             func(childComplexity int, displayName *string) int
 	}
 
@@ -74,7 +73,6 @@ type ComplexityRoot struct {
 		SearchStudysets   func(childComplexity int, q string, limit *int32, offset *int32) int
 		Studyset          func(childComplexity int, id string) int
 		StudysetProgress  func(childComplexity int, studysetID string) int
-		StudysetSettings  func(childComplexity int, studysetID string) int
 		User              func(childComplexity int, id string) int
 	}
 
@@ -119,12 +117,6 @@ type ComplexityRoot struct {
 		TermState                    func(childComplexity int) int
 	}
 
-	StudysetSettings struct {
-		BadAcc                   func(childComplexity int) int
-		GoodAcc                  func(childComplexity int) int
-		LearningMinSessionsCount func(childComplexity int) int
-	}
-
 	User struct {
 		DisplayName func(childComplexity int) int
 		ID          func(childComplexity int) int
@@ -139,7 +131,6 @@ type MutationResolver interface {
 	UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error)
 	UpdateStudysetProgress(ctx context.Context, studysetID string, progressChanges []*model.StudysetProgressTermInput) (*model.StudysetProgress, error)
 	DeleteStudysetProgress(ctx context.Context, studysetID string) (*string, error)
-	UpdateStudysetSettings(ctx context.Context, studysetID string, changedSettings model.StudysetSettingsInput) (*model.StudysetSettings, error)
 }
 type QueryResolver interface {
 	Authed(ctx context.Context) (*bool, error)
@@ -151,7 +142,6 @@ type QueryResolver interface {
 	SearchStudysets(ctx context.Context, q string, limit *int32, offset *int32) ([]*model.Studyset, error)
 	MyStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error)
 	StudysetProgress(ctx context.Context, studysetID string) (*model.StudysetProgress, error)
-	StudysetSettings(ctx context.Context, studysetID string) (*model.StudysetSettings, error)
 }
 
 type executableSchema struct {
@@ -268,18 +258,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.UpdateStudysetProgress(childComplexity, args["studysetId"].(string), args["progressChanges"].([]*model.StudysetProgressTermInput)), true
 
-	case "Mutation.updateStudysetSettings":
-		if e.complexity.Mutation.UpdateStudysetSettings == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateStudysetSettings_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateStudysetSettings(childComplexity, args["studysetId"].(string), args["changedSettings"].(model.StudysetSettingsInput)), true
-
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
 			break
@@ -377,18 +355,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Query.StudysetProgress(childComplexity, args["studysetId"].(string)), true
-
-	case "Query.studysetSettings":
-		if e.complexity.Query.StudysetSettings == nil {
-			break
-		}
-
-		args, err := ec.field_Query_studysetSettings_args(ctx, rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.StudysetSettings(childComplexity, args["studysetId"].(string)), true
 
 	case "Query.user":
 		if e.complexity.Query.User == nil {
@@ -605,27 +571,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.StudysetProgressTerm.TermState(childComplexity), true
 
-	case "StudysetSettings.badAcc":
-		if e.complexity.StudysetSettings.BadAcc == nil {
-			break
-		}
-
-		return e.complexity.StudysetSettings.BadAcc(childComplexity), true
-
-	case "StudysetSettings.goodAcc":
-		if e.complexity.StudysetSettings.GoodAcc == nil {
-			break
-		}
-
-		return e.complexity.StudysetSettings.GoodAcc(childComplexity), true
-
-	case "StudysetSettings.learningMinSessionsCount":
-		if e.complexity.StudysetSettings.LearningMinSessionsCount == nil {
-			break
-		}
-
-		return e.complexity.StudysetSettings.LearningMinSessionsCount(childComplexity), true
-
 	case "User.display_name":
 		if e.complexity.User.DisplayName == nil {
 			break
@@ -658,7 +603,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputStudysetDataInput,
 		ec.unmarshalInputStudysetInput,
 		ec.unmarshalInputStudysetProgressTermInput,
-		ec.unmarshalInputStudysetSettingsInput,
 	)
 	first := true
 
@@ -824,22 +768,6 @@ func (ec *executionContext) field_Mutation_updateStudysetProgress_args(ctx conte
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_updateStudysetSettings_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "studysetId", ec.unmarshalNID2string)
-	if err != nil {
-		return nil, err
-	}
-	args["studysetId"] = arg0
-	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "changedSettings", ec.unmarshalNStudysetSettingsInput2quizfreelyᚋapiᚋgraphᚋmodelᚐStudysetSettingsInput)
-	if err != nil {
-		return nil, err
-	}
-	args["changedSettings"] = arg1
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_updateStudyset_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
@@ -948,17 +876,6 @@ func (ec *executionContext) field_Query_searchStudysets_args(ctx context.Context
 }
 
 func (ec *executionContext) field_Query_studysetProgress_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
-	var err error
-	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "studysetId", ec.unmarshalNID2string)
-	if err != nil {
-		return nil, err
-	}
-	args["studysetId"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_studysetSettings_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "studysetId", ec.unmarshalNID2string)
@@ -1620,66 +1537,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteStudysetProgress(ctx con
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_updateStudysetSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateStudysetSettings(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateStudysetSettings(rctx, fc.Args["studysetId"].(string), fc.Args["changedSettings"].(model.StudysetSettingsInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.StudysetSettings)
-	fc.Result = res
-	return ec.marshalOStudysetSettings2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetSettings(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateStudysetSettings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "goodAcc":
-				return ec.fieldContext_StudysetSettings_goodAcc(ctx, field)
-			case "badAcc":
-				return ec.fieldContext_StudysetSettings_badAcc(ctx, field)
-			case "learningMinSessionsCount":
-				return ec.fieldContext_StudysetSettings_learningMinSessionsCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type StudysetSettings", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateStudysetSettings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_authed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_authed(ctx, field)
 	if err != nil {
@@ -2242,66 +2099,6 @@ func (ec *executionContext) fieldContext_Query_studysetProgress(ctx context.Cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Query_studysetProgress_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_studysetSettings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_studysetSettings(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().StudysetSettings(rctx, fc.Args["studysetId"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.StudysetSettings)
-	fc.Result = res
-	return ec.marshalOStudysetSettings2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetSettings(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_studysetSettings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "goodAcc":
-				return ec.fieldContext_StudysetSettings_goodAcc(ctx, field)
-			case "badAcc":
-				return ec.fieldContext_StudysetSettings_badAcc(ctx, field)
-			case "learningMinSessionsCount":
-				return ec.fieldContext_StudysetSettings_learningMinSessionsCount(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type StudysetSettings", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_studysetSettings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3698,129 +3495,6 @@ func (ec *executionContext) fieldContext_StudysetProgressTerm_confusedDefs(_ con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StudysetSettings_goodAcc(ctx context.Context, field graphql.CollectedField, obj *model.StudysetSettings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StudysetSettings_goodAcc(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.GoodAcc, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StudysetSettings_goodAcc(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StudysetSettings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StudysetSettings_badAcc(ctx context.Context, field graphql.CollectedField, obj *model.StudysetSettings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StudysetSettings_badAcc(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.BadAcc, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*float64)
-	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StudysetSettings_badAcc(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StudysetSettings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Float does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _StudysetSettings_learningMinSessionsCount(ctx context.Context, field graphql.CollectedField, obj *model.StudysetSettings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_StudysetSettings_learningMinSessionsCount(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.LearningMinSessionsCount, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int32)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_StudysetSettings_learningMinSessionsCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "StudysetSettings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6065,47 +5739,6 @@ func (ec *executionContext) unmarshalInputStudysetProgressTermInput(ctx context.
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputStudysetSettingsInput(ctx context.Context, obj any) (model.StudysetSettingsInput, error) {
-	var it model.StudysetSettingsInput
-	asMap := map[string]any{}
-	for k, v := range obj.(map[string]any) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"goodAcc", "badAcc", "learningMinSessionsCount"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "goodAcc":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("goodAcc"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.GoodAcc = data
-		case "badAcc":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("badAcc"))
-			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.BadAcc = data
-		case "learningMinSessionsCount":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("learningMinSessionsCount"))
-			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.LearningMinSessionsCount = data
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -6200,10 +5833,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteStudysetProgress":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteStudysetProgress(ctx, field)
-			})
-		case "updateStudysetSettings":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateStudysetSettings(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -6409,25 +6038,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_studysetProgress(ctx, field)
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "studysetSettings":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_studysetSettings(ctx, field)
 				return res
 			}
 
@@ -6678,46 +6288,6 @@ func (ec *executionContext) _StudysetProgressTerm(ctx context.Context, sel ast.S
 			out.Values[i] = ec._StudysetProgressTerm_confusedTerms(ctx, field, obj)
 		case "confusedDefs":
 			out.Values[i] = ec._StudysetProgressTerm_confusedDefs(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var studysetSettingsImplementors = []string{"StudysetSettings"}
-
-func (ec *executionContext) _StudysetSettings(ctx context.Context, sel ast.SelectionSet, obj *model.StudysetSettings) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, studysetSettingsImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("StudysetSettings")
-		case "goodAcc":
-			out.Values[i] = ec._StudysetSettings_goodAcc(ctx, field, obj)
-		case "badAcc":
-			out.Values[i] = ec._StudysetSettings_badAcc(ctx, field, obj)
-		case "learningMinSessionsCount":
-			out.Values[i] = ec._StudysetSettings_learningMinSessionsCount(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7264,11 +6834,6 @@ func (ec *executionContext) unmarshalNStudysetProgressTermInput2ᚖquizfreelyᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNStudysetSettingsInput2quizfreelyᚋapiᚋgraphᚋmodelᚐStudysetSettingsInput(ctx context.Context, v any) (model.StudysetSettingsInput, error) {
-	res, err := ec.unmarshalInputStudysetSettingsInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -7575,23 +7140,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v any) (*float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	_ = sel
-	res := graphql.MarshalFloatContext(*v)
-	return graphql.WrapContextMarshaler(ctx, res)
-}
-
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -7790,13 +7338,6 @@ func (ec *executionContext) marshalOStudysetProgress2ᚖquizfreelyᚋapiᚋgraph
 		return graphql.Null
 	}
 	return ec._StudysetProgress(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOStudysetSettings2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐStudysetSettings(ctx context.Context, sel ast.SelectionSet, v *model.StudysetSettings) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._StudysetSettings(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {

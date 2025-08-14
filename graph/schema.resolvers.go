@@ -203,10 +203,22 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 
 	// Ensure all progress changes have valid numbers (convert nil to 0)
 	for _, change := range progressChanges {
-		if change.TermCorrect == nil { var zero int32 = 0; change.TermCorrect = &zero }
-		if change.TermIncorrect == nil { var zero int32 = 0; change.TermIncorrect = &zero }
-		if change.DefCorrect == nil { var zero int32 = 0; change.DefCorrect = &zero }
-		if change.DefIncorrect == nil { var zero int32 = 0; change.DefIncorrect = &zero }
+		if change.TermCorrect == nil {
+			var zero int32 = 0
+			change.TermCorrect = &zero
+		}
+		if change.TermIncorrect == nil {
+			var zero int32 = 0
+			change.TermIncorrect = &zero
+		}
+		if change.DefCorrect == nil {
+			var zero int32 = 0
+			change.DefCorrect = &zero
+		}
+		if change.DefIncorrect == nil {
+			var zero int32 = 0
+			change.DefIncorrect = &zero
+		}
 	}
 
 	tx, err := r.DB.Begin(ctx)
@@ -217,8 +229,8 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 
 	// Check if progress already exists for this user/studyset
 	var existingProgress struct {
-		ID        string `db:"id"`
-		Terms     []*model.StudysetProgressTerm `db:"terms"`
+		ID    string                        `db:"id"`
+		Terms []*model.StudysetProgressTerm `db:"terms"`
 	}
 	sql := `
 		SELECT id, terms 
@@ -226,9 +238,9 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		WHERE user_id = $1 AND studyset_id = $2
 	`
 	err = pgxscan.Get(ctx, tx, &existingProgress, sql, authedUser.ID, studysetID)
-	
+
 	var result *model.StudysetProgress
-	
+
 	if err == nil {
 		// Update existing progress
 		updatedProgress := existingProgress.Terms
@@ -236,7 +248,7 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		for i, term := range updatedProgress {
 			existingProgressMap[[2]string{term.Term, term.Def}] = i
 		}
-		
+
 		rnDateTimeString := time.Now().UTC().Format(time.RFC3339)
 		for _, change := range progressChanges {
 			key := [2]string{change.Term, change.Def}
@@ -251,25 +263,25 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 			} else {
 				// Add new term
 				updatedProgress = append(updatedProgress, &model.StudysetProgressTerm{
-					Term: change.Term,
-					Def: change.Def,
-					TermCorrect: *change.TermCorrect,
-					TermIncorrect: *change.TermIncorrect,
-					DefCorrect: *change.DefCorrect,
-					DefIncorrect: *change.DefIncorrect,
-					FirstReviewedAt: rnDateTimeString,
-					LastReviewedAt: rnDateTimeString,
+					Term:                change.Term,
+					Def:                 change.Def,
+					TermCorrect:         *change.TermCorrect,
+					TermIncorrect:       *change.TermIncorrect,
+					DefCorrect:          *change.DefCorrect,
+					DefIncorrect:        *change.DefIncorrect,
+					FirstReviewedAt:     rnDateTimeString,
+					LastReviewedAt:      rnDateTimeString,
 					ReviewSessionsCount: 1,
 				})
 			}
 		}
-		
+
 		// Update record in database
 		var updatedRecord struct {
-			ID          string  `db:"id"`
-			StudysetID  string  `db:"studyset_id"`
-			UserID      string  `db:"user_id"`
-			UpdatedAt   string  `db:"updated_at"`
+			ID         string `db:"id"`
+			StudysetID string `db:"studyset_id"`
+			UserID     string `db:"user_id"`
+			UpdatedAt  string `db:"updated_at"`
 		}
 		sql = `
 			UPDATE public.studyset_progress 
@@ -281,14 +293,14 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		if err != nil {
 			return nil, fmt.Errorf("failed to update studyset progress: %w", err)
 		}
-		
+
 		updatedAtPtr := &updatedRecord.UpdatedAt
 		result = &model.StudysetProgress{
-			ID:          updatedRecord.ID,
-			StudysetID:  updatedRecord.StudysetID,
-			UserID:      updatedRecord.UserID,
-			Terms:       updatedProgress,
-			UpdatedAt:   updatedAtPtr,
+			ID:         updatedRecord.ID,
+			StudysetID: updatedRecord.StudysetID,
+			UserID:     updatedRecord.UserID,
+			Terms:      updatedProgress,
+			UpdatedAt:  updatedAtPtr,
 		}
 	} else if pgxscan.NotFound(err) {
 		// Create new progress record
@@ -296,24 +308,24 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		progress := make([]*model.StudysetProgressTerm, len(progressChanges))
 		for i, change := range progressChanges {
 			progress[i] = &model.StudysetProgressTerm{
-				Term: change.Term,
-				Def: change.Def,
-				TermCorrect: *change.TermCorrect,
-				TermIncorrect: *change.TermIncorrect,
-				DefCorrect: *change.DefCorrect,
-				DefIncorrect: *change.DefIncorrect,
-				FirstReviewedAt: rnDateTimeString,
-				LastReviewedAt: rnDateTimeString,
+				Term:                change.Term,
+				Def:                 change.Def,
+				TermCorrect:         *change.TermCorrect,
+				TermIncorrect:       *change.TermIncorrect,
+				DefCorrect:          *change.DefCorrect,
+				DefIncorrect:        *change.DefIncorrect,
+				FirstReviewedAt:     rnDateTimeString,
+				LastReviewedAt:      rnDateTimeString,
 				ReviewSessionsCount: 1,
 			}
 		}
-		
+
 		// Insert new record
 		var newRecord struct {
-			ID          string  `db:"id"`
-			StudysetID  string  `db:"studyset_id"`
-			UserID      string  `db:"user_id"`
-			UpdatedAt   string  `db:"updated_at"`
+			ID         string `db:"id"`
+			StudysetID string `db:"studyset_id"`
+			UserID     string `db:"user_id"`
+			UpdatedAt  string `db:"updated_at"`
 		}
 		sql = `
 			INSERT INTO public.studyset_progress (studyset_id, user_id, terms, updated_at) 
@@ -324,14 +336,14 @@ func (r *mutationResolver) UpdateStudysetProgress(ctx context.Context, studysetI
 		if err != nil {
 			return nil, fmt.Errorf("failed to create studyset progress: %w", err)
 		}
-		
+
 		updatedAtPtr := &newRecord.UpdatedAt
 		result = &model.StudysetProgress{
-			ID:          newRecord.ID,
-			StudysetID:  newRecord.StudysetID,
-			UserID:      newRecord.UserID,
-			Terms:       progress,
-			UpdatedAt:   updatedAtPtr,
+			ID:         newRecord.ID,
+			StudysetID: newRecord.StudysetID,
+			UserID:     newRecord.UserID,
+			Terms:      progress,
+			UpdatedAt:  updatedAtPtr,
 		}
 	} else {
 		return nil, fmt.Errorf("failed to check existing progress: %w", err)
@@ -371,41 +383,6 @@ func (r *mutationResolver) DeleteStudysetProgress(ctx context.Context, studysetI
 	}
 
 	return &deletedID, nil
-}
-
-// UpdateStudysetSettings is the resolver for the updateStudysetSettings field.
-func (r *mutationResolver) UpdateStudysetSettings(ctx context.Context, studysetID string, changedSettings model.StudysetSettingsInput) (*model.StudysetSettings, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
-	}
-
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	sql := `
-		INSERT INTO public.studyset_settings (studyset_id, user_id, good_acc, bad_acc, learning_min_sessions_count)
-		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT (studyset_id, user_id) DO UPDATE SET
-			good_acc = $3,
-			bad_acc = $4,
-			learning_min_sessions_count = $5
-		RETURNING studyset_id, user_id, good_acc, bad_acc, learning_min_sessions_count, to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
-	`
-	var updatedSettings model.StudysetSettings
-	err = pgxscan.Get(ctx, tx, &updatedSettings, sql, studysetID, authedUser.ID, changedSettings.GoodAcc, changedSettings.BadAcc, changedSettings.LearningMinSessionsCount)
-	if err != nil {
-		return nil, fmt.Errorf("failed to update studyset settings: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return &updatedSettings, nil
 }
 
 // Authed is the resolver for the authed field.
@@ -667,46 +644,6 @@ func (r *queryResolver) StudysetProgress(ctx context.Context, studysetID string)
 	}
 
 	return &studysetProgress, nil
-}
-
-// StudysetSettings is the resolver for the studysetSettings field.
-func (r *queryResolver) StudysetSettings(ctx context.Context, studysetID string) (*model.StudysetSettings, error) {
-	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, nil
-	}
-
-	tx, err := r.DB.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback(ctx)
-
-	var studysetSettings model.StudysetSettings
-	sql := `
-		SELECT
-			studyset_id,
-			user_id,
-			shuffle,
-			study_starred,
-			front_side_first,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
-		FROM public.studyset_settings
-		WHERE studyset_id = $1 AND user_id = $2
-	`
-	err = pgxscan.Get(ctx, tx, &studysetSettings, sql, studysetID, authedUser.ID)
-	if err != nil {
-		if pgxscan.NotFound(err) {
-			return nil, nil // Return nil, nil if no settings are found
-		}
-		return nil, fmt.Errorf("failed to fetch studyset settings: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	return &studysetSettings, nil
 }
 
 // Mutation returns MutationResolver implementation.

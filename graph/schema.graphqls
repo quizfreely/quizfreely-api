@@ -8,7 +8,6 @@ type Query {
     searchStudysets(q: String!, limit: Int, offset: Int): [Studyset]
     myStudysets(limit: Int, offset: Int): [Studyset]
     studysetProgress(studysetId: ID!): StudysetProgress
-    studysetSettings(studysetId: ID!): StudysetSettings
 }
 type Mutation {
     createStudyset(studyset: StudysetInput!): Studyset
@@ -17,7 +16,6 @@ type Mutation {
     updateUser(display_name: String): AuthedUser
     updateStudysetProgress(studysetId: ID!, progressChanges: [StudysetProgressTermInput!]!): StudysetProgress
     deleteStudysetProgress(studysetId: ID!): ID
-    updateStudysetSettings(studysetId: ID!, changedSettings: StudysetSettingsInput!): StudysetSettings
 }
 type User {
     id: ID
@@ -55,16 +53,6 @@ input StudysetInput {
 }
 input StudysetDataInput {
     terms: [[String]]
-}
-type StudysetSettings {
-    goodAcc: Float
-    badAcc: Float
-    learningMinSessionsCount: Int
-}
-input StudysetSettingsInput {
-    goodAcc: Float
-    badAcc: Float
-    learningMinSessionsCount: Int
 }
 type StudysetProgress {
     id: ID!
