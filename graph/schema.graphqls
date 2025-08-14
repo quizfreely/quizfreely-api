@@ -13,6 +13,7 @@ type Mutation {
     updateStudyset(id: ID!, studyset: StudysetInput): Studyset
     deleteStudyset(id: ID!): ID
     updateUser(display_name: String): AuthedUser
+    updateTermProgress(id: ID!, progress: TermProgressInput!): TermProgress
 }
 type User {
     id: ID
@@ -35,10 +36,8 @@ type Studyset {
     title: String
     private: Boolean
     updated_at: String
-    user_id: ID
-    user_display_name: String
+    user: User
     terms: [Term]
-    terms_count: Int
 }
 type Term {
     id: ID
@@ -59,6 +58,16 @@ input TermInput {
 }
 type TermProgress {
     id: ID
+    term_first_reviewed_at: String
+    term_last_reviewed_at: String
+    term_review_count: Int
+    def_first_reviewed_at: String
+    def_last_reviewed_at: String
+    def_review_count: Int
+    term_leitner_system_box: Int
+    def_leitner_system_box: Int
+}
+input TermProgressInput {
     term_first_reviewed_at: String
     term_last_reviewed_at: String
     term_review_count: Int

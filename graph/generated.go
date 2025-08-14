@@ -74,14 +74,12 @@ type ComplexityRoot struct {
 	}
 
 	Studyset struct {
-		ID              func(childComplexity int) int
-		Private         func(childComplexity int) int
-		Terms           func(childComplexity int) int
-		TermsCount      func(childComplexity int) int
-		Title           func(childComplexity int) int
-		UpdatedAt       func(childComplexity int) int
-		UserDisplayName func(childComplexity int) int
-		UserID          func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Private   func(childComplexity int) int
+		Terms     func(childComplexity int) int
+		Title     func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		User      func(childComplexity int) int
 	}
 
 	Term struct {
@@ -338,13 +336,6 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.Terms(childComplexity), true
 
-	case "Studyset.terms_count":
-		if e.complexity.Studyset.TermsCount == nil {
-			break
-		}
-
-		return e.complexity.Studyset.TermsCount(childComplexity), true
-
 	case "Studyset.title":
 		if e.complexity.Studyset.Title == nil {
 			break
@@ -359,19 +350,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.UpdatedAt(childComplexity), true
 
-	case "Studyset.user_display_name":
-		if e.complexity.Studyset.UserDisplayName == nil {
+	case "Studyset.user":
+		if e.complexity.Studyset.User == nil {
 			break
 		}
 
-		return e.complexity.Studyset.UserDisplayName(childComplexity), true
-
-	case "Studyset.user_id":
-		if e.complexity.Studyset.UserID == nil {
-			break
-		}
-
-		return e.complexity.Studyset.UserID(childComplexity), true
+		return e.complexity.Studyset.User(childComplexity), true
 
 	case "Term.created_at":
 		if e.complexity.Term.CreatedAt == nil {
@@ -1077,14 +1061,10 @@ func (ec *executionContext) fieldContext_Mutation_createStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1147,14 +1127,10 @@ func (ec *executionContext) fieldContext_Mutation_updateStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1427,14 +1403,10 @@ func (ec *executionContext) fieldContext_Query_studyset(ctx context.Context, fie
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1557,14 +1529,10 @@ func (ec *executionContext) fieldContext_Query_featuredStudysets(ctx context.Con
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1627,14 +1595,10 @@ func (ec *executionContext) fieldContext_Query_recentStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1697,14 +1661,10 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1767,14 +1727,10 @@ func (ec *executionContext) fieldContext_Query_myStudysets(ctx context.Context, 
 				return ec.fieldContext_Studyset_private(ctx, field)
 			case "updated_at":
 				return ec.fieldContext_Studyset_updated_at(ctx, field)
-			case "user_id":
-				return ec.fieldContext_Studyset_user_id(ctx, field)
-			case "user_display_name":
-				return ec.fieldContext_Studyset_user_display_name(ctx, field)
+			case "user":
+				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2088,8 +2044,8 @@ func (ec *executionContext) fieldContext_Studyset_updated_at(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Studyset_user_id(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_user_id(ctx, field)
+func (ec *executionContext) _Studyset_user(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_user(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2102,7 +2058,7 @@ func (ec *executionContext) _Studyset_user_id(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UserID, nil
+		return obj.User, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2111,60 +2067,27 @@ func (ec *executionContext) _Studyset_user_id(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studyset_user_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studyset_user(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Studyset_user_display_name(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_user_display_name(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UserDisplayName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Studyset_user_display_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Studyset",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "display_name":
+				return ec.fieldContext_User_display_name(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
 	}
 	return fc, nil
@@ -2220,47 +2143,6 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Studyset_terms_count(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_terms_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.TermsCount, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int32)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Studyset",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5381,14 +5263,10 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Studyset_private(ctx, field, obj)
 		case "updated_at":
 			out.Values[i] = ec._Studyset_updated_at(ctx, field, obj)
-		case "user_id":
-			out.Values[i] = ec._Studyset_user_id(ctx, field, obj)
-		case "user_display_name":
-			out.Values[i] = ec._Studyset_user_display_name(ctx, field, obj)
+		case "user":
+			out.Values[i] = ec._Studyset_user(ctx, field, obj)
 		case "terms":
 			out.Values[i] = ec._Studyset_terms(ctx, field, obj)
-		case "terms_count":
-			out.Values[i] = ec._Studyset_terms_count(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
