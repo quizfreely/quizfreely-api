@@ -117,7 +117,36 @@ func (r *queryResolver) User(ctx context.Context, id string) (*model.User, error
 
 // FeaturedStudysets is the resolver for the featuredStudysets field.
 func (r *queryResolver) FeaturedStudysets(ctx context.Context, limit *int32, offset *int32) ([]*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: FeaturedStudysets - featuredStudysets"))
+	l := 20
+	if limit != nil && *limit > 0 && *limit < 20 {
+		l = int(*limit)
+	}
+
+	o := 0
+	if offset != nil && *offset > 0 {
+		o = int(*offset)
+	}
+
+	var studysets []*model.Studyset
+	sql := `
+		SELECT
+			id,
+			user_id,
+			title,
+			private,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		FROM public.studysets
+		WHERE private = false
+			AND featured = true
+		ORDER BY terms_count DESC
+		LIMIT $1 OFFSET $2
+	`
+	err := pgxscan.Select(ctx, r.DB, &studysets, sql, l, o)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch featured studysets: %w", err)
+	}
+
+	return studysets, nil
 }
 
 // RecentStudysets is the resolver for the recentStudysets field.
