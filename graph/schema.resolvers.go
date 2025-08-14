@@ -217,7 +217,23 @@ func (r *studysetResolver) User(ctx context.Context, obj *model.Studyset) (*mode
 
 // Terms is the resolver for the terms field.
 func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error) {
-	panic(fmt.Errorf("not implemented: Terms - terms"))
+	var terms []*model.Term
+	sql := `
+		SELECT
+			id,
+			term,
+			def,
+			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
+			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		FROM terms
+		WHERE studyset_id = $1
+	`
+	err := pgxscan.Select(ctx, r.DB, &terms, sql, obj.ID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get terms from studyset: %w", err)
+	}
+
+	return terms, nil
 }
 
 // Mutation returns MutationResolver implementation.

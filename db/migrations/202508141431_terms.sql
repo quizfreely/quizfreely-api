@@ -8,6 +8,11 @@ create table terms (
     updated_at timestamptz default now()
 );
 
+grant select on terms to quizfreely_api;
+grant insert on terms to quizfreely_api;
+grant update on terms to quizfreely_api;
+grant delete on terms to quizfreely_api;
+
 create table term_progress (
     id uuid primary key default gen_random_uuid(),
     term_id uuid not null references terms (id) on delete cascade,
@@ -21,6 +26,11 @@ create table term_progress (
     term_leitner_system_box smallint,
     def_leitner_system_box smallint
 );
+
+grant select on term_progress to quizfreely_api;
+grant insert on term_progress to quizfreely_api;
+grant update on term_progress to quizfreely_api;
+grant delete on term_progress to quizfreely_api;
 
 INSERT INTO terms (term, def, studyset_id)
 SELECT
