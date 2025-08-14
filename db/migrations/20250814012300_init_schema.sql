@@ -1,3 +1,4 @@
+-- migrate:up
 create extension if not exists pgcrypto;
 create extension if not exists pg_trgm;
 
@@ -18,7 +19,7 @@ create table auth.users (
   oauth_google_sub text,
   oauth_google_email text,
   unique (username),
-  unique (oauth_google_id)
+  unique (oauth_google_sub)
 );
 
 grant select on auth.users to quizfreely_api;
@@ -92,3 +93,5 @@ grant select on public.studyset_settings to quizfreely_api;
 grant insert on public.studyset_settings to quizfreely_api;
 grant update on public.studyset_settings to quizfreely_api;
 grant delete on public.studyset_settings to quizfreely_api;
+
+-- migrate:down
