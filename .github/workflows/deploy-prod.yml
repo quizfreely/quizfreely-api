@@ -25,7 +25,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 \
             quizfreely@server.quizfreely.org \
-            "cd ~/api \
-            sudo systemctl stop quizfreely-api.service \
-            dbmate -e DB_MIGRATION_URL migrate \
+            "cd ~/api; \
+            sudo systemctl stop quizfreely-api.service; \
+            dbmate -e DB_MIGRATION_URL migrate; \
             sudo systemctl start quizfreely-api.service"
