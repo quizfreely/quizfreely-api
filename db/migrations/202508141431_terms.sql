@@ -4,6 +4,7 @@ create table terms (
     term text,
     def text,
     studyset_id uuid not null references studysets (id) on delete cascade,
+    sort_order int not null,
     created_at timestamptz default now(),
     updated_at timestamptz default now()
 );
@@ -32,13 +33,14 @@ grant insert on term_progress to quizfreely_api;
 grant update on term_progress to quizfreely_api;
 grant delete on term_progress to quizfreely_api;
 
-INSERT INTO terms (term, def, studyset_id)
+INSERT INTO terms (term, def, studyset_id, sort_order)
 SELECT
     elem->>0 AS term,
     elem->>1 AS def,
-    s.id AS studyset_id
+    s.id AS studyset_id,
+    ordinality - 1 AS sort_order
 FROM studysets s
-CROSS JOIN LATERAL jsonb_array_elements(s.data->'terms') AS elem;
+CROSS JOIN LATERAL jsonb_array_elements(s.data->'terms') WITH ORDINALITY AS elem(elem, ordinality);
 
 ALTER TABLE studysets
 DROP COLUMN data;

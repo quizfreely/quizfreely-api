@@ -45,12 +45,12 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 	}
 
 	if len(terms) > 0 {
-		values := make([]interface{}, 0, len(terms)*3)
+		values := make([]interface{}, 0, len(terms)*4)
 		placeholders := make([]string, 0, len(terms))
 
 		for i, t := range terms {
-			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
-			values = append(values, newStudyset.ID, t.Term, t.Def)
+			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d,$%d)", i*4+1, i*4+2, i*4+3, i*4+4))
+			values = append(values, newStudyset.ID, t.Term, t.Def, t.SortOrder)
 		}
 
 		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
@@ -94,8 +94,8 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 		sql := `
 			UPDATE public.studysets
 			SET title = $1, private = $2, updated_at = now()
-			WHERE id = $5 AND user_id = $6
-			RETURNING id, user_id, title, private, data, terms_count,
+			WHERE id = $3 AND user_id = $4
+			RETURNING id, user_id, title, private,
 				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 		`
 		err = pgxscan.Get(ctx, tx, &updatedStudyset, sql, title, studyset.Private, id, authedUser.ID)
@@ -123,23 +123,23 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 	}
 
 	if terms != nil && len(terms) > 0 {
-		values := make([]interface{}, 0, len(terms)*3)
+		values := make([]interface{}, 0, len(terms)*4)
 		placeholders := make([]string, 0, len(terms))
 
 		for i, t := range terms {
 			placeholders = append(placeholders, fmt.Sprintf(
-				"($%d,$%d,$%d)",
-				i*3+1, i*3+2, i*3+3,
+				"($%d::uuid, $%d::text, $%d::text, $%d::int)",
+				i*4+1, i*4+2, i*4+3, i*4+4,
 			))
-			values = append(values, t.ID, t.Term, t.Def)
+			values = append(values, t.ID, t.Term, t.Def, t.SortOrder)
 		}
 
 		sql := fmt.Sprintf(
 			`UPDATE terms AS t
-			SET term = v.term, def = v.def, updated_at = now()
+			SET term = v.term, def = v.def, v.sort_order, updated_at = now()
 			FROM (VALUES
 				%s
-			) AS v(id, term, def)
+			) AS v(id, term, def, sort_order)
 			WHERE t.id = v.id`,
 			strings.Join(placeholders, ","),
 		)
@@ -150,15 +150,15 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 	}
 
 	if newTerms != nil && len(newTerms) > 0 {
-		values := make([]interface{}, 0, len(newTerms)*3)
+		values := make([]interface{}, 0, len(newTerms)*4)
 		placeholders := make([]string, 0, len(newTerms))
 
 		for i, t := range newTerms {
-			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
-			values = append(values, id, t.Term, t.Def)
+			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d,$%d)", i*4+1, i*4+2, i*4+3, i*4+4))
+			values = append(values, id, t.Term, t.Def, t.SortOrder)
 		}
 
-		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
+		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def, sort_order) VALUES %s", strings.Join(placeholders, ","))
 		_, err := tx.Exec(ctx, sql, values...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert new terms: %w", err)
@@ -458,10 +458,12 @@ func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*m
 			id,
 			term,
 			def,
+			sort_order,
 			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
 			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 		FROM terms
 		WHERE studyset_id = $1
+		ORDER BY sort_order ASC
 	`
 	err := pgxscan.Select(ctx, r.DB, &terms, sql, obj.ID)
 	if err != nil {

@@ -43,6 +43,7 @@ type Term {
     id: ID
     term: String
     def: String
+    sort_order: Int
     progress: TermProgress
     created_at: String
     updated_at: String
@@ -54,11 +55,13 @@ input StudysetInput {
 input NewTermInput {
     term: String
     def: String
+    sort_order: Int!
 }
 input TermInput {
     id: ID!
     term: String
     def: String
+    sort_order: Int!
 }
 type TermProgress {
     id: ID
