@@ -163,3 +163,7 @@ models:
         resolver: true
       terms:
         resolver: true
+  Term:
+    fields:
+      progress:
+        resolver: true
