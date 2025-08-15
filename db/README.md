@@ -36,6 +36,16 @@ ALTER TABLE public.studyset_settings OWNER TO quizfreely_db_admin;
 \password quizfreely_db_admin
 ```
 
+## Manually setting schema migration version
+
+If dbmate is trying to run migrations you don't need, or throwing errors because it's running commands you already ran yourself, you can edit `version` in the table `schema_migrations`:
+```sql
+UPDATE schema_migrations SET version = '202508140123';
+
+-- OR, if there are no rows in `schema_migrations`:
+-- INSERT INTO schema_migrations (version) VALUES ('202508140123');
+```
+
 ## search-queries.sql
 
 optionally, to populate `search_queries`, you can manually run `db/search-queries.sql`.

@@ -18,6 +18,13 @@ CREATE SCHEMA auth;
 
 
 --
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+--
 -- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -55,6 +62,44 @@ CREATE TYPE public.auth_type_enum AS ENUM (
 );
 
 
+--
+-- Name: submission_action_type; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.submission_action_type AS ENUM (
+    'submit',
+    'unsubmit',
+    'add_grade',
+    'update_grade',
+    'remove_grade',
+    'add_attachment',
+    'update_attachment',
+    'remove_attachment'
+);
+
+
+--
+-- Name: delete_expired_sessions(); Type: PROCEDURE; Schema: auth; Owner: -
+--
+
+CREATE PROCEDURE auth.delete_expired_sessions()
+    LANGUAGE sql
+    AS $$
+delete from auth.sessions where expire_at < (select now())
+$$;
+
+
+--
+-- Name: verify_session(text); Type: FUNCTION; Schema: auth; Owner: -
+--
+
+CREATE FUNCTION auth.verify_session(session_token text) RETURNS TABLE(user_id uuid)
+    LANGUAGE sql
+    AS $_$
+select user_id from auth.sessions where token = $1 and expire_at > (select now())
+$_$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -64,30 +109,10 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE auth.sessions (
-    id bigint NOT NULL,
     token text DEFAULT encode(public.gen_random_bytes(32), 'base64'::text) NOT NULL,
     user_id uuid NOT NULL,
     expire_at timestamp with time zone DEFAULT (now() + '10 days'::interval)
 );
-
-
---
--- Name: sessions_id_seq; Type: SEQUENCE; Schema: auth; Owner: -
---
-
-CREATE SEQUENCE auth.sessions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: auth; Owner: -
---
-
-ALTER SEQUENCE auth.sessions_id_seq OWNED BY auth.sessions.id;
 
 
 --
@@ -125,41 +150,14 @@ CREATE TABLE public.search_queries (
 
 
 --
--- Name: studyset_progress; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.studyset_progress (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    studyset_id uuid,
-    user_id uuid,
-    terms jsonb NOT NULL,
-    updated_at timestamp with time zone DEFAULT now()
-);
-
-
---
--- Name: studyset_settings; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.studyset_settings (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    studyset_id uuid,
-    user_id uuid,
-    settings jsonb NOT NULL,
-    updated_at timestamp with time zone DEFAULT now()
-);
-
-
---
 -- Name: studysets; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.studysets (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid,
-    title text DEFAULT 'Untitled Studyset'::text NOT NULL,
-    private boolean DEFAULT false NOT NULL,
-    data jsonb NOT NULL,
+    title text NOT NULL,
+    private boolean NOT NULL,
     updated_at timestamp with time zone DEFAULT now(),
     terms_count integer,
     featured boolean DEFAULT false,
@@ -168,10 +166,37 @@ CREATE TABLE public.studysets (
 
 
 --
--- Name: sessions id; Type: DEFAULT; Schema: auth; Owner: -
+-- Name: term_progress; Type: TABLE; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY auth.sessions ALTER COLUMN id SET DEFAULT nextval('auth.sessions_id_seq'::regclass);
+CREATE TABLE public.term_progress (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    term_id uuid NOT NULL,
+    user_id uuid NOT NULL,
+    term_first_reviewed_at timestamp with time zone,
+    term_last_reviewed_at timestamp with time zone,
+    term_review_count integer,
+    def_first_reviewed_at timestamp with time zone,
+    def_last_reviewed_at timestamp with time zone,
+    def_review_count integer,
+    term_leitner_system_box smallint,
+    def_leitner_system_box smallint
+);
+
+
+--
+-- Name: terms; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.terms (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    term text,
+    def text,
+    studyset_id uuid NOT NULL,
+    sort_order integer NOT NULL,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
 
 
 --
@@ -179,15 +204,15 @@ ALTER TABLE ONLY auth.sessions ALTER COLUMN id SET DEFAULT nextval('auth.session
 --
 
 ALTER TABLE ONLY auth.sessions
-    ADD CONSTRAINT sessions_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT sessions_pkey PRIMARY KEY (token);
 
 
 --
--- Name: users users_oauth_google_sub_key; Type: CONSTRAINT; Schema: auth; Owner: -
+-- Name: users users_oauth_google_id_key; Type: CONSTRAINT; Schema: auth; Owner: -
 --
 
 ALTER TABLE ONLY auth.users
-    ADD CONSTRAINT users_oauth_google_sub_key UNIQUE (oauth_google_sub);
+    ADD CONSTRAINT users_oauth_google_id_key UNIQUE (oauth_google_sub);
 
 
 --
@@ -223,27 +248,27 @@ ALTER TABLE ONLY public.search_queries
 
 
 --
--- Name: studyset_progress studyset_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_progress
-    ADD CONSTRAINT studyset_progress_pkey PRIMARY KEY (id);
-
-
---
--- Name: studyset_settings studyset_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_settings
-    ADD CONSTRAINT studyset_settings_pkey PRIMARY KEY (id);
-
-
---
 -- Name: studysets studysets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.studysets
     ADD CONSTRAINT studysets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: term_progress term_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_progress
+    ADD CONSTRAINT term_progress_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: terms terms_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.terms
+    ADD CONSTRAINT terms_pkey PRIMARY KEY (id);
 
 
 --
@@ -254,51 +279,35 @@ CREATE INDEX textsearch_title_idx ON public.studysets USING gin (tsvector_title)
 
 
 --
--- Name: sessions sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: auth; Owner: -
---
-
-ALTER TABLE ONLY auth.sessions
-    ADD CONSTRAINT sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-
---
--- Name: studyset_progress studyset_progress_studyset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_progress
-    ADD CONSTRAINT studyset_progress_studyset_id_fkey FOREIGN KEY (studyset_id) REFERENCES public.studysets(id) ON DELETE CASCADE;
-
-
---
--- Name: studyset_progress studyset_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_progress
-    ADD CONSTRAINT studyset_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-
---
--- Name: studyset_settings studyset_settings_studyset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_settings
-    ADD CONSTRAINT studyset_settings_studyset_id_fkey FOREIGN KEY (studyset_id) REFERENCES public.studysets(id) ON DELETE CASCADE;
-
-
---
--- Name: studyset_settings studyset_settings_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.studyset_settings
-    ADD CONSTRAINT studyset_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-
---
 -- Name: studysets studysets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.studysets
     ADD CONSTRAINT studysets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: term_progress term_progress_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_progress
+    ADD CONSTRAINT term_progress_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.terms(id) ON DELETE CASCADE;
+
+
+--
+-- Name: term_progress term_progress_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_progress
+    ADD CONSTRAINT term_progress_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: terms terms_studyset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.terms
+    ADD CONSTRAINT terms_studyset_id_fkey FOREIGN KEY (studyset_id) REFERENCES public.studysets(id) ON DELETE CASCADE;
 
 
 --
@@ -311,4 +320,5 @@ ALTER TABLE ONLY public.studysets
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20250814012300');
+    ('202508140123'),
+    ('202508141431');
