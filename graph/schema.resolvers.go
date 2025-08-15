@@ -174,7 +174,21 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 
 // DeleteStudyset is the resolver for the deleteStudyset field.
 func (r *mutationResolver) DeleteStudyset(ctx context.Context, id string) (*string, error) {
-	panic(fmt.Errorf("not implemented: DeleteStudyset - deleteStudyset"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	var deletedID string
+	err = r.DB.QueryRow(ctx, "DELETE FROM public.studysets WHERE id = $1 AND user_id = $2 RETURNING id", id, authedUser.ID).Scan(&deletedID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("studyset not found")
+		}
+		return nil, fmt.Errorf("failed to delete studyset: %w", err)
+	}
+
+	return &deletedID, nil
 }
 
 // UpdateUser is the resolver for the updateUser field.
