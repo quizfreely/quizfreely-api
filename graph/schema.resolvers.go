@@ -44,7 +44,7 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 		return nil, fmt.Errorf("failed to create studyset: %w", err)
 	}
 
-	if len(terms) > 0 {
+	if terms != nil && len(terms) > 0 {
 		values := make([]interface{}, 0, len(terms)*4)
 		placeholders := make([]string, 0, len(terms))
 
@@ -53,7 +53,7 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 			values = append(values, newStudyset.ID, t.Term, t.Def, t.SortOrder)
 		}
 
-		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
+		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def, sort_order) VALUES %s", strings.Join(placeholders, ","))
 		_, err := tx.Exec(ctx, sql, values...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to insert terms: %w", err)
@@ -136,7 +136,7 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 
 		sql := fmt.Sprintf(
 			`UPDATE terms AS t
-			SET term = v.term, def = v.def, v.sort_order, updated_at = now()
+			SET term = v.term, def = v.def, sort_order = v.sort_order, updated_at = now()
 			FROM (VALUES
 				%s
 			) AS v(id, term, def, sort_order)
