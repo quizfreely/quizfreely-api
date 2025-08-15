@@ -89,6 +89,7 @@ type ComplexityRoot struct {
 		Def       func(childComplexity int) int
 		ID        func(childComplexity int) int
 		Progress  func(childComplexity int) int
+		SortOrder func(childComplexity int) int
 		Term      func(childComplexity int) int
 		UpdatedAt func(childComplexity int) int
 	}
@@ -403,6 +404,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Term.Progress(childComplexity), true
+
+	case "Term.sort_order":
+		if e.complexity.Term.SortOrder == nil {
+			break
+		}
+
+		return e.complexity.Term.SortOrder(childComplexity), true
 
 	case "Term.term":
 		if e.complexity.Term.Term == nil {
@@ -2259,6 +2267,8 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "created_at":
@@ -2390,6 +2400,47 @@ func (ec *executionContext) fieldContext_Term_def(_ context.Context, field graph
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Term_sort_order(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_sort_order(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SortOrder, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4988,7 +5039,7 @@ func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term", "def"}
+	fieldsInOrder := [...]string{"term", "def", "sort_order"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5009,6 +5060,13 @@ func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Def = data
+		case "sort_order":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SortOrder = data
 		}
 	}
 
@@ -5056,7 +5114,7 @@ func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "term", "def"}
+	fieldsInOrder := [...]string{"id", "term", "def", "sort_order"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5084,6 +5142,13 @@ func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any
 				return it, err
 			}
 			it.Def = data
+		case "sort_order":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+			data, err := ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SortOrder = data
 		}
 	}
 
@@ -5607,6 +5672,8 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Term_term(ctx, field, obj)
 		case "def":
 			out.Values[i] = ec._Term_def(ctx, field, obj)
+		case "sort_order":
+			out.Values[i] = ec._Term_sort_order(ctx, field, obj)
 		case "progress":
 			out.Values[i] = ec._Term_progress(ctx, field, obj)
 		case "created_at":
@@ -6087,6 +6154,22 @@ func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (str
 func (ec *executionContext) marshalNID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	_ = sel
 	res := graphql.MarshalID(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v any) (int32, error) {
+	res, err := graphql.UnmarshalInt32(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.SelectionSet, v int32) graphql.Marshaler {
+	_ = sel
+	res := graphql.MarshalInt32(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
