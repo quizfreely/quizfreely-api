@@ -165,6 +165,18 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 		}
 	}
 
+	if deleteTerms != nil && len(deleteTerms) > 0 {
+		_, err := tx.Exec(
+			ctx,
+			"DELETE FROM terms WHERE id = ANY($1) AND studyset_id = $2",
+			deleteTerms,
+			id
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to delete terms: %w", err)
+		}
+	}
+
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
