@@ -10,7 +10,7 @@ type Query {
 }
 type Mutation {
     createStudyset(studyset: StudysetInput!, terms: [NewTermInput]): Studyset
-    updateStudyset(id: ID!, studyset: StudysetInput, terms: [TermInput]): Studyset
+    updateStudyset(id: ID!, studyset: StudysetInput, terms: [TermInput], newTerms: [NewTermInput]): Studyset
     deleteStudyset(id: ID!): ID
     updateUser(display_name: String): AuthedUser
     updateTermProgress(id: ID!, progress: TermProgressInput!): TermProgress

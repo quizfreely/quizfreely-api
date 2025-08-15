@@ -69,7 +69,91 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 
 // UpdateStudyset is the resolver for the updateStudyset field.
 func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput) (*model.Studyset, error) {
-	panic(fmt.Errorf("not implemented: UpdateStudyset - updateStudyset"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	if studyset == nil && (terms == nil || len(terms) == 0) {
+		return r.Query().Studyset(ctx, id)
+	}
+
+	tx, err := r.DB.Begin(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	var updatedStudyset model.Studyset
+	if studyset != nil {
+		title := "Untitled Studyset"
+		if len(studyset.Title) > 0 && len(studyset.Title) < 200 && validTitleRegex.MatchString(studyset.Title) {
+			title = studyset.Title
+		}
+
+		sql := `
+			UPDATE public.studysets
+			SET title = $1, private = $2, updated_at = now()
+			WHERE id = $5 AND user_id = $6
+			RETURNING id, user_id, title, private, data, terms_count,
+				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		`
+		err = pgxscan.Get(ctx, tx, &updatedStudyset, sql, title, studyset.Private, id, authedUser.ID)
+		if err != nil {
+			if pgxscan.NotFound(err) {
+				return nil, fmt.Errorf("studyset not found")
+			}
+			return nil, fmt.Errorf("failed to update studyset: %w", err)
+		}
+	} else {
+		sql := `
+			UPDATE public.studysets
+			SET updated_at = now()
+			WHERE id = $1 AND user_id = $2
+			RETURNING id, user_id, title, private,
+				to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+		`
+		err = pgxscan.Get(ctx, tx, &updatedStudyset, sql, id, authedUser.ID)
+		if err != nil {
+			if pgxscan.NotFound(err) {
+				return nil, fmt.Errorf("studyset not found")
+			}
+			return nil, fmt.Errorf("failed to update studyset: %w", err)
+		}
+	}
+
+	if terms != nil && len(terms) > 0 {
+	    values := make([]interface{}, 0, len(terms)*3)
+	    placeholders := make([]string, 0, len(terms))
+	    
+	    for i, t := range terms {
+	        placeholders = append(placeholders, fmt.Sprintf(
+				"($%d,$%d,$%d)",
+				i*3+1, i*3+2, i*3+3
+			))
+	        values = append(values, t.ID, t.Term, t.Def)
+	    }
+	
+	    sql := fmt.Sprintf(
+			`UPDATE terms AS t
+			SET term = v.term, def = v.def, updated_at = now()
+			FROM (VALUES
+				%s
+			) AS v(id, term, def)
+			WHERE t.id = v.id`,
+			strings.Join(placeholders, ",")
+		)
+	    _, err := tx.Exec(ctx, sql, values...)
+	    if err != nil {
+	        return nil, fmt.Errorf("failed to update terms: %w", err)
+	    }
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return &updatedStudyset, nil
 }
 
 // DeleteStudyset is the resolver for the deleteStudyset field.
