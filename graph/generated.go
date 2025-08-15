@@ -59,7 +59,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateStudyset     func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
 		DeleteStudyset     func(childComplexity int, id string) int
-		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput) int
+		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) int
 		UpdateTermProgress func(childComplexity int, id string, progress model.TermProgressInput) int
 		UpdateUser         func(childComplexity int, displayName *string) int
 	}
@@ -114,7 +114,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateStudyset(ctx context.Context, studyset model.StudysetInput, terms []*model.NewTermInput) (*model.Studyset, error)
-	UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput) (*model.Studyset, error)
+	UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) (*model.Studyset, error)
 	DeleteStudyset(ctx context.Context, id string) (*string, error)
 	UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error)
 	UpdateTermProgress(ctx context.Context, id string, progress model.TermProgressInput) (*model.TermProgress, error)
@@ -222,7 +222,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateStudyset(childComplexity, args["id"].(string), args["studyset"].(*model.StudysetInput), args["terms"].([]*model.TermInput)), true
+		return e.complexity.Mutation.UpdateStudyset(childComplexity, args["id"].(string), args["studyset"].(*model.StudysetInput), args["terms"].([]*model.TermInput), args["newTerms"].([]*model.NewTermInput)), true
 
 	case "Mutation.updateTermProgress":
 		if e.complexity.Mutation.UpdateTermProgress == nil {
@@ -675,6 +675,11 @@ func (ec *executionContext) field_Mutation_updateStudyset_args(ctx context.Conte
 		return nil, err
 	}
 	args["terms"] = arg2
+	arg3, err := graphql.ProcessArgField(ctx, rawArgs, "newTerms", ec.unmarshalONewTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐNewTermInput)
+	if err != nil {
+		return nil, err
+	}
+	args["newTerms"] = arg3
 	return args, nil
 }
 
@@ -1144,7 +1149,7 @@ func (ec *executionContext) _Mutation_updateStudyset(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateStudyset(rctx, fc.Args["id"].(string), fc.Args["studyset"].(*model.StudysetInput), fc.Args["terms"].([]*model.TermInput))
+		return ec.resolvers.Mutation().UpdateStudyset(rctx, fc.Args["id"].(string), fc.Args["studyset"].(*model.StudysetInput), fc.Args["terms"].([]*model.TermInput), fc.Args["newTerms"].([]*model.NewTermInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

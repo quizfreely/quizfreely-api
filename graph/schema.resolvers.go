@@ -45,19 +45,19 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 	}
 
 	if len(terms) > 0 {
-	    values := make([]interface{}, 0, len(terms)*3)
-	    placeholders := make([]string, 0, len(terms))
-	    
-	    for i, t := range terms {
-	        placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
-	        values = append(values, newStudyset.ID, t.Term, t.Def)
-	    }
-	
-	    sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
-	    _, err := tx.Exec(ctx, sql, values...)
-	    if err != nil {
-	        return nil, fmt.Errorf("failed to insert terms: %w", err)
-	    }
+		values := make([]interface{}, 0, len(terms)*3)
+		placeholders := make([]string, 0, len(terms))
+
+		for i, t := range terms {
+			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
+			values = append(values, newStudyset.ID, t.Term, t.Def)
+		}
+
+		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
+		_, err := tx.Exec(ctx, sql, values...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert terms: %w", err)
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -68,7 +68,7 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
-func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput) (*model.Studyset, error) {
+func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) (*model.Studyset, error) {
 	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
@@ -123,30 +123,46 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 	}
 
 	if terms != nil && len(terms) > 0 {
-	    values := make([]interface{}, 0, len(terms)*3)
-	    placeholders := make([]string, 0, len(terms))
-	    
-	    for i, t := range terms {
-	        placeholders = append(placeholders, fmt.Sprintf(
+		values := make([]interface{}, 0, len(terms)*3)
+		placeholders := make([]string, 0, len(terms))
+
+		for i, t := range terms {
+			placeholders = append(placeholders, fmt.Sprintf(
 				"($%d,$%d,$%d)",
-				i*3+1, i*3+2, i*3+3
+				i*3+1, i*3+2, i*3+3,
 			))
-	        values = append(values, t.ID, t.Term, t.Def)
-	    }
-	
-	    sql := fmt.Sprintf(
+			values = append(values, t.ID, t.Term, t.Def)
+		}
+
+		sql := fmt.Sprintf(
 			`UPDATE terms AS t
 			SET term = v.term, def = v.def, updated_at = now()
 			FROM (VALUES
 				%s
 			) AS v(id, term, def)
 			WHERE t.id = v.id`,
-			strings.Join(placeholders, ",")
+			strings.Join(placeholders, ","),
 		)
-	    _, err := tx.Exec(ctx, sql, values...)
-	    if err != nil {
-	        return nil, fmt.Errorf("failed to update terms: %w", err)
-	    }
+		_, err := tx.Exec(ctx, sql, values...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update terms: %w", err)
+		}
+	}
+
+	if newTerms != nil && len(newTerms) > 0 {
+		values := make([]interface{}, 0, len(newTerms)*3)
+		placeholders := make([]string, 0, len(newTerms))
+
+		for i, t := range newTerms {
+			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d)", i*3+1, i*3+2, i*3+3))
+			values = append(values, id, t.Term, t.Def)
+		}
+
+		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def) VALUES %s", strings.Join(placeholders, ","))
+		_, err := tx.Exec(ctx, sql, values...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert new terms: %w", err)
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
