@@ -6,12 +6,14 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	pgx "github.com/jackc/pgx/v5"
 )
 
 // CreateStudyset is the resolver for the createStudyset field.
@@ -68,7 +70,7 @@ func (r *mutationResolver) CreateStudyset(ctx context.Context, studyset model.St
 }
 
 // UpdateStudyset is the resolver for the updateStudyset field.
-func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) (*model.Studyset, error) {
+func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) (*model.Studyset, error) {
 	authedUser := auth.AuthedUserContext(ctx)
 	if authedUser == nil {
 		return nil, fmt.Errorf("not authenticated")
@@ -170,7 +172,7 @@ func (r *mutationResolver) UpdateStudyset(ctx context.Context, id string, studys
 			ctx,
 			"DELETE FROM terms WHERE id = ANY($1) AND studyset_id = $2",
 			deleteTerms,
-			id
+			id,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to delete terms: %w", err)
@@ -192,7 +194,7 @@ func (r *mutationResolver) DeleteStudyset(ctx context.Context, id string) (*stri
 	}
 
 	var deletedID string
-	err = r.DB.QueryRow(ctx, "DELETE FROM public.studysets WHERE id = $1 AND user_id = $2 RETURNING id", id, authedUser.ID).Scan(&deletedID)
+	err := r.DB.QueryRow(ctx, "DELETE FROM public.studysets WHERE id = $1 AND user_id = $2 RETURNING id", id, authedUser.ID).Scan(&deletedID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("studyset not found")

@@ -59,7 +59,7 @@ type ComplexityRoot struct {
 	Mutation struct {
 		CreateStudyset     func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
 		DeleteStudyset     func(childComplexity int, id string) int
-		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) int
+		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) int
 		UpdateTermProgress func(childComplexity int, id string, progress model.TermProgressInput) int
 		UpdateUser         func(childComplexity int, displayName *string) int
 	}
@@ -115,7 +115,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateStudyset(ctx context.Context, studyset model.StudysetInput, terms []*model.NewTermInput) (*model.Studyset, error)
-	UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput) (*model.Studyset, error)
+	UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) (*model.Studyset, error)
 	DeleteStudyset(ctx context.Context, id string) (*string, error)
 	UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error)
 	UpdateTermProgress(ctx context.Context, id string, progress model.TermProgressInput) (*model.TermProgress, error)
@@ -223,7 +223,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateStudyset(childComplexity, args["id"].(string), args["studyset"].(*model.StudysetInput), args["terms"].([]*model.TermInput), args["newTerms"].([]*model.NewTermInput)), true
+		return e.complexity.Mutation.UpdateStudyset(childComplexity, args["id"].(string), args["studyset"].(*model.StudysetInput), args["terms"].([]*model.TermInput), args["newTerms"].([]*model.NewTermInput), args["deleteTerms"].([]*string)), true
 
 	case "Mutation.updateTermProgress":
 		if e.complexity.Mutation.UpdateTermProgress == nil {
@@ -688,6 +688,11 @@ func (ec *executionContext) field_Mutation_updateStudyset_args(ctx context.Conte
 		return nil, err
 	}
 	args["newTerms"] = arg3
+	arg4, err := graphql.ProcessArgField(ctx, rawArgs, "deleteTerms", ec.unmarshalOID2ᚕᚖstring)
+	if err != nil {
+		return nil, err
+	}
+	args["deleteTerms"] = arg4
 	return args, nil
 }
 
@@ -1157,7 +1162,7 @@ func (ec *executionContext) _Mutation_updateStudyset(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateStudyset(rctx, fc.Args["id"].(string), fc.Args["studyset"].(*model.StudysetInput), fc.Args["terms"].([]*model.TermInput), fc.Args["newTerms"].([]*model.NewTermInput))
+		return ec.resolvers.Mutation().UpdateStudyset(rctx, fc.Args["id"].(string), fc.Args["studyset"].(*model.StudysetInput), fc.Args["terms"].([]*model.TermInput), fc.Args["newTerms"].([]*model.NewTermInput), fc.Args["deleteTerms"].([]*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6508,6 +6513,36 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOID2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOID2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOID2ᚖstring(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
