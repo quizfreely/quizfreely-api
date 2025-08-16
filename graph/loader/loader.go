@@ -44,6 +44,37 @@ ORDER BY input.og_order`,
 	return users, nil
 }
 
+func (dr *dataReader) getTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.Term, []error) {
+	var terms []*model.User
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&terms,
+		`SELECT t.id, t.studyset_id, t.term, t.def, t.created_at, t.updated_at
+FROM terms t
+WHERE t.studyset_id = ANY($1::uuid[])`,
+		studysetIDs,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+    // Group terms by studyset_id
+    grouped := make(map[string][]*model.Term)
+    for _, t := range terms {
+        grouped[t.StudysetID] = append(grouped[t.StudysetID], t)
+    }
+
+    // Reassemble in the same order as studysetIDs
+    orderedTerms := make([][]*model.Term, len(studysetIDs))
+    for i, id := range studysetIDs {
+        orderedTerms[i] = grouped[id]
+    }
+
+	return orderedTerms, nil
+}
+
 func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, []error) {
 	var termsProgress []*model.TermProgress
 
@@ -71,6 +102,7 @@ ORDER BY input.og_order`,
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
+	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
 	TermProgressLoader *dataloadgen.Loader[[]string, *model.TermProgress]
 }
 
@@ -80,6 +112,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 	dr := &dataReader{db: db}
 	return &Loaders{
 		UserLoader: dataloadgen.NewLoader(dr.getUsers, dataloadgen.WithWait(time.Millisecond)),
+		TermByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
@@ -111,13 +144,25 @@ func GetUsers(ctx context.Context, userIDs []string) ([]*model.User, error) {
 	return loaders.UserLoader.LoadAll(ctx, userIDs)
 }
 
-// GetUser returns a single term's progress record by term id and user id efficiently
+// GetTermsByStudysetID returns a single studyset's terms efficiently
+func GetTermsByStudysetID(ctx context.Context, studysetID string) ([]*model.Term, error) {
+	loaders := For(ctx)
+	return loaders.TermByStudysetIDLoader.Load(ctx, studysetID)
+}
+
+// GetTermsByStudysetIDs returns many studysets' terms efficiently
+func GetTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.Term, error) {
+	loaders := For(ctx)
+	return loaders.TermByStudysetIDLoader.LoadAll(ctx, studysetIDs)
+}
+
+// GetTermProgress returns a single term's progress record by term id and user id efficiently
 func GetTermProgress(ctx context.Context, termAndUserID []string) (*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.Load(ctx, termAndUserID)
 }
 
-// GetUsers returns many terms' progress records by term ids and user ids efficiently
+// GetTermsProgress returns many terms' progress records by term ids and user ids efficiently
 func GetTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.LoadAll(ctx, termAndUserIDs)
