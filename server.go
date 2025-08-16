@@ -6,6 +6,7 @@ import (
 	"context"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph"
+	"quizfreely/api/graph/loader"
 	"quizfreely/api/rest"
 
 	"github.com/joho/godotenv"
@@ -102,18 +103,20 @@ check your environment variables`,
 	router.Group(func(r chi.Router) {
 		r.Use(authHandler.AuthMiddleware)
 
-		srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: dbPool}}))
+		h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: dbPool}}))
 
-		srv.AddTransport(transport.Options{})
-		srv.AddTransport(transport.GET{})
-		srv.AddTransport(transport.POST{})
+		h.AddTransport(transport.Options{})
+		h.AddTransport(transport.GET{})
+		h.AddTransport(transport.POST{})
 
-		srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
+		h.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
-		srv.Use(extension.Introspection{})
-		srv.Use(extension.AutomaticPersistedQuery{
+		h.Use(extension.Introspection{})
+		h.Use(extension.AutomaticPersistedQuery{
 			Cache: lru.New[string](100),
 		})
+
+		srv := loader.Middleware(dbPool, h)
 
 		r.Handle(
 			"/graphiql",

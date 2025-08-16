@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
+	"quizfreely/api/graph/loader"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -459,23 +460,9 @@ func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *i
 func (r *studysetResolver) User(ctx context.Context, obj *model.Studyset) (*model.User, error) {
 	if obj.UserID == nil {
 		return nil, nil
+	} else {
+		return loader.GetUser(ctx, *obj.UserID)
 	}
-
-	var user model.User
-	sql := `
-		SELECT
-			id,
-			username,
-			display_name
-		FROM auth.users
-		WHERE id = $1
-	`
-	err := pgxscan.Get(ctx, r.DB, &user, sql, obj.UserID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user from studyset: %w", err)
-	}
-
-	return &user, nil
 }
 
 // Terms is the resolver for the terms field.
