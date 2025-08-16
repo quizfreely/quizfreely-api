@@ -44,9 +44,34 @@ ORDER BY input.og_order`,
 	return users, nil
 }
 
+func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, []error) {
+	var termsProgress []*model.TermProgress
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&termsProgress,
+		`SELECT tp.id, tp.term_first_reviewed_at, tp.term_last_reviewed_at,
+tp.term_review_count, tp.def_first_reviewed_at, tp.def_last_reviewed_at,
+tp.def_review_count, tp.term_leitner_system_box, tp.def_leitner_system_box
+FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
+LEFT JOIN term_progress tp
+	ON tp.term_id = input.ids[1]
+	AND tp.user_id = input.ids[2]
+ORDER BY input.og_order`,
+		termAndUserIDs,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	return termsProgress, nil
+}
+
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
+	TermProgressLoader *dataloadgen.Loader[[]string, *model.TermProgress]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -55,6 +80,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 	dr := &dataReader{db: db}
 	return &Loaders{
 		UserLoader: dataloadgen.NewLoader(dr.getUsers, dataloadgen.WithWait(time.Millisecond)),
+		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
 
@@ -83,4 +109,16 @@ func GetUser(ctx context.Context, userID string) (*model.User, error) {
 func GetUsers(ctx context.Context, userIDs []string) ([]*model.User, error) {
 	loaders := For(ctx)
 	return loaders.UserLoader.LoadAll(ctx, userIDs)
+}
+
+// GetUser returns a single term's progress record by term id and user id efficiently
+func GetTermProgress(ctx context.Context, termAndUserID []string) (*model.TermProgress, error) {
+	loaders := For(ctx)
+	return loaders.TermProgressLoader.Load(ctx, termAndUserID)
+}
+
+// GetUsers returns many terms' progress records by term ids and user ids efficiently
+func GetTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, error) {
+	loaders := For(ctx)
+	return loaders.TermProgressLoader.LoadAll(ctx, termAndUserIDs)
 }
