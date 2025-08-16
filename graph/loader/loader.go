@@ -31,9 +31,10 @@ func (dr *dataReader) getUsers(ctx context.Context, userIDs []string) ([]*model.
 		ctx,
 		dr.db,
 		&users,
-		`SELECT id, username, display_name
-FROM auth.users
-		WHERE id = ANY($1::uuid[])`,
+		`SELECT u.id, u.username, u.display_name
+FROM unnest($1::uuid[]) WITH ORDINALITY AS input(id, og_order)
+LEFT JOIN auth.users u ON u.id = input.id
+ORDER BY input.og_order`,
 		userIDs,
 	)
 	if err != nil {
