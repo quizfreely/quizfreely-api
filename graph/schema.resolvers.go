@@ -460,32 +460,18 @@ func (r *queryResolver) MyStudysets(ctx context.Context, limit *int32, offset *i
 func (r *studysetResolver) User(ctx context.Context, obj *model.Studyset) (*model.User, error) {
 	if obj.UserID == nil {
 		return nil, nil
-	} else {
-		return loader.GetUser(ctx, *obj.UserID)
 	}
+	
+	return loader.GetUser(ctx, *obj.UserID)
 }
 
 // Terms is the resolver for the terms field.
 func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error) {
-	var terms []*model.Term
-	sql := `
-		SELECT
-			id,
-			term,
-			def,
-			sort_order,
-			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
-			to_char(updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
-		FROM terms
-		WHERE studyset_id = $1
-		ORDER BY sort_order ASC
-	`
-	err := pgxscan.Select(ctx, r.DB, &terms, sql, obj.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get terms from studyset: %w", err)
+	if obj.ID == nil {
+		return nil, nil
 	}
 
-	return terms, nil
+	return loader.GetTermsByStudysetID(ctx, *obj.ID)
 }
 
 // Progress is the resolver for the progress field.
