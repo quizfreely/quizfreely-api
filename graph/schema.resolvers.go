@@ -9,8 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"quizfreely/api/auth"
-	"quizfreely/api/graph/model"
 	"quizfreely/api/graph/loader"
+	"quizfreely/api/graph/model"
 	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -488,6 +488,16 @@ func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*m
 	return terms, nil
 }
 
+// Progress is the resolver for the progress field.
+func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error) {
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil || authedUser.ID == nil || obj.ID == nil {
+		return nil, nil
+	}
+
+	return loader.GetTermProgress(ctx, []string{*obj.ID, *authedUser.ID})
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -497,6 +507,10 @@ func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 // Studyset returns StudysetResolver implementation.
 func (r *Resolver) Studyset() StudysetResolver { return &studysetResolver{r} }
 
+// Term returns TermResolver implementation.
+func (r *Resolver) Term() TermResolver { return &termResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type studysetResolver struct{ *Resolver }
+type termResolver struct{ *Resolver }
