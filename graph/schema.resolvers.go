@@ -461,7 +461,7 @@ func (r *studysetResolver) User(ctx context.Context, obj *model.Studyset) (*mode
 	if obj.UserID == nil {
 		return nil, nil
 	}
-	
+
 	return loader.GetUser(ctx, *obj.UserID)
 }
 
@@ -481,7 +481,7 @@ func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.Te
 		return nil, nil
 	}
 
-	return loader.GetTermProgress(ctx, []string{*obj.ID, *authedUser.ID})
+	return loader.GetTermProgress(ctx, [2]string{*obj.ID, *authedUser.ID})
 }
 
 // Mutation returns MutationResolver implementation.

@@ -45,7 +45,7 @@ ORDER BY input.og_order`,
 }
 
 func (dr *dataReader) getTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.Term, []error) {
-	var terms []*model.User
+	var terms []*model.Term
 
 	err := pgxscan.Select(
 		ctx,
@@ -63,7 +63,7 @@ WHERE t.studyset_id = ANY($1::uuid[])`,
     // Group terms by studyset_id
     grouped := make(map[string][]*model.Term)
     for _, t := range terms {
-        grouped[t.StudysetID] = append(grouped[t.StudysetID], t)
+        grouped[*t.StudysetID] = append(grouped[*t.StudysetID], t)
     }
 
     // Reassemble in the same order as studysetIDs
@@ -75,7 +75,7 @@ WHERE t.studyset_id = ANY($1::uuid[])`,
 	return orderedTerms, nil
 }
 
-func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, []error) {
+func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, []error) {
 	var termsProgress []*model.TermProgress
 
 	err := pgxscan.Select(
@@ -103,7 +103,7 @@ ORDER BY input.og_order`,
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
 	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
-	TermProgressLoader *dataloadgen.Loader[[]string, *model.TermProgress]
+	TermProgressLoader *dataloadgen.Loader[[2]string, *model.TermProgress]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -157,13 +157,13 @@ func GetTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*mode
 }
 
 // GetTermProgress returns a single term's progress record by term id and user id efficiently
-func GetTermProgress(ctx context.Context, termAndUserID []string) (*model.TermProgress, error) {
+func GetTermProgress(ctx context.Context, termAndUserID [2]string) (*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.Load(ctx, termAndUserID)
 }
 
 // GetTermsProgress returns many terms' progress records by term ids and user ids efficiently
-func GetTermsProgress(ctx context.Context, termAndUserIDs [][]string) ([]*model.TermProgress, error) {
+func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.LoadAll(ctx, termAndUserIDs)
 }
