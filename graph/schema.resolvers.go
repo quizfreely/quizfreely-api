@@ -291,10 +291,10 @@ RETURNING id,
 	term_leitner_system_box, def_leitner_system_box`,
 		termId,
 		authedUser.ID,
-		progress.term_reviewed_at,
-		progress.def_reviewed_at,
-		progress.term_leitner_system_box,
-		progress.def_leitner_system_box,
+		progress.TermReviewedAt,
+		progress.DefReviewedAt,
+		progress.TermLeitnerSystemBox,
+		progress.DefLeitnerSystemBox,
 	)
 
 	if err != nil {
