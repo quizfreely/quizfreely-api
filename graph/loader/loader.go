@@ -51,7 +51,9 @@ func (dr *dataReader) getTermsByStudysetIDs(ctx context.Context, studysetIDs []s
 		ctx,
 		dr.db,
 		&terms,
-		`SELECT t.id, t.studyset_id, t.term, t.def, t.created_at, t.updated_at
+		`SELECT t.id, t.studyset_id, t.term, t.def,
+	to_char(t.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
+	to_char(t.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 FROM terms t
 WHERE t.studyset_id = ANY($1::uuid[])`,
 		studysetIDs,
@@ -124,9 +126,14 @@ func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]
 		ctx,
 		dr.db,
 		&termsProgress,
-		`SELECT tp.id, tp.term_first_reviewed_at, tp.term_last_reviewed_at,
-tp.term_review_count, tp.def_first_reviewed_at, tp.def_last_reviewed_at,
-tp.def_review_count, tp.term_leitner_system_box, tp.def_leitner_system_box
+		`SELECT tp.id,
+	to_char(tp.term_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as term_first_reviewed_at,
+	to_char(tp.term_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as term_last_reviewed_at,
+	tp.term_review_count,
+	to_char(tp.def_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_first_reviewed_at,
+	to_char(tp.def_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_last_reviewed_at
+	tp.def_review_count,
+	tp.term_leitner_system_box, tp.def_leitner_system_box
 FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
 LEFT JOIN term_progress tp
 	ON tp.term_id = input.ids[1]
