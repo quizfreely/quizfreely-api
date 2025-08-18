@@ -8,4 +8,5 @@ type Studyset struct {
 	UserID      *string   `json:"user_id,omitempty"`
 	User      *User   `json:"user,omitempty"`
 	Terms     []*Term `json:"terms,omitempty"`
+	TermsCount     []*Term `json:"terms_count,omitempty"`
 }

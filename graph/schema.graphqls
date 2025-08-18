@@ -38,6 +38,7 @@ type Studyset {
     updated_at: String
     user: User
     terms: [Term]
+    terms_count: Int
 }
 type Term {
     id: ID

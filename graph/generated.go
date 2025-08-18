@@ -77,12 +77,13 @@ type ComplexityRoot struct {
 	}
 
 	Studyset struct {
-		ID        func(childComplexity int) int
-		Private   func(childComplexity int) int
-		Terms     func(childComplexity int) int
-		Title     func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
-		User      func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Private    func(childComplexity int) int
+		Terms      func(childComplexity int) int
+		TermsCount func(childComplexity int) int
+		Title      func(childComplexity int) int
+		UpdatedAt  func(childComplexity int) int
+		User       func(childComplexity int) int
 	}
 
 	Term struct {
@@ -134,6 +135,7 @@ type QueryResolver interface {
 type StudysetResolver interface {
 	User(ctx context.Context, obj *model.Studyset) (*model.User, error)
 	Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error)
+	TermsCount(ctx context.Context, obj *model.Studyset) (*int32, error)
 }
 type TermResolver interface {
 	Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error)
@@ -359,6 +361,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Studyset.Terms(childComplexity), true
+
+	case "Studyset.terms_count":
+		if e.complexity.Studyset.TermsCount == nil {
+			break
+		}
+
+		return e.complexity.Studyset.TermsCount(childComplexity), true
 
 	case "Studyset.title":
 		if e.complexity.Studyset.Title == nil {
@@ -1134,6 +1143,8 @@ func (ec *executionContext) fieldContext_Mutation_createStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1200,6 +1211,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1548,6 +1561,8 @@ func (ec *executionContext) fieldContext_Query_studyset(ctx context.Context, fie
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1674,6 +1689,8 @@ func (ec *executionContext) fieldContext_Query_featuredStudysets(ctx context.Con
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1740,6 +1757,8 @@ func (ec *executionContext) fieldContext_Query_recentStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1806,6 +1825,8 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1872,6 +1893,8 @@ func (ec *executionContext) fieldContext_Query_myStudysets(ctx context.Context, 
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
+			case "terms_count":
+				return ec.fieldContext_Studyset_terms_count(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2286,6 +2309,47 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_updated_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Studyset_terms_count(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_terms_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studyset().TermsCount(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studyset",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5618,6 +5682,39 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 					}
 				}()
 				res = ec._Studyset_terms(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "terms_count":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studyset_terms_count(ctx, field, obj)
 				return res
 			}
 

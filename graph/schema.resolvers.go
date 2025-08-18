@@ -474,6 +474,15 @@ func (r *studysetResolver) Terms(ctx context.Context, obj *model.Studyset) ([]*m
 	return loader.GetTermsByStudysetID(ctx, *obj.ID)
 }
 
+// TermsCount is the resolver for the terms_count field.
+func (r *studysetResolver) TermsCount(ctx context.Context, obj *model.Studyset) (*int32, error) {
+	if obj.ID == nil {
+		return nil, nil
+	}
+
+	return loader.GetTermsCountByStudysetID(ctx, *obj.ID)
+}
+
 // Progress is the resolver for the progress field.
 func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error) {
 	authedUser := auth.AuthedUserContext(ctx)
