@@ -76,12 +76,8 @@ type TermProgress {
     def_leitner_system_box: Int
 }
 input TermProgressInput {
-    term_first_reviewed_at: String
-    term_last_reviewed_at: String
-    term_review_count: Int
-    def_first_reviewed_at: String
-    def_last_reviewed_at: String
-    def_review_count: Int
+    term_reviewed_at: String
+    def_reviewed_at: String
     term_leitner_system_box: Int
     def_leitner_system_box: Int
 }
