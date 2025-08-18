@@ -251,7 +251,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, displayName *string) 
 }
 
 // UpdateTermProgress is the resolver for the updateTermProgress field.
-func (r *mutationResolver) UpdateTermProgress(ctx context.Context, id string, progress model.TermProgressInput) (*model.TermProgress, error) {
+func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string, progress model.TermProgressInput) (*model.TermProgress, error) {
 	panic(fmt.Errorf("not implemented: UpdateTermProgress - updateTermProgress"))
 }
 

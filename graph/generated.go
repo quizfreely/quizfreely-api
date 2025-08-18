@@ -61,7 +61,7 @@ type ComplexityRoot struct {
 		CreateStudyset     func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
 		DeleteStudyset     func(childComplexity int, id string) int
 		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) int
-		UpdateTermProgress func(childComplexity int, id string, progress model.TermProgressInput) int
+		UpdateTermProgress func(childComplexity int, termID string, progress model.TermProgressInput) int
 		UpdateUser         func(childComplexity int, displayName *string) int
 	}
 
@@ -120,7 +120,7 @@ type MutationResolver interface {
 	UpdateStudyset(ctx context.Context, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) (*model.Studyset, error)
 	DeleteStudyset(ctx context.Context, id string) (*string, error)
 	UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error)
-	UpdateTermProgress(ctx context.Context, id string, progress model.TermProgressInput) (*model.TermProgress, error)
+	UpdateTermProgress(ctx context.Context, termID string, progress model.TermProgressInput) (*model.TermProgress, error)
 }
 type QueryResolver interface {
 	Authed(ctx context.Context) (*bool, error)
@@ -241,7 +241,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateTermProgress(childComplexity, args["id"].(string), args["progress"].(model.TermProgressInput)), true
+		return e.complexity.Mutation.UpdateTermProgress(childComplexity, args["termId"].(string), args["progress"].(model.TermProgressInput)), true
 
 	case "Mutation.updateUser":
 		if e.complexity.Mutation.UpdateUser == nil {
@@ -712,11 +712,11 @@ func (ec *executionContext) field_Mutation_updateStudyset_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_updateTermProgress_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id", ec.unmarshalNID2string)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "termId", ec.unmarshalNID2string)
 	if err != nil {
 		return nil, err
 	}
-	args["id"] = arg0
+	args["termId"] = arg0
 	arg1, err := graphql.ProcessArgField(ctx, rawArgs, "progress", ec.unmarshalNTermProgressInput2quizfreelyᚋapiᚋgraphᚋmodelᚐTermProgressInput)
 	if err != nil {
 		return nil, err
@@ -1361,7 +1361,7 @@ func (ec *executionContext) _Mutation_updateTermProgress(ctx context.Context, fi
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateTermProgress(rctx, fc.Args["id"].(string), fc.Args["progress"].(model.TermProgressInput))
+		return ec.resolvers.Mutation().UpdateTermProgress(rctx, fc.Args["termId"].(string), fc.Args["progress"].(model.TermProgressInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
