@@ -51,11 +51,12 @@ func (dr *dataReader) getTermsByStudysetIDs(ctx context.Context, studysetIDs []s
 		ctx,
 		dr.db,
 		&terms,
-		`SELECT t.id, t.studyset_id, t.term, t.def,
+		`SELECT t.id, t.studyset_id, t.term, t.def, t.sort_order,
 	to_char(t.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
 	to_char(t.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
 FROM terms t
-WHERE t.studyset_id = ANY($1::uuid[])`,
+WHERE t.studyset_id = ANY($1::uuid[])
+ORDER BY t.studyset_id, t.sort_order`,
 		studysetIDs,
 	)
 	if err != nil {
