@@ -5235,55 +5235,27 @@ func (ec *executionContext) unmarshalInputTermProgressInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term_first_reviewed_at", "term_last_reviewed_at", "term_review_count", "def_first_reviewed_at", "def_last_reviewed_at", "def_review_count", "term_leitner_system_box", "def_leitner_system_box"}
+	fieldsInOrder := [...]string{"term_reviewed_at", "def_reviewed_at", "term_leitner_system_box", "def_leitner_system_box"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "term_first_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_first_reviewed_at"))
+		case "term_reviewed_at":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_reviewed_at"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TermFirstReviewedAt = data
-		case "term_last_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_last_reviewed_at"))
+			it.TermReviewedAt = data
+		case "def_reviewed_at":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_reviewed_at"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.TermLastReviewedAt = data
-		case "term_review_count":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_review_count"))
-			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.TermReviewCount = data
-		case "def_first_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_first_reviewed_at"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DefFirstReviewedAt = data
-		case "def_last_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_last_reviewed_at"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DefLastReviewedAt = data
-		case "def_review_count":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_review_count"))
-			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DefReviewCount = data
+			it.DefReviewedAt = data
 		case "term_leitner_system_box":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_leitner_system_box"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)

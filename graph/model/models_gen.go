@@ -46,12 +46,8 @@ type TermProgress struct {
 }
 
 type TermProgressInput struct {
-	TermFirstReviewedAt  *string `json:"term_first_reviewed_at,omitempty"`
-	TermLastReviewedAt   *string `json:"term_last_reviewed_at,omitempty"`
-	TermReviewCount      *int32  `json:"term_review_count,omitempty"`
-	DefFirstReviewedAt   *string `json:"def_first_reviewed_at,omitempty"`
-	DefLastReviewedAt    *string `json:"def_last_reviewed_at,omitempty"`
-	DefReviewCount       *int32  `json:"def_review_count,omitempty"`
+	TermReviewedAt       *string `json:"term_reviewed_at,omitempty"`
+	DefReviewedAt        *string `json:"def_reviewed_at,omitempty"`
 	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
 	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
 }
