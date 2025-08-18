@@ -75,6 +75,48 @@ WHERE t.studyset_id = ANY($1::uuid[])`,
 	return orderedTerms, nil
 }
 
+func (dr *dataReader) getTermsCountByStudysetIDs(ctx context.Context, studysetIDs []string) ([]*int32, []error) {
+    type countResult struct {
+        StudysetID string `db:"studyset_id"`
+        Count      int32  `db:"term_count"`
+    }
+
+    var results []countResult
+
+    err := pgxscan.Select(
+        ctx,
+        dr.db,
+        &results,
+        `SELECT studyset_id, COUNT(*) AS term_count
+         FROM terms
+         WHERE studyset_id = ANY($1::uuid[])
+         GROUP BY studyset_id`,
+        studysetIDs,
+    )
+    if err != nil {
+        return nil, []error{err}
+    }
+
+    // Map studysetID -> count for quick lookup
+    countsMap := make(map[string]int32, len(results))
+    for _, r := range results {
+        countsMap[r.StudysetID] = r.Count
+    }
+
+    // Assemble slice in the same order as studysetIDs
+    orderedCounts := make([]*int32, len(studysetIDs))
+    for i, id := range studysetIDs {
+        if c, ok := countsMap[id]; ok {
+            orderedCounts[i] = &c
+        } else {
+            zero := int32(0)
+            orderedCounts[i] = &zero
+        }
+    }
+
+    return orderedCounts, nil
+}
+
 func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, []error) {
 	var termsProgress []*model.TermProgress
 
@@ -103,6 +145,7 @@ ORDER BY input.og_order`,
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
 	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
+	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
 	TermProgressLoader *dataloadgen.Loader[[2]string, *model.TermProgress]
 }
 
@@ -113,6 +156,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 	return &Loaders{
 		UserLoader: dataloadgen.NewLoader(dr.getUsers, dataloadgen.WithWait(time.Millisecond)),
 		TermByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
+		TermsCountByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsCountByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
@@ -154,6 +198,18 @@ func GetTermsByStudysetID(ctx context.Context, studysetID string) ([]*model.Term
 func GetTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.Term, error) {
 	loaders := For(ctx)
 	return loaders.TermByStudysetIDLoader.LoadAll(ctx, studysetIDs)
+}
+
+// GetTermsCountByStudysetID returns a single studyset's terms count efficiently
+func GetTermsCountByStudysetID(ctx context.Context, studysetID string) (*int32, error) {
+	loaders := For(ctx)
+	return loaders.TermsCountByStudysetIDLoader.Load(ctx, studysetID)
+}
+
+// GetTermsCountByStudysetIDs returns many studysets' terms counts efficiently
+func GetTermsCountByStudysetIDs(ctx context.Context, studysetIDs []string) ([]*int32, error) {
+	loaders := For(ctx)
+	return loaders.TermsCountByStudysetIDLoader.LoadAll(ctx, studysetIDs)
 }
 
 // GetTermProgress returns a single term's progress record by term id and user id efficiently
