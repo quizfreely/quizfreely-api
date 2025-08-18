@@ -252,7 +252,56 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, displayName *string) 
 
 // UpdateTermProgress is the resolver for the updateTermProgress field.
 func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string, progress model.TermProgressInput) (*model.TermProgress, error) {
-	panic(fmt.Errorf("not implemented: UpdateTermProgress - updateTermProgress"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	var termProgress model.TermProgress
+	err := pgxscan.Get(
+		ctx,
+		r.DB,
+		&termProgress,
+		`INSERT INTO term_progress (
+    term_id, user_id,
+    term_first_reviewed_at, term_last_reviewed_at,
+	term_review_count,
+    def_first_reviewed_at, def_last_reviewed_at,
+	def_review_count,
+    term_leitner_system_box, def_leitner_system_box
+) VALUES (
+    $1, $2,
+    $3, $3,
+    CASE WHEN $3 IS NOT NULL THEN 1 ELSE 0 END,
+    $4, $4,
+    CASE WHEN $4 IS NOT NULL THEN 1 ELSE 0 END,
+    $5, $6
+) ON CONFLICT (term_id, user_id) DO UPDATE SET
+    term_last_reviewed_at = $3,
+    def_last_reviewed_at = $4,
+    term_leitner_system_box = $5,
+    def_leitner_system_box = $6,
+    term_review_count = term_progress.term_review_count + 
+        (CASE WHEN $3 IS NOT NULL THEN 1 ELSE 0 END),
+    def_review_count = term_progress.def_review_count + 
+        (CASE WHEN $4 IS NOT NULL THEN 1 ELSE 0 END),
+RETURNING id,
+	term_first_reviewed_at, term_last_reviewed_at, term_review_count,
+	def_first_reviewed_at, def_last_reviewed_at, def_review_count,
+	term_leitner_system_box, def_leitner_system_box`,
+		termId,
+		authedUser.ID,
+		progress.term_reviewed_at,
+		progress.def_reviewed_at,
+		progress.term_leitner_system_box,
+		progress.def_leitner_system_box,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to update term progress: %w", err)
+	}
+
+	return &termProgress, nil
 }
 
 // Authed is the resolver for the authed field.
