@@ -97,12 +97,16 @@ type ComplexityRoot struct {
 	}
 
 	TermProgress struct {
+		DefCorrectCount      func(childComplexity int) int
 		DefFirstReviewedAt   func(childComplexity int) int
+		DefIncorrectCount    func(childComplexity int) int
 		DefLastReviewedAt    func(childComplexity int) int
 		DefLeitnerSystemBox  func(childComplexity int) int
 		DefReviewCount       func(childComplexity int) int
 		ID                   func(childComplexity int) int
+		TermCorrectCount     func(childComplexity int) int
 		TermFirstReviewedAt  func(childComplexity int) int
+		TermIncorrectCount   func(childComplexity int) int
 		TermLastReviewedAt   func(childComplexity int) int
 		TermLeitnerSystemBox func(childComplexity int) int
 		TermReviewCount      func(childComplexity int) int
@@ -439,12 +443,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Term.UpdatedAt(childComplexity), true
 
+	case "TermProgress.def_correct_count":
+		if e.complexity.TermProgress.DefCorrectCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefCorrectCount(childComplexity), true
+
 	case "TermProgress.def_first_reviewed_at":
 		if e.complexity.TermProgress.DefFirstReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefFirstReviewedAt(childComplexity), true
+
+	case "TermProgress.def_incorrect_count":
+		if e.complexity.TermProgress.DefIncorrectCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.DefIncorrectCount(childComplexity), true
 
 	case "TermProgress.def_last_reviewed_at":
 		if e.complexity.TermProgress.DefLastReviewedAt == nil {
@@ -474,12 +492,26 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.TermProgress.ID(childComplexity), true
 
+	case "TermProgress.term_correct_count":
+		if e.complexity.TermProgress.TermCorrectCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermCorrectCount(childComplexity), true
+
 	case "TermProgress.term_first_reviewed_at":
 		if e.complexity.TermProgress.TermFirstReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermFirstReviewedAt(childComplexity), true
+
+	case "TermProgress.term_incorrect_count":
+		if e.complexity.TermProgress.TermIncorrectCount == nil {
+			break
+		}
+
+		return e.complexity.TermProgress.TermIncorrectCount(childComplexity), true
 
 	case "TermProgress.term_last_reviewed_at":
 		if e.complexity.TermProgress.TermLastReviewedAt == nil {
@@ -1397,6 +1429,14 @@ func (ec *executionContext) fieldContext_Mutation_updateTermProgress(ctx context
 				return ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
 			case "def_review_count":
 				return ec.fieldContext_TermProgress_def_review_count(ctx, field)
+			case "term_correct_count":
+				return ec.fieldContext_TermProgress_term_correct_count(ctx, field)
+			case "term_incorrect_count":
+				return ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
+			case "def_correct_count":
+				return ec.fieldContext_TermProgress_def_correct_count(ctx, field)
+			case "def_incorrect_count":
+				return ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
 			case "term_leitner_system_box":
 				return ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
 			case "def_leitner_system_box":
@@ -2569,6 +2609,14 @@ func (ec *executionContext) fieldContext_Term_progress(_ context.Context, field 
 				return ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
 			case "def_review_count":
 				return ec.fieldContext_TermProgress_def_review_count(ctx, field)
+			case "term_correct_count":
+				return ec.fieldContext_TermProgress_term_correct_count(ctx, field)
+			case "term_incorrect_count":
+				return ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
+			case "def_correct_count":
+				return ec.fieldContext_TermProgress_def_correct_count(ctx, field)
+			case "def_incorrect_count":
+				return ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
 			case "term_leitner_system_box":
 				return ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
 			case "def_leitner_system_box":
@@ -2937,6 +2985,170 @@ func (ec *executionContext) _TermProgress_def_review_count(ctx context.Context, 
 }
 
 func (ec *executionContext) fieldContext_TermProgress_def_review_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_correct_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_correct_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermCorrectCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_correct_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_term_incorrect_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TermIncorrectCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_term_incorrect_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_correct_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_correct_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefCorrectCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_correct_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermProgress",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermProgress_def_incorrect_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DefIncorrectCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermProgress_def_incorrect_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -5235,7 +5447,7 @@ func (ec *executionContext) unmarshalInputTermProgressInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term_reviewed_at", "def_reviewed_at", "term_leitner_system_box", "def_leitner_system_box"}
+	fieldsInOrder := [...]string{"term_reviewed_at", "def_reviewed_at", "term_leitner_system_box", "def_leitner_system_box", "term_correct_increase", "term_incorrect_increase", "def_correct_increase", "def_incorrect_increase"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5270,6 +5482,34 @@ func (ec *executionContext) unmarshalInputTermProgressInput(ctx context.Context,
 				return it, err
 			}
 			it.DefLeitnerSystemBox = data
+		case "term_correct_increase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_correct_increase"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TermCorrectIncrease = data
+		case "term_incorrect_increase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_incorrect_increase"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TermIncorrectIncrease = data
+		case "def_correct_increase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_correct_increase"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DefCorrectIncrease = data
+		case "def_incorrect_increase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_incorrect_increase"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DefIncorrectIncrease = data
 		}
 	}
 
@@ -5837,6 +6077,14 @@ func (ec *executionContext) _TermProgress(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TermProgress_def_last_reviewed_at(ctx, field, obj)
 		case "def_review_count":
 			out.Values[i] = ec._TermProgress_def_review_count(ctx, field, obj)
+		case "term_correct_count":
+			out.Values[i] = ec._TermProgress_term_correct_count(ctx, field, obj)
+		case "term_incorrect_count":
+			out.Values[i] = ec._TermProgress_term_incorrect_count(ctx, field, obj)
+		case "def_correct_count":
+			out.Values[i] = ec._TermProgress_def_correct_count(ctx, field, obj)
+		case "def_incorrect_count":
+			out.Values[i] = ec._TermProgress_def_incorrect_count(ctx, field, obj)
 		case "term_leitner_system_box":
 			out.Values[i] = ec._TermProgress_term_leitner_system_box(ctx, field, obj)
 		case "def_leitner_system_box":

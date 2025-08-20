@@ -41,15 +41,23 @@ type TermProgress struct {
 	DefFirstReviewedAt   *string `json:"def_first_reviewed_at,omitempty"`
 	DefLastReviewedAt    *string `json:"def_last_reviewed_at,omitempty"`
 	DefReviewCount       *int32  `json:"def_review_count,omitempty"`
+	TermCorrectCount     *int32  `json:"term_correct_count,omitempty"`
+	TermIncorrectCount   *int32  `json:"term_incorrect_count,omitempty"`
+	DefCorrectCount      *int32  `json:"def_correct_count,omitempty"`
+	DefIncorrectCount    *int32  `json:"def_incorrect_count,omitempty"`
 	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
 	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
 }
 
 type TermProgressInput struct {
-	TermReviewedAt       *string `json:"term_reviewed_at,omitempty"`
-	DefReviewedAt        *string `json:"def_reviewed_at,omitempty"`
-	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
-	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
+	TermReviewedAt        *string `json:"term_reviewed_at,omitempty"`
+	DefReviewedAt         *string `json:"def_reviewed_at,omitempty"`
+	TermLeitnerSystemBox  *int32  `json:"term_leitner_system_box,omitempty"`
+	DefLeitnerSystemBox   *int32  `json:"def_leitner_system_box,omitempty"`
+	TermCorrectIncrease   *int32  `json:"term_correct_increase,omitempty"`
+	TermIncorrectIncrease *int32  `json:"term_incorrect_increase,omitempty"`
+	DefCorrectIncrease    *int32  `json:"def_correct_increase,omitempty"`
+	DefIncorrectIncrease  *int32  `json:"def_incorrect_increase,omitempty"`
 }
 
 type User struct {

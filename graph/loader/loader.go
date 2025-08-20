@@ -134,7 +134,9 @@ func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]
 	to_char(tp.def_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_first_reviewed_at,
 	to_char(tp.def_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_last_reviewed_at
 	tp.def_review_count,
-	tp.term_leitner_system_box, tp.def_leitner_system_box
+	tp.term_leitner_system_box, tp.def_leitner_system_box,
+	tp.term_correct_count, tp.term_incorrect_count,
+	tp.def_correct_count, tp.def_incorrect_count
 FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
 LEFT JOIN term_progress tp
 	ON tp.term_id = input.ids[1]

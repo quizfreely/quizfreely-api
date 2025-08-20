@@ -72,6 +72,10 @@ type TermProgress {
     def_first_reviewed_at: String
     def_last_reviewed_at: String
     def_review_count: Int
+    term_correct_count: Int
+    term_incorrect_count: Int
+    def_correct_count: Int
+    def_incorrect_count: Int
     term_leitner_system_box: Int
     def_leitner_system_box: Int
 }
@@ -80,4 +84,8 @@ input TermProgressInput {
     def_reviewed_at: String
     term_leitner_system_box: Int
     def_leitner_system_box: Int
+    term_correct_increase: Int
+    term_incorrect_increase: Int
+    def_correct_increase: Int
+    def_incorrect_increase: Int
 }
