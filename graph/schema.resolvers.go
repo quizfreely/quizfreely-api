@@ -268,14 +268,18 @@ func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string
 	term_review_count,
     def_first_reviewed_at, def_last_reviewed_at,
 	def_review_count,
-    term_leitner_system_box, def_leitner_system_box
+    term_leitner_system_box, def_leitner_system_box,
+	term_correct_count, term_incorrect_count,
+	def_correct_count, def_incorrect_count
 ) VALUES (
     $1, $2,
     $3, $3,
     CASE WHEN $3 IS NOT NULL THEN 1 ELSE 0 END,
     $4, $4,
     CASE WHEN $4 IS NOT NULL THEN 1 ELSE 0 END,
-    $5, $6
+    $5, $6,
+	COALESCE($7, 0), COALESCE($8, 0),
+	COALESCE($9, 0), COALESCE($10, 0)
 ) ON CONFLICT (term_id, user_id) DO UPDATE SET
     term_last_reviewed_at = $3,
     def_last_reviewed_at = $4,
@@ -285,16 +289,30 @@ func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string
         (CASE WHEN $3 IS NOT NULL THEN 1 ELSE 0 END),
     def_review_count = term_progress.def_review_count + 
         (CASE WHEN $4 IS NOT NULL THEN 1 ELSE 0 END),
+	term_correct_count = term_progress.term_correct_count +
+		COALESCE($7, 0),
+	term_incorrect_count = term_progress.term_incorrect_count +
+		COALESCE($8, 0),
+	def_correct_count = term_progress.def_correct_count +
+		COALESCE($9, 0),
+	def_incorrect_count = term_progress.def_incorrect_count +
+		COALESCE($10, 0),
 RETURNING id,
 	term_first_reviewed_at, term_last_reviewed_at, term_review_count,
 	def_first_reviewed_at, def_last_reviewed_at, def_review_count,
-	term_leitner_system_box, def_leitner_system_box`,
+	term_leitner_system_box, def_leitner_system_box,
+	term_correct_count, term_incorrect_count,
+	def_correct_count, def_incorrect_count`,
 		termID,
 		authedUser.ID,
 		progress.TermReviewedAt,
 		progress.DefReviewedAt,
 		progress.TermLeitnerSystemBox,
 		progress.DefLeitnerSystemBox,
+		progress.TermCorrectIncrease,
+		progress.TermIncorrectIncrease,
+		progress.DefCorrectIncrease,
+		progress.DefIncorrectIncrease,
 	)
 
 	if err != nil {
