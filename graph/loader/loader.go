@@ -187,7 +187,7 @@ ORDER BY input.og_order ASC, tcp.confused_count DESC`,
         grouped[*c.TermID] = append(grouped[*c.TermID], c)
     }
 
-    orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termAndUserIDs))
+    orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termIDs))
     for i, id := range termIDs {
         orderedConfusionPairs[i] = grouped[id]
     }

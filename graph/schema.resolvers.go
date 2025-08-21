@@ -572,7 +572,7 @@ func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.Te
 		return nil, nil
 	}
 
-	return loader.GetTermProgress(ctx, [2]string{*obj.ID, *authedUser.ID})
+	return loader.GetTermProgress(ctx, *obj.ID)
 }
 
 // TopConfusionPairs is the resolver for the top_confusion_pairs field.
@@ -582,7 +582,7 @@ func (r *termResolver) TopConfusionPairs(ctx context.Context, obj *model.Term) (
 		return nil, nil
 	}
 
-	return loader.GetTermTopConfusionPairs(ctx, [2]string{*obj.ID, *authedUser.ID})
+	return loader.GetTermTopConfusionPairs(ctx, *obj.ID)
 }
 
 // ConfusedTerm is the resolver for the confused_term field.
