@@ -53,6 +53,16 @@ COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
 
 
 --
+-- Name: answer_with_enum; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.answer_with_enum AS ENUM (
+    'TERM',
+    'DEF'
+);
+
+
+--
 -- Name: auth_type_enum; Type: TYPE; Schema: public; Owner: -
 --
 
@@ -131,6 +141,21 @@ CREATE TABLE auth.users (
 
 
 --
+-- Name: practice_tests; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.practice_tests (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    "timestamp" timestamp with time zone DEFAULT now() NOT NULL,
+    user_id uuid NOT NULL,
+    studyset_id uuid NOT NULL,
+    questions_correct smallint,
+    questions_total smallint,
+    questions jsonb
+);
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -166,6 +191,21 @@ CREATE TABLE public.studysets (
 
 
 --
+-- Name: term_confusion_pairs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.term_confusion_pairs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    term_id uuid NOT NULL,
+    confused_term_id uuid NOT NULL,
+    answered_with public.answer_with_enum NOT NULL,
+    confused_count integer,
+    last_confused_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: term_progress; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -180,7 +220,11 @@ CREATE TABLE public.term_progress (
     def_last_reviewed_at timestamp with time zone,
     def_review_count integer,
     term_leitner_system_box smallint,
-    def_leitner_system_box smallint
+    def_leitner_system_box smallint,
+    term_correct_count integer DEFAULT 0 NOT NULL,
+    term_incorrect_count integer DEFAULT 0 NOT NULL,
+    def_correct_count integer DEFAULT 0 NOT NULL,
+    def_incorrect_count integer DEFAULT 0 NOT NULL
 );
 
 
@@ -232,6 +276,14 @@ ALTER TABLE ONLY auth.users
 
 
 --
+-- Name: practice_tests practice_tests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.practice_tests
+    ADD CONSTRAINT practice_tests_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: schema_migrations schema_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -256,11 +308,27 @@ ALTER TABLE ONLY public.studysets
 
 
 --
+-- Name: term_confusion_pairs term_confusion_pairs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_confusion_pairs
+    ADD CONSTRAINT term_confusion_pairs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: term_progress term_progress_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.term_progress
     ADD CONSTRAINT term_progress_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: term_progress term_progress_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_progress
+    ADD CONSTRAINT term_progress_unique UNIQUE (term_id, user_id);
 
 
 --
@@ -279,11 +347,51 @@ CREATE INDEX textsearch_title_idx ON public.studysets USING gin (tsvector_title)
 
 
 --
+-- Name: practice_tests practice_tests_studyset_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.practice_tests
+    ADD CONSTRAINT practice_tests_studyset_id_fkey FOREIGN KEY (studyset_id) REFERENCES public.studysets(id) ON DELETE CASCADE;
+
+
+--
+-- Name: practice_tests practice_tests_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.practice_tests
+    ADD CONSTRAINT practice_tests_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: studysets studysets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.studysets
     ADD CONSTRAINT studysets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
+-- Name: term_confusion_pairs term_confusion_pairs_confused_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_confusion_pairs
+    ADD CONSTRAINT term_confusion_pairs_confused_term_id_fkey FOREIGN KEY (confused_term_id) REFERENCES public.terms(id) ON DELETE CASCADE;
+
+
+--
+-- Name: term_confusion_pairs term_confusion_pairs_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_confusion_pairs
+    ADD CONSTRAINT term_confusion_pairs_term_id_fkey FOREIGN KEY (term_id) REFERENCES public.terms(id) ON DELETE CASCADE;
+
+
+--
+-- Name: term_confusion_pairs term_confusion_pairs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_confusion_pairs
+    ADD CONSTRAINT term_confusion_pairs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -321,4 +429,8 @@ ALTER TABLE ONLY public.terms
 
 INSERT INTO public.schema_migrations (version) VALUES
     ('202508140123'),
-    ('202508141431');
+    ('202508141431'),
+    ('202508181513'),
+    ('202508191404'),
+    ('202508201847'),
+    ('202508202155');
