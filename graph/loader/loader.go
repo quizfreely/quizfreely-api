@@ -120,7 +120,7 @@ func (dr *dataReader) getTermsCountByStudysetIDs(ctx context.Context, studysetID
     return orderedCounts, nil
 }
 
-func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, []error) {
+func (dr *dataReader) getTermsProgress(ctx context.Context, termIDs []string) ([]*model.TermProgress, []error) {
 	var termsProgress []*model.TermProgress
 
 	err := pgxscan.Select(
@@ -137,12 +137,13 @@ func (dr *dataReader) getTermsProgress(ctx context.Context, termAndUserIDs [][2]
 	tp.term_leitner_system_box, tp.def_leitner_system_box,
 	tp.term_correct_count, tp.term_incorrect_count,
 	tp.def_correct_count, tp.def_incorrect_count
-FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
+FROM unnest($1::uuid[]) WITH ORDINALITY AS input(term_id, og_order)
 LEFT JOIN term_progress tp
-	ON tp.term_id = input.ids[1]
-	AND tp.user_id = input.ids[2]
+	ON tp.term_id = input.term_id
+	AND tp.user_id = $2
 ORDER BY input.og_order`,
-		termAndUserIDs,
+		termIDs,
+		AUTHEDIDHERE
 	)
 	if err != nil {
 		return nil, []error{err}
@@ -151,7 +152,7 @@ ORDER BY input.og_order`,
 	return termsProgress, nil
 }
 
-func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, []error) {
+func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, []error) {
 	var confusionPairs []*model.TermConfusionPair
 
 	err := pgxscan.Select(
@@ -164,12 +165,13 @@ func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termAndUser
     tcp.answered_with,
     tcp.confused_count,
 	to_char(tcp.last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
-FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
+FROM unnest($1::uuid[]) WITH ORDINALITY AS input(term_id, og_order)
 LEFT JOIN term_confusion_pairs tcp
-	ON tcp.term_id = input.ids[1]
-	AND tcp.user_id = input.ids[2]
+	ON tcp.term_id = input.term_id
+	AND tcp.user_id = $2
 ORDER BY input.og_order ASC, tcp.confused_count DESC`,
-		termAndUserIDs,
+		termIDs,
+		AUTHEDIDHERE
 	)
 	if err != nil {
 		return nil, []error{err}
@@ -181,8 +183,8 @@ ORDER BY input.og_order ASC, tcp.confused_count DESC`,
     }
 
     orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termAndUserIDs))
-    for i, termAndUserID := range termAndUserIDs {
-        orderedConfusionPairs[i] = grouped[termAndUserID[0]]
+    for i, id := range termIDs {
+        orderedConfusionPairs[i] = grouped[id]
     }
 
 	return orderedConfusionPairs, nil
@@ -193,8 +195,8 @@ type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
 	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
 	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
-	TermProgressLoader *dataloadgen.Loader[[2]string, *model.TermProgress]
-	TermTopConfusionPairsLoader *dataloadgen.Loader[[2]string, []*model.TermConfusionPair]
+	TermProgressLoader *dataloadgen.Loader[string, *model.TermProgress]
+	TermTopConfusionPairsLoader *dataloadgen.Loader[string, []*model.TermConfusionPair]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -261,26 +263,26 @@ func GetTermsCountByStudysetIDs(ctx context.Context, studysetIDs []string) ([]*i
 	return loaders.TermsCountByStudysetIDLoader.LoadAll(ctx, studysetIDs)
 }
 
-// GetTermProgress returns a single term's progress record by term id and user id efficiently
-func GetTermProgress(ctx context.Context, termAndUserID [2]string) (*model.TermProgress, error) {
+// GetTermProgress returns a single term's progress record by term id efficiently
+func GetTermProgress(ctx context.Context, termID string) (*model.TermProgress, error) {
 	loaders := For(ctx)
-	return loaders.TermProgressLoader.Load(ctx, termAndUserID)
+	return loaders.TermProgressLoader.Load(ctx, termID)
 }
 
-// GetTermsProgress returns many terms' progress records by term ids and user ids efficiently
-func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, error) {
+// GetTermsProgress returns many terms' progress records by term ids efficiently
+func GetTermsProgress(ctx context.Context, termIDs []string) ([]*model.TermProgress, error) {
 	loaders := For(ctx)
-	return loaders.TermProgressLoader.LoadAll(ctx, termAndUserIDs)
+	return loaders.TermProgressLoader.LoadAll(ctx, termIDs)
 }
 
 // GetTermTopConfusionPairs returns a single term's confusion pairs
-func GetTermTopConfusionPairs(ctx context.Context, termAndUserID [2]string) ([]*model.TermConfusionPair, error) {
+func GetTermTopConfusionPairs(ctx context.Context, termID string) ([]*model.TermConfusionPair, error) {
 	loaders := For(ctx)
-	return loaders.TermTopConfusionPairsLoader.Load(ctx, termAndUserID)
+	return loaders.TermTopConfusionPairsLoader.Load(ctx, termID)
 }
 
 // GetTermsTopConfusionPairs returns many terms' confusion pairs
-func GetTermsTopConfusionPairs(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, error) {
+func GetTermsTopConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, error) {
 	loaders := For(ctx)
-	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termAndUserIDs)
+	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termIDs)
 }
