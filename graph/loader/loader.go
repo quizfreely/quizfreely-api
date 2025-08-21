@@ -222,6 +222,48 @@ ORDER BY input.og_order ASC, tcp.confused_count DESC`,
 	return orderedConfusionPairs, nil
 }
 
+func (dr *dataReader) getPracticeTestsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.PracticeTest, []error) {
+	authedUser := auth.AuthedUserContext(ctx)
+
+	var practiceTests []*model.PracticeTest
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&practiceTests,
+		`SELECT pt.id,
+	to_char(pt.timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as timestamp,
+	pt.studyset_id,
+    pt.questions_correct,
+    pt.questions_total,
+    pt.questions jsonb
+FROM unnest($1::uuid[]) WITH ORDINALITY AS input(studyset_id, og_order)
+LEFT JOIN practice_tests pt
+	ON pt.studyset_id = input.studyset_id
+	AND pt.user_id = $2
+ORDER BY input.og_order ASC, pt.timestamp DESC`,
+		studysetIDs,
+		authedUser.ID,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+    grouped := make(map[string][]*model.PracticeTest)
+    for _, pt := range practiceTests {
+        if pt.StudysetID != nil {
+			grouped[*pt.StudysetID] = append(grouped[*pt.StudysetID], pt)
+		}
+    }
+
+    orderedPracticeTests := make([][]*model.PracticeTest, len(practiceTests))
+    for i, id := range studysetIDs {
+        orderedConfusionPairs[i] = grouped[id]
+    }
+
+	return orderedPracticeTests, nil
+}
+
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
