@@ -6608,7 +6608,7 @@ func (ec *executionContext) unmarshalInputPracticeTestInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"timestamp", "questions_correct", "questions_total", "questions"}
+	fieldsInOrder := [...]string{"timestamp", "studyset_id", "questions_correct", "questions_total", "questions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6622,6 +6622,13 @@ func (ec *executionContext) unmarshalInputPracticeTestInput(ctx context.Context,
 				return it, err
 			}
 			it.Timestamp = data
+		case "studyset_id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studyset_id"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.StudysetID = data
 		case "questions_correct":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions_correct"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)

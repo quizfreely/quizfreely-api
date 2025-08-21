@@ -135,6 +135,7 @@ enum QuestionType {
 }
 input PracticeTestInput {
     timestamp: String
+    studyset_id: ID
     questions_correct: Int
     questions_total: Int
     questions: [QuestionInput]

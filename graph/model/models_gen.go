@@ -28,6 +28,7 @@ type PracticeTest struct {
 
 type PracticeTestInput struct {
 	Timestamp        *string          `json:"timestamp,omitempty"`
+	StudysetID       *string          `json:"studyset_id,omitempty"`
 	QuestionsCorrect *int32           `json:"questions_correct,omitempty"`
 	QuestionsTotal   *int32           `json:"questions_total,omitempty"`
 	Questions        []*QuestionInput `json:"questions,omitempty"`

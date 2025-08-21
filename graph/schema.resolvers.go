@@ -562,7 +562,12 @@ func (r *studysetResolver) TermsCount(ctx context.Context, obj *model.Studyset) 
 
 // PracticeTests is the resolver for the practice_tests field.
 func (r *studysetResolver) PracticeTests(ctx context.Context, obj *model.Studyset) ([]*model.PracticeTest, error) {
-	panic(fmt.Errorf("not implemented: PracticeTests - practice_tests"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil || authedUser.ID == nil || obj.ID == nil {
+		return nil, nil
+	}
+
+	return loader.GetPracticeTestsByStudysetID(ctx, *obj.ID)
 }
 
 // Progress is the resolver for the progress field.
