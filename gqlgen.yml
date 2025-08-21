@@ -169,6 +169,8 @@ models:
     fields:
       progress:
         resolver: true
+      top_confusion_pairs:
+        resolver: true
   TermConfusionPair:
     fields:
       term:

@@ -62,8 +62,8 @@ type StudysetInput struct {
 }
 
 type TermConfusionPairInput struct {
-	Term                  *TermInput  `json:"term,omitempty"`
-	ConfusedTerm          *TermInput  `json:"confused_term,omitempty"`
+	TermID                *string     `json:"term_id,omitempty"`
+	ConfusedTermID        *string     `json:"confused_term_id,omitempty"`
 	AnsweredWith          *AnswerWith `json:"answered_with,omitempty"`
 	ConfusedCountIncrease *int32      `json:"confused_count_increase,omitempty"`
 	ConfusedAt            *string     `json:"confused_at,omitempty"`
