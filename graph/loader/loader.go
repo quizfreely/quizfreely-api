@@ -274,13 +274,13 @@ func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model
 }
 
 // GetTermTopConfusionPairs returns a single term's confusion pairs
-func GetTermProgress(ctx context.Context, termAndUserID [2]string) ([]*model.TermConfusionPair, error) {
+func GetTermTopConfusionPairs(ctx context.Context, termAndUserID [2]string) ([]*model.TermConfusionPair, error) {
 	loaders := For(ctx)
 	return loaders.TermTopConfusionPairsLoader.Load(ctx, termAndUserID)
 }
 
 // GetTermsTopConfusionPairs returns many terms' confusion pairs
-func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, error) {
+func GetTermsTopConfusionPairs(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, error) {
 	loaders := For(ctx)
 	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termAndUserIDs)
 }
