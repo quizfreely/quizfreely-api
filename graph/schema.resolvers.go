@@ -578,27 +578,11 @@ func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.Te
 // TopConfusionPairs is the resolver for the top_confusion_pairs field.
 func (r *termResolver) TopConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error) {
 	authedUser := auth.AuthedUserContext(ctx)
-	if authedUser == nil {
-		return nil, fmt.Errorf("not authenticated")
+	if authedUser == nil || authedUser.ID == nil || obj.ID == nil {
+		return nil, nil
 	}
 
-	var confusionPairs []*model.TermConfusionPair
-	sql := `SELECT id,
-	term_id,
-    confused_term_id,
-    answered_with,
-    confused_count,
-	to_char(last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
-FROM term_confusion_pairs
-WHERE user_id = $1 AND (term_id = $2 OR confused_term_id = $2)
-ORDER BY confused_count DESC
-LIMIT 3`
-	err := pgxscan.Select(ctx, r.DB, &confusionPairs, sql, authedUser.ID, obj.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get confusion pairs from term: %w", err)
-	}
-
-	return confusionPairs, nil
+	return loader.GetTermTopConfusionPairs(ctx, [2]string{*obj.ID, *authedUser.ID})
 }
 
 // ConfusedTerm is the resolver for the confused_term field.
