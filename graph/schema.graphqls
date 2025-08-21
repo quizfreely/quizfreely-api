@@ -14,6 +14,7 @@ type Mutation {
     deleteStudyset(id: ID!): ID
     updateUser(display_name: String): AuthedUser
     updateTermProgress(termId: ID!, progress: TermProgressInput!): TermProgress
+    recordConfusedTerms(confusedTerms: [TermConfusionPairInput]): Boolean
 }
 type User {
     id: ID
@@ -46,6 +47,7 @@ type Term {
     def: String
     sort_order: Int
     progress: TermProgress
+    top_confusion_pairs(limit: Int): [TermConfusionPair]
     created_at: String
     updated_at: String
 }
@@ -88,4 +90,23 @@ input TermProgressInput {
     term_incorrect_increase: Int
     def_correct_increase: Int
     def_incorrect_increase: Int
+}
+enum AnswerWith {
+    TERM
+    DEF
+}
+type TermConfusionPair {
+    id: ID,
+    term: Term
+    confused_term: Term
+    answered_with: AnswerWith
+    confused_count: Int
+    last_confused_at: String
+}
+input TermConfusionPairInput {
+    term: Term
+    confused_term: Term
+    answered_with: AnswerWith
+    confused_count_increase: Int
+    confused_at: String
 }
