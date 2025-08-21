@@ -151,12 +151,50 @@ ORDER BY input.og_order`,
 	return termsProgress, nil
 }
 
+func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, []error) {
+	var confusionPairs []*model.TermConfusionPair
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&confusionPairs,
+		`SELECT tcp.id,
+	tcp.term_id,
+    tcp.confused_term_id,
+    tcp.answered_with,
+    tcp.confused_count,
+	to_char(tcp.last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
+FROM unnest($1::uuid[2][]) WITH ORDINALITY AS input(ids, og_order)
+LEFT JOIN term_confusion_pairs tcp
+	ON tcp.term_id = input.ids[1]
+	AND tcp.user_id = input.ids[2]
+ORDER BY input.og_order ASC, tcp.confused_count DESC`,
+		termAndUserIDs,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+    grouped := make(map[string][]*model.TermConfusionPair)
+    for _, c := range confusionPairs {
+        grouped[*c.TermId] = append(grouped[*c.TermId], c)
+    }
+
+    orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termAndUserIDs))
+    for i, termAndUserID := range termAndUserIDs {
+        orderedConfusionPairs[i] = grouped[termAndUserID[0]]
+    }
+
+	return orderedConfusionPairs, nil
+}
+
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
 	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
 	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
 	TermProgressLoader *dataloadgen.Loader[[2]string, *model.TermProgress]
+	TermTopConfusionPairsLoader *dataloadgen.Loader[[2]string, []*model.TermConfusionPair]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -168,6 +206,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 		TermByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermsCountByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsCountByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
+		TermTopConfusionPairsLoader: dataloadgen.NewLoader(dr.getTermsTopConfusionPairs, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
 
@@ -232,4 +271,16 @@ func GetTermProgress(ctx context.Context, termAndUserID [2]string) (*model.TermP
 func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([]*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.LoadAll(ctx, termAndUserIDs)
+}
+
+// GetTermTopConfusionPairs returns a single term's confusion pairs
+func GetTermProgress(ctx context.Context, termAndUserID [2]string) ([]*model.TermConfusionPair, error) {
+	loaders := For(ctx)
+	return loaders.TermTopConfusionPairsLoader.Load(ctx, termAndUserID)
+}
+
+// GetTermsTopConfusionPairs returns many terms' confusion pairs
+func GetTermsProgress(ctx context.Context, termAndUserIDs [][2]string) ([][]*model.TermConfusionPair, error) {
+	loaders := For(ctx)
+	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termAndUserIDs)
 }
