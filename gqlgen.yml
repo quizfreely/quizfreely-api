@@ -169,3 +169,9 @@ models:
     fields:
       progress:
         resolver: true
+  TermConfusionPair:
+    fields:
+      term:
+        resolver: true
+      confused_term:
+        resolver: true

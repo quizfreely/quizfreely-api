@@ -106,8 +106,8 @@ type TermConfusionPair {
     last_confused_at: String
 }
 input TermConfusionPairInput {
-    term: TermInput
-    confused_term: TermInput
+    term_id: ID
+    confused_term_id: ID
     answered_with: AnswerWith
     confused_count_increase: Int
     confused_at: String
