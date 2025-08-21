@@ -67,7 +67,9 @@ ORDER BY t.studyset_id, t.sort_order`,
     // Group terms by studyset_id
     grouped := make(map[string][]*model.Term)
     for _, t := range terms {
-        grouped[*t.StudysetID] = append(grouped[*t.StudysetID], t)
+		if t.StudysetID != nil {
+        	grouped[*t.StudysetID] = append(grouped[*t.StudysetID], t)
+		}
     }
 
     // Reassemble in the same order as studysetIDs
@@ -135,7 +137,7 @@ func (dr *dataReader) getTermsProgress(ctx context.Context, termIDs []string) ([
 	to_char(tp.term_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as term_last_reviewed_at,
 	tp.term_review_count,
 	to_char(tp.def_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_first_reviewed_at,
-	to_char(tp.def_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_last_reviewed_at
+	to_char(tp.def_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_last_reviewed_at,
 	tp.def_review_count,
 	tp.term_leitner_system_box, tp.def_leitner_system_box,
 	tp.term_correct_count, tp.term_incorrect_count,
@@ -184,7 +186,9 @@ ORDER BY input.og_order ASC, tcp.confused_count DESC`,
 
     grouped := make(map[string][]*model.TermConfusionPair)
     for _, c := range confusionPairs {
-        grouped[*c.TermID] = append(grouped[*c.TermID], c)
+        if c.TermID != nil {
+			grouped[*c.TermID] = append(grouped[*c.TermID], c)
+		}
     }
 
     orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termIDs))
