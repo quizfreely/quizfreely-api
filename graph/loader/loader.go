@@ -275,12 +275,12 @@ func GetUsers(ctx context.Context, userIDs []string) ([]*model.User, error) {
 
 func GetTermByID(ctx context.Context, id string) (*model.Term, error) {
 	loaders := For(ctx)
-	return loaders.TermByStudysetIDLoader.Load(ctx, id)
+	return loaders.TermByIDLoader.Load(ctx, id)
 }
 
 func GetTermsByIDs(ctx context.Context, ids []string) ([]*model.Term, error) {
 	loaders := For(ctx)
-	return loaders.TermByStudysetIDLoader.LoadAll(ctx, ids)
+	return loaders.TermByIDLoader.LoadAll(ctx, ids)
 }
 
 // GetTermsByStudysetID returns a single studyset's terms efficiently
