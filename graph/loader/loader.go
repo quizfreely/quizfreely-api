@@ -5,6 +5,7 @@ import (
 	"context"
 	"net/http"
 	"time"
+	"quizfreely/api/auth"
 	"quizfreely/api/graph/model"
 
 	"github.com/vikstrous/dataloadgen"
@@ -121,6 +122,8 @@ func (dr *dataReader) getTermsCountByStudysetIDs(ctx context.Context, studysetID
 }
 
 func (dr *dataReader) getTermsProgress(ctx context.Context, termIDs []string) ([]*model.TermProgress, []error) {
+	authedUser := auth.AuthedUserContext(ctx)
+
 	var termsProgress []*model.TermProgress
 
 	err := pgxscan.Select(
@@ -143,7 +146,7 @@ LEFT JOIN term_progress tp
 	AND tp.user_id = $2
 ORDER BY input.og_order`,
 		termIDs,
-		AUTHEDIDHERE
+		authedUser.ID,
 	)
 	if err != nil {
 		return nil, []error{err}
@@ -153,6 +156,8 @@ ORDER BY input.og_order`,
 }
 
 func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, []error) {
+	authedUser := auth.AuthedUserContext(ctx)
+
 	var confusionPairs []*model.TermConfusionPair
 
 	err := pgxscan.Select(
@@ -171,7 +176,7 @@ LEFT JOIN term_confusion_pairs tcp
 	AND tcp.user_id = $2
 ORDER BY input.og_order ASC, tcp.confused_count DESC`,
 		termIDs,
-		AUTHEDIDHERE
+		authedUser.ID,
 	)
 	if err != nil {
 		return nil, []error{err}
