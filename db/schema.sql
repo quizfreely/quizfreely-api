@@ -276,6 +276,14 @@ ALTER TABLE ONLY auth.users
 
 
 --
+-- Name: term_confusion_pairs confusion_pairs_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.term_confusion_pairs
+    ADD CONSTRAINT confusion_pairs_unique UNIQUE (user_id, term_id, confused_term_id);
+
+
+--
 -- Name: practice_tests practice_tests_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -433,4 +441,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('202508181513'),
     ('202508191404'),
     ('202508201847'),
-    ('202508202155');
+    ('202508202155'),
+    ('202508211445');

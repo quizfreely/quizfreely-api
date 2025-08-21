@@ -324,7 +324,24 @@ RETURNING id,
 
 // RecordConfusedTerms is the resolver for the recordConfusedTerms field.
 func (r *mutationResolver) RecordConfusedTerms(ctx context.Context, confusedTerms []*model.TermConfusionPairInput) (*bool, error) {
-	panic(fmt.Errorf("not implemented: RecordConfusedTerms - recordConfusedTerms"))
+	for _, confusionPair := range confusedTerms {
+
+	}
+	if confusedTerms != nil && len(confusedTerms) > 0 {
+		values := make([]interface{}, 0, len(confusedTerms)*4)
+		placeholders := make([]string, 0, len(confusedTerms))
+
+		for i, t := range confusedTerms {
+			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d,$%d)", i*4+1, i*4+2, i*4+3, i*4+4))
+			values = append(values, newStudyset.ID, t.Term, t.Def, t.SortOrder)
+		}
+
+		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def, sort_order) VALUES %s", strings.Join(placeholders, ","))
+		_, err := tx.Exec(ctx, sql, values...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to insert terms: %w", err)
+		}
+	}
 }
 
 // RecordPracticeTest is the resolver for the recordPracticeTest field.
