@@ -18,7 +18,42 @@ type NewTermInput struct {
 	SortOrder int32   `json:"sort_order"`
 }
 
+type PracticeTest struct {
+	ID               *string     `json:"id,omitempty"`
+	Timestamp        *string     `json:"timestamp,omitempty"`
+	QuestionsCorrect *int32      `json:"questions_correct,omitempty"`
+	QuestionsTotal   *int32      `json:"questions_total,omitempty"`
+	Questions        []*Question `json:"questions,omitempty"`
+}
+
+type PracticeTestInput struct {
+	Timestamp        *string          `json:"timestamp,omitempty"`
+	QuestionsCorrect *int32           `json:"questions_correct,omitempty"`
+	QuestionsTotal   *int32           `json:"questions_total,omitempty"`
+	Questions        []*QuestionInput `json:"questions,omitempty"`
+}
+
 type Query struct {
+}
+
+type Question struct {
+	Type              *QuestionType `json:"type,omitempty"`
+	Term              *Term         `json:"term,omitempty"`
+	AnswerWith        *AnswerWith   `json:"answer_with,omitempty"`
+	Answered          *Term         `json:"answered,omitempty"`
+	AnsweredTrueFalse *bool         `json:"answered_true_false,omitempty"`
+	AnsweredFrq       *string       `json:"answered_frq,omitempty"`
+	DistractorsMcq    []*Term       `json:"distractors_mcq,omitempty"`
+}
+
+type QuestionInput struct {
+	Type              *QuestionType `json:"type,omitempty"`
+	Term              *TermInput    `json:"term,omitempty"`
+	AnswerWith        *AnswerWith   `json:"answer_with,omitempty"`
+	Answered          *TermInput    `json:"answered,omitempty"`
+	AnsweredTrueFalse *bool         `json:"answered_true_false,omitempty"`
+	AnsweredFrq       *string       `json:"answered_frq,omitempty"`
+	DistractorsMcq    []*TermInput  `json:"distractors_mcq,omitempty"`
 }
 
 type StudysetInput struct {
@@ -26,11 +61,28 @@ type StudysetInput struct {
 	Private bool   `json:"private"`
 }
 
+type TermConfusionPair struct {
+	ID             *string     `json:"id,omitempty"`
+	Term           *Term       `json:"term,omitempty"`
+	ConfusedTerm   *Term       `json:"confused_term,omitempty"`
+	AnsweredWith   *AnswerWith `json:"answered_with,omitempty"`
+	ConfusedCount  *int32      `json:"confused_count,omitempty"`
+	LastConfusedAt *string     `json:"last_confused_at,omitempty"`
+}
+
+type TermConfusionPairInput struct {
+	Term                  *TermInput  `json:"term,omitempty"`
+	ConfusedTerm          *TermInput  `json:"confused_term,omitempty"`
+	AnsweredWith          *AnswerWith `json:"answered_with,omitempty"`
+	ConfusedCountIncrease *int32      `json:"confused_count_increase,omitempty"`
+	ConfusedAt            *string     `json:"confused_at,omitempty"`
+}
+
 type TermInput struct {
 	ID        string  `json:"id"`
 	Term      *string `json:"term,omitempty"`
 	Def       *string `json:"def,omitempty"`
-	SortOrder int32   `json:"sort_order"`
+	SortOrder *int32  `json:"sort_order,omitempty"`
 }
 
 type TermProgress struct {
@@ -64,6 +116,61 @@ type User struct {
 	ID          *string `json:"id,omitempty"`
 	Username    *string `json:"username,omitempty"`
 	DisplayName *string `json:"display_name,omitempty"`
+}
+
+type AnswerWith string
+
+const (
+	AnswerWithTerm AnswerWith = "TERM"
+	AnswerWithDef  AnswerWith = "DEF"
+)
+
+var AllAnswerWith = []AnswerWith{
+	AnswerWithTerm,
+	AnswerWithDef,
+}
+
+func (e AnswerWith) IsValid() bool {
+	switch e {
+	case AnswerWithTerm, AnswerWithDef:
+		return true
+	}
+	return false
+}
+
+func (e AnswerWith) String() string {
+	return string(e)
+}
+
+func (e *AnswerWith) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = AnswerWith(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid AnswerWith", str)
+	}
+	return nil
+}
+
+func (e AnswerWith) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *AnswerWith) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e AnswerWith) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
 }
 
 type AuthType string
@@ -116,6 +223,65 @@ func (e *AuthType) UnmarshalJSON(b []byte) error {
 }
 
 func (e AuthType) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type QuestionType string
+
+const (
+	QuestionTypeMcq       QuestionType = "MCQ"
+	QuestionTypeTrueFalse QuestionType = "TRUE_FALSE"
+	QuestionTypeMatch     QuestionType = "MATCH"
+	QuestionTypeFrq       QuestionType = "FRQ"
+)
+
+var AllQuestionType = []QuestionType{
+	QuestionTypeMcq,
+	QuestionTypeTrueFalse,
+	QuestionTypeMatch,
+	QuestionTypeFrq,
+}
+
+func (e QuestionType) IsValid() bool {
+	switch e {
+	case QuestionTypeMcq, QuestionTypeTrueFalse, QuestionTypeMatch, QuestionTypeFrq:
+		return true
+	}
+	return false
+}
+
+func (e QuestionType) String() string {
+	return string(e)
+}
+
+func (e *QuestionType) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = QuestionType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid QuestionType", str)
+	}
+	return nil
+}
+
+func (e QuestionType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *QuestionType) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e QuestionType) MarshalJSON() ([]byte, error) {
 	var buf bytes.Buffer
 	e.MarshalGQL(&buf)
 	return buf.Bytes(), nil

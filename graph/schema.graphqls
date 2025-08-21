@@ -15,6 +15,7 @@ type Mutation {
     updateUser(display_name: String): AuthedUser
     updateTermProgress(termId: ID!, progress: TermProgressInput!): TermProgress
     recordConfusedTerms(confusedTerms: [TermConfusionPairInput]): Boolean
+    recordPracticeTest(input: PracticeTestInput): PracticeTest
 }
 type User {
     id: ID
@@ -40,6 +41,7 @@ type Studyset {
     user: User
     terms: [Term]
     terms_count: Int
+    practice_tests: [PracticeTest]
 }
 type Term {
     id: ID
@@ -64,7 +66,7 @@ input TermInput {
     id: ID!
     term: String
     def: String
-    sort_order: Int!
+    sort_order: Int
 }
 type TermProgress {
     id: ID
@@ -96,7 +98,7 @@ enum AnswerWith {
     DEF
 }
 type TermConfusionPair {
-    id: ID,
+    id: ID
     term: Term
     confused_term: Term
     answered_with: AnswerWith
@@ -104,9 +106,46 @@ type TermConfusionPair {
     last_confused_at: String
 }
 input TermConfusionPairInput {
-    term: Term
-    confused_term: Term
+    term: TermInput
+    confused_term: TermInput
     answered_with: AnswerWith
     confused_count_increase: Int
     confused_at: String
+}
+type PracticeTest {
+    id: ID
+    timestamp: String
+    questions_correct: Int
+    questions_total: Int
+    questions: [Question]
+}
+type Question {
+    type: QuestionType
+    term: Term
+    answer_with: AnswerWith
+    answered: Term
+    answered_true_false: Boolean
+    answered_frq: String
+    distractors_mcq: [Term]
+}
+enum QuestionType {
+    MCQ
+    TRUE_FALSE
+    MATCH
+    FRQ
+}
+input PracticeTestInput {
+    timestamp: String
+    questions_correct: Int
+    questions_total: Int
+    questions: [QuestionInput]
+}
+input QuestionInput {
+    type: QuestionType
+    term: TermInput
+    answer_with: AnswerWith
+    answered: TermInput
+    answered_true_false: Boolean
+    answered_frq: String
+    distractors_mcq: [TermInput]
 }

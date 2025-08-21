@@ -58,11 +58,21 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateStudyset     func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
-		DeleteStudyset     func(childComplexity int, id string) int
-		UpdateStudyset     func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) int
-		UpdateTermProgress func(childComplexity int, termID string, progress model.TermProgressInput) int
-		UpdateUser         func(childComplexity int, displayName *string) int
+		CreateStudyset      func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
+		DeleteStudyset      func(childComplexity int, id string) int
+		RecordConfusedTerms func(childComplexity int, confusedTerms []*model.TermConfusionPairInput) int
+		RecordPracticeTest  func(childComplexity int, input *model.PracticeTestInput) int
+		UpdateStudyset      func(childComplexity int, id string, studyset *model.StudysetInput, terms []*model.TermInput, newTerms []*model.NewTermInput, deleteTerms []*string) int
+		UpdateTermProgress  func(childComplexity int, termID string, progress model.TermProgressInput) int
+		UpdateUser          func(childComplexity int, displayName *string) int
+	}
+
+	PracticeTest struct {
+		ID               func(childComplexity int) int
+		Questions        func(childComplexity int) int
+		QuestionsCorrect func(childComplexity int) int
+		QuestionsTotal   func(childComplexity int) int
+		Timestamp        func(childComplexity int) int
 	}
 
 	Query struct {
@@ -76,24 +86,45 @@ type ComplexityRoot struct {
 		User              func(childComplexity int, id string) int
 	}
 
+	Question struct {
+		AnswerWith        func(childComplexity int) int
+		Answered          func(childComplexity int) int
+		AnsweredFrq       func(childComplexity int) int
+		AnsweredTrueFalse func(childComplexity int) int
+		DistractorsMcq    func(childComplexity int) int
+		Term              func(childComplexity int) int
+		Type              func(childComplexity int) int
+	}
+
 	Studyset struct {
-		ID         func(childComplexity int) int
-		Private    func(childComplexity int) int
-		Terms      func(childComplexity int) int
-		TermsCount func(childComplexity int) int
-		Title      func(childComplexity int) int
-		UpdatedAt  func(childComplexity int) int
-		User       func(childComplexity int) int
+		ID            func(childComplexity int) int
+		PracticeTests func(childComplexity int) int
+		Private       func(childComplexity int) int
+		Terms         func(childComplexity int) int
+		TermsCount    func(childComplexity int) int
+		Title         func(childComplexity int) int
+		UpdatedAt     func(childComplexity int) int
+		User          func(childComplexity int) int
 	}
 
 	Term struct {
-		CreatedAt func(childComplexity int) int
-		Def       func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Progress  func(childComplexity int) int
-		SortOrder func(childComplexity int) int
-		Term      func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		CreatedAt         func(childComplexity int) int
+		Def               func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Progress          func(childComplexity int) int
+		SortOrder         func(childComplexity int) int
+		Term              func(childComplexity int) int
+		TopConfusionPairs func(childComplexity int, limit *int32) int
+		UpdatedAt         func(childComplexity int) int
+	}
+
+	TermConfusionPair struct {
+		AnsweredWith   func(childComplexity int) int
+		ConfusedCount  func(childComplexity int) int
+		ConfusedTerm   func(childComplexity int) int
+		ID             func(childComplexity int) int
+		LastConfusedAt func(childComplexity int) int
+		Term           func(childComplexity int) int
 	}
 
 	TermProgress struct {
@@ -125,6 +156,8 @@ type MutationResolver interface {
 	DeleteStudyset(ctx context.Context, id string) (*string, error)
 	UpdateUser(ctx context.Context, displayName *string) (*model.AuthedUser, error)
 	UpdateTermProgress(ctx context.Context, termID string, progress model.TermProgressInput) (*model.TermProgress, error)
+	RecordConfusedTerms(ctx context.Context, confusedTerms []*model.TermConfusionPairInput) (*bool, error)
+	RecordPracticeTest(ctx context.Context, input *model.PracticeTestInput) (*model.PracticeTest, error)
 }
 type QueryResolver interface {
 	Authed(ctx context.Context) (*bool, error)
@@ -140,9 +173,11 @@ type StudysetResolver interface {
 	User(ctx context.Context, obj *model.Studyset) (*model.User, error)
 	Terms(ctx context.Context, obj *model.Studyset) ([]*model.Term, error)
 	TermsCount(ctx context.Context, obj *model.Studyset) (*int32, error)
+	PracticeTests(ctx context.Context, obj *model.Studyset) ([]*model.PracticeTest, error)
 }
 type TermResolver interface {
 	Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error)
+	TopConfusionPairs(ctx context.Context, obj *model.Term, limit *int32) ([]*model.TermConfusionPair, error)
 }
 
 type executableSchema struct {
@@ -223,6 +258,30 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Mutation.DeleteStudyset(childComplexity, args["id"].(string)), true
 
+	case "Mutation.recordConfusedTerms":
+		if e.complexity.Mutation.RecordConfusedTerms == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_recordConfusedTerms_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RecordConfusedTerms(childComplexity, args["confusedTerms"].([]*model.TermConfusionPairInput)), true
+
+	case "Mutation.recordPracticeTest":
+		if e.complexity.Mutation.RecordPracticeTest == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_recordPracticeTest_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RecordPracticeTest(childComplexity, args["input"].(*model.PracticeTestInput)), true
+
 	case "Mutation.updateStudyset":
 		if e.complexity.Mutation.UpdateStudyset == nil {
 			break
@@ -258,6 +317,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["display_name"].(*string)), true
+
+	case "PracticeTest.id":
+		if e.complexity.PracticeTest.ID == nil {
+			break
+		}
+
+		return e.complexity.PracticeTest.ID(childComplexity), true
+
+	case "PracticeTest.questions":
+		if e.complexity.PracticeTest.Questions == nil {
+			break
+		}
+
+		return e.complexity.PracticeTest.Questions(childComplexity), true
+
+	case "PracticeTest.questions_correct":
+		if e.complexity.PracticeTest.QuestionsCorrect == nil {
+			break
+		}
+
+		return e.complexity.PracticeTest.QuestionsCorrect(childComplexity), true
+
+	case "PracticeTest.questions_total":
+		if e.complexity.PracticeTest.QuestionsTotal == nil {
+			break
+		}
+
+		return e.complexity.PracticeTest.QuestionsTotal(childComplexity), true
+
+	case "PracticeTest.timestamp":
+		if e.complexity.PracticeTest.Timestamp == nil {
+			break
+		}
+
+		return e.complexity.PracticeTest.Timestamp(childComplexity), true
 
 	case "Query.authed":
 		if e.complexity.Query.Authed == nil {
@@ -345,12 +439,68 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
+	case "Question.answer_with":
+		if e.complexity.Question.AnswerWith == nil {
+			break
+		}
+
+		return e.complexity.Question.AnswerWith(childComplexity), true
+
+	case "Question.answered":
+		if e.complexity.Question.Answered == nil {
+			break
+		}
+
+		return e.complexity.Question.Answered(childComplexity), true
+
+	case "Question.answered_frq":
+		if e.complexity.Question.AnsweredFrq == nil {
+			break
+		}
+
+		return e.complexity.Question.AnsweredFrq(childComplexity), true
+
+	case "Question.answered_true_false":
+		if e.complexity.Question.AnsweredTrueFalse == nil {
+			break
+		}
+
+		return e.complexity.Question.AnsweredTrueFalse(childComplexity), true
+
+	case "Question.distractors_mcq":
+		if e.complexity.Question.DistractorsMcq == nil {
+			break
+		}
+
+		return e.complexity.Question.DistractorsMcq(childComplexity), true
+
+	case "Question.term":
+		if e.complexity.Question.Term == nil {
+			break
+		}
+
+		return e.complexity.Question.Term(childComplexity), true
+
+	case "Question.type":
+		if e.complexity.Question.Type == nil {
+			break
+		}
+
+		return e.complexity.Question.Type(childComplexity), true
+
 	case "Studyset.id":
 		if e.complexity.Studyset.ID == nil {
 			break
 		}
 
 		return e.complexity.Studyset.ID(childComplexity), true
+
+	case "Studyset.practice_tests":
+		if e.complexity.Studyset.PracticeTests == nil {
+			break
+		}
+
+		return e.complexity.Studyset.PracticeTests(childComplexity), true
 
 	case "Studyset.private":
 		if e.complexity.Studyset.Private == nil {
@@ -436,12 +586,66 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Term.Term(childComplexity), true
 
+	case "Term.top_confusion_pairs":
+		if e.complexity.Term.TopConfusionPairs == nil {
+			break
+		}
+
+		args, err := ec.field_Term_top_confusion_pairs_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Term.TopConfusionPairs(childComplexity, args["limit"].(*int32)), true
+
 	case "Term.updated_at":
 		if e.complexity.Term.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Term.UpdatedAt(childComplexity), true
+
+	case "TermConfusionPair.answered_with":
+		if e.complexity.TermConfusionPair.AnsweredWith == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.AnsweredWith(childComplexity), true
+
+	case "TermConfusionPair.confused_count":
+		if e.complexity.TermConfusionPair.ConfusedCount == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.ConfusedCount(childComplexity), true
+
+	case "TermConfusionPair.confused_term":
+		if e.complexity.TermConfusionPair.ConfusedTerm == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.ConfusedTerm(childComplexity), true
+
+	case "TermConfusionPair.id":
+		if e.complexity.TermConfusionPair.ID == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.ID(childComplexity), true
+
+	case "TermConfusionPair.last_confused_at":
+		if e.complexity.TermConfusionPair.LastConfusedAt == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.LastConfusedAt(childComplexity), true
+
+	case "TermConfusionPair.term":
+		if e.complexity.TermConfusionPair.Term == nil {
+			break
+		}
+
+		return e.complexity.TermConfusionPair.Term(childComplexity), true
 
 	case "TermProgress.def_correct_count":
 		if e.complexity.TermProgress.DefCorrectCount == nil {
@@ -564,7 +768,10 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputNewTermInput,
+		ec.unmarshalInputPracticeTestInput,
+		ec.unmarshalInputQuestionInput,
 		ec.unmarshalInputStudysetInput,
+		ec.unmarshalInputTermConfusionPairInput,
 		ec.unmarshalInputTermInput,
 		ec.unmarshalInputTermProgressInput,
 	)
@@ -707,6 +914,28 @@ func (ec *executionContext) field_Mutation_deleteStudyset_args(ctx context.Conte
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_recordConfusedTerms_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "confusedTerms", ec.unmarshalOTermConfusionPairInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPairInput)
+	if err != nil {
+		return nil, err
+	}
+	args["confusedTerms"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_recordPracticeTest_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input", ec.unmarshalOPracticeTestInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTestInput)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -867,6 +1096,17 @@ func (ec *executionContext) field_Query_user_args(ctx context.Context, rawArgs m
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Term_top_confusion_pairs_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "limit", ec.unmarshalOInt2ᚖint32)
+	if err != nil {
+		return nil, err
+	}
+	args["limit"] = arg0
 	return args, nil
 }
 
@@ -1177,6 +1417,8 @@ func (ec *executionContext) fieldContext_Mutation_createStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1245,6 +1487,8 @@ func (ec *executionContext) fieldContext_Mutation_updateStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1459,6 +1703,343 @@ func (ec *executionContext) fieldContext_Mutation_updateTermProgress(ctx context
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_recordConfusedTerms(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_recordConfusedTerms(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RecordConfusedTerms(rctx, fc.Args["confusedTerms"].([]*model.TermConfusionPairInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_recordConfusedTerms(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_recordConfusedTerms_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_recordPracticeTest(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_recordPracticeTest(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RecordPracticeTest(rctx, fc.Args["input"].(*model.PracticeTestInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.PracticeTest)
+	fc.Result = res
+	return ec.marshalOPracticeTest2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_recordPracticeTest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_PracticeTest_id(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_PracticeTest_timestamp(ctx, field)
+			case "questions_correct":
+				return ec.fieldContext_PracticeTest_questions_correct(ctx, field)
+			case "questions_total":
+				return ec.fieldContext_PracticeTest_questions_total(ctx, field)
+			case "questions":
+				return ec.fieldContext_PracticeTest_questions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PracticeTest", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_recordPracticeTest_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PracticeTest_id(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PracticeTest_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PracticeTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PracticeTest_timestamp(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_timestamp(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timestamp, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PracticeTest_timestamp(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PracticeTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PracticeTest_questions_correct(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_questions_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.QuestionsCorrect, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PracticeTest_questions_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PracticeTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PracticeTest_questions_total(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_questions_total(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.QuestionsTotal, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PracticeTest_questions_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PracticeTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PracticeTest_questions(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_questions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Questions, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Question)
+	fc.Result = res
+	return ec.marshalOQuestion2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestion(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PracticeTest_questions(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PracticeTest",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "type":
+				return ec.fieldContext_Question_type(ctx, field)
+			case "term":
+				return ec.fieldContext_Question_term(ctx, field)
+			case "answer_with":
+				return ec.fieldContext_Question_answer_with(ctx, field)
+			case "answered":
+				return ec.fieldContext_Question_answered(ctx, field)
+			case "answered_true_false":
+				return ec.fieldContext_Question_answered_true_false(ctx, field)
+			case "answered_frq":
+				return ec.fieldContext_Question_answered_frq(ctx, field)
+			case "distractors_mcq":
+				return ec.fieldContext_Question_distractors_mcq(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Question", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_authed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_authed(ctx, field)
 	if err != nil {
@@ -1603,6 +2184,8 @@ func (ec *executionContext) fieldContext_Query_studyset(ctx context.Context, fie
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1731,6 +2314,8 @@ func (ec *executionContext) fieldContext_Query_featuredStudysets(ctx context.Con
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1799,6 +2384,8 @@ func (ec *executionContext) fieldContext_Query_recentStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1867,6 +2454,8 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1935,6 +2524,8 @@ func (ec *executionContext) fieldContext_Query_myStudysets(ctx context.Context, 
 				return ec.fieldContext_Studyset_terms(ctx, field)
 			case "terms_count":
 				return ec.fieldContext_Studyset_terms_count(ctx, field)
+			case "practice_tests":
+				return ec.fieldContext_Studyset_practice_tests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2079,6 +2670,347 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_type(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_type(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Type, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.QuestionType)
+	fc.Result = res
+	return ec.marshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type QuestionType does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_term(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_answer_with(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answer_with(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_answer_with(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_answered(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answered(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Answered, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_answered(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_answered_true_false(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answered_true_false(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredTrueFalse, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_answered_true_false(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_answered_frq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answered_frq(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredFrq, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_answered_frq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_distractors_mcq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_distractors_mcq(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DistractorsMcq, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
 	}
 	return fc, nil
@@ -2343,6 +3275,8 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_sort_order(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -2390,6 +3324,59 @@ func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context,
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Studyset_practice_tests(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_practice_tests(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Studyset().PracticeTests(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.PracticeTest)
+	fc.Result = res
+	return ec.marshalOPracticeTest2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Studyset_practice_tests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Studyset",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_PracticeTest_id(ctx, field)
+			case "timestamp":
+				return ec.fieldContext_PracticeTest_timestamp(ctx, field)
+			case "questions_correct":
+				return ec.fieldContext_PracticeTest_questions_correct(ctx, field)
+			case "questions_total":
+				return ec.fieldContext_PracticeTest_questions_total(ctx, field)
+			case "questions":
+				return ec.fieldContext_PracticeTest_questions(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PracticeTest", field.Name)
 		},
 	}
 	return fc, nil
@@ -2628,6 +3615,72 @@ func (ec *executionContext) fieldContext_Term_progress(_ context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Term_top_confusion_pairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Term().TopConfusionPairs(rctx, obj, fc.Args["limit"].(*int32))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TermConfusionPair)
+	fc.Result = res
+	return ec.marshalOTermConfusionPair2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_top_confusion_pairs(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TermConfusionPair_id(ctx, field)
+			case "term":
+				return ec.fieldContext_TermConfusionPair_term(ctx, field)
+			case "confused_term":
+				return ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
+			case "answered_with":
+				return ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
+			case "confused_count":
+				return ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
+			case "last_confused_at":
+				return ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TermConfusionPair", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Term_top_confusion_pairs_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Term_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Term_created_at(ctx, field)
 	if err != nil {
@@ -2700,6 +3753,288 @@ func (ec *executionContext) _Term_updated_at(ctx context.Context, field graphql.
 func (ec *executionContext) fieldContext_Term_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_id(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOID2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_term(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_confused_term(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ConfusedTerm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_confused_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_answered_with(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_answered_with(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_confused_count(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ConfusedCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_confused_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TermConfusionPair_last_confused_at(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LastConfusedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TermConfusionPair_last_confused_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TermConfusionPair",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -5358,6 +6693,123 @@ func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputPracticeTestInput(ctx context.Context, obj any) (model.PracticeTestInput, error) {
+	var it model.PracticeTestInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"timestamp", "questions_correct", "questions_total", "questions"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "timestamp":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timestamp"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Timestamp = data
+		case "questions_correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions_correct"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.QuestionsCorrect = data
+		case "questions_total":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions_total"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.QuestionsTotal = data
+		case "questions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions"))
+			data, err := ec.unmarshalOQuestionInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Questions = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj any) (model.QuestionInput, error) {
+	var it model.QuestionInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"type", "term", "answer_with", "answered", "answered_true_false", "answered_frq", "distractors_mcq"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "type":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "answer_with":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answer_with"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnswerWith = data
+		case "answered":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Answered = data
+		case "answered_true_false":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_true_false"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredTrueFalse = data
+		case "answered_frq":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_frq"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredFrq = data
+		case "distractors_mcq":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractors_mcq"))
+			data, err := ec.unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistractorsMcq = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputStudysetInput(ctx context.Context, obj any) (model.StudysetInput, error) {
 	var it model.StudysetInput
 	asMap := map[string]any{}
@@ -5386,6 +6838,61 @@ func (ec *executionContext) unmarshalInputStudysetInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Private = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputTermConfusionPairInput(ctx context.Context, obj any) (model.TermConfusionPairInput, error) {
+	var it model.TermConfusionPairInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "confused_term", "answered_with", "confused_count_increase", "confused_at"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "confused_term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConfusedTerm = data
+		case "answered_with":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_with"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredWith = data
+		case "confused_count_increase":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_count_increase"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConfusedCountIncrease = data
+		case "confused_at":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_at"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ConfusedAt = data
 		}
 	}
 
@@ -5429,7 +6936,7 @@ func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any
 			it.Def = data
 		case "sort_order":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
-			data, err := ec.unmarshalNInt2int32(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5607,6 +7114,58 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateTermProgress(ctx, field)
 			})
+		case "recordConfusedTerms":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_recordConfusedTerms(ctx, field)
+			})
+		case "recordPracticeTest":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_recordPracticeTest(ctx, field)
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var practiceTestImplementors = []string{"PracticeTest"}
+
+func (ec *executionContext) _PracticeTest(ctx context.Context, sel ast.SelectionSet, obj *model.PracticeTest) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, practiceTestImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PracticeTest")
+		case "id":
+			out.Values[i] = ec._PracticeTest_id(ctx, field, obj)
+		case "timestamp":
+			out.Values[i] = ec._PracticeTest_timestamp(ctx, field, obj)
+		case "questions_correct":
+			out.Values[i] = ec._PracticeTest_questions_correct(ctx, field, obj)
+		case "questions_total":
+			out.Values[i] = ec._PracticeTest_questions_total(ctx, field, obj)
+		case "questions":
+			out.Values[i] = ec._PracticeTest_questions(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5832,6 +7391,54 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
+var questionImplementors = []string{"Question"}
+
+func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet, obj *model.Question) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, questionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Question")
+		case "type":
+			out.Values[i] = ec._Question_type(ctx, field, obj)
+		case "term":
+			out.Values[i] = ec._Question_term(ctx, field, obj)
+		case "answer_with":
+			out.Values[i] = ec._Question_answer_with(ctx, field, obj)
+		case "answered":
+			out.Values[i] = ec._Question_answered(ctx, field, obj)
+		case "answered_true_false":
+			out.Values[i] = ec._Question_answered_true_false(ctx, field, obj)
+		case "answered_frq":
+			out.Values[i] = ec._Question_answered_frq(ctx, field, obj)
+		case "distractors_mcq":
+			out.Values[i] = ec._Question_distractors_mcq(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var studysetImplementors = []string{"Studyset"}
 
 func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet, obj *model.Studyset) graphql.Marshaler {
@@ -5950,6 +7557,39 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "practice_tests":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Studyset_practice_tests(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6025,10 +7665,89 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "top_confusion_pairs":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Term_top_confusion_pairs(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "created_at":
 			out.Values[i] = ec._Term_created_at(ctx, field, obj)
 		case "updated_at":
 			out.Values[i] = ec._Term_updated_at(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var termConfusionPairImplementors = []string{"TermConfusionPair"}
+
+func (ec *executionContext) _TermConfusionPair(ctx context.Context, sel ast.SelectionSet, obj *model.TermConfusionPair) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, termConfusionPairImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TermConfusionPair")
+		case "id":
+			out.Values[i] = ec._TermConfusionPair_id(ctx, field, obj)
+		case "term":
+			out.Values[i] = ec._TermConfusionPair_term(ctx, field, obj)
+		case "confused_term":
+			out.Values[i] = ec._TermConfusionPair_confused_term(ctx, field, obj)
+		case "answered_with":
+			out.Values[i] = ec._TermConfusionPair_answered_with(ctx, field, obj)
+		case "confused_count":
+			out.Values[i] = ec._TermConfusionPair_confused_count(ctx, field, obj)
+		case "last_confused_at":
+			out.Values[i] = ec._TermConfusionPair_last_confused_at(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6814,6 +8533,22 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx context.Context, v any) (*model.AnswerWith, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.AnswerWith)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx context.Context, sel ast.SelectionSet, v *model.AnswerWith) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalOAuthType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAuthType(ctx context.Context, v any) (*model.AuthType, error) {
 	if v == nil {
 		return nil, nil
@@ -6959,6 +8694,152 @@ func (ec *executionContext) unmarshalONewTermInput2ᚖquizfreelyᚋapiᚋgraph�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOPracticeTest2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx context.Context, sel ast.SelectionSet, v []*model.PracticeTest) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOPracticeTest2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOPracticeTest2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx context.Context, sel ast.SelectionSet, v *model.PracticeTest) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PracticeTest(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPracticeTestInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTestInput(ctx context.Context, v any) (*model.PracticeTestInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPracticeTestInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOQuestion2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestion(ctx context.Context, sel ast.SelectionSet, v []*model.Question) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestion(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestion(ctx context.Context, sel ast.SelectionSet, v *model.Question) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Question(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOQuestionInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionInput(ctx context.Context, v any) ([]*model.QuestionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.QuestionInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionInput(ctx context.Context, v any) (*model.QuestionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputQuestionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx context.Context, v any) (*model.QuestionType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.QuestionType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx context.Context, sel ast.SelectionSet, v *model.QuestionType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v any) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -7079,6 +8960,80 @@ func (ec *executionContext) marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐT
 		return graphql.Null
 	}
 	return ec._Term(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTermConfusionPair2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx context.Context, sel ast.SelectionSet, v []*model.TermConfusionPair) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTermConfusionPair2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOTermConfusionPair2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx context.Context, sel ast.SelectionSet, v *model.TermConfusionPair) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TermConfusionPair(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTermConfusionPairInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPairInput(ctx context.Context, v any) ([]*model.TermConfusionPairInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*model.TermConfusionPairInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOTermConfusionPairInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPairInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalOTermConfusionPairInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPairInput(ctx context.Context, v any) (*model.TermConfusionPairInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTermConfusionPairInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx context.Context, v any) ([]*model.TermInput, error) {

@@ -322,6 +322,16 @@ RETURNING id,
 	return &termProgress, nil
 }
 
+// RecordConfusedTerms is the resolver for the recordConfusedTerms field.
+func (r *mutationResolver) RecordConfusedTerms(ctx context.Context, confusedTerms []*model.TermConfusionPairInput) (*bool, error) {
+	panic(fmt.Errorf("not implemented: RecordConfusedTerms - recordConfusedTerms"))
+}
+
+// RecordPracticeTest is the resolver for the recordPracticeTest field.
+func (r *mutationResolver) RecordPracticeTest(ctx context.Context, input *model.PracticeTestInput) (*model.PracticeTest, error) {
+	panic(fmt.Errorf("not implemented: RecordPracticeTest - recordPracticeTest"))
+}
+
 // Authed is the resolver for the authed field.
 func (r *queryResolver) Authed(ctx context.Context) (*bool, error) {
 	authed := auth.AuthedUserContext(ctx) != nil
@@ -550,6 +560,11 @@ func (r *studysetResolver) TermsCount(ctx context.Context, obj *model.Studyset) 
 	return loader.GetTermsCountByStudysetID(ctx, *obj.ID)
 }
 
+// PracticeTests is the resolver for the practice_tests field.
+func (r *studysetResolver) PracticeTests(ctx context.Context, obj *model.Studyset) ([]*model.PracticeTest, error) {
+	panic(fmt.Errorf("not implemented: PracticeTests - practice_tests"))
+}
+
 // Progress is the resolver for the progress field.
 func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error) {
 	authedUser := auth.AuthedUserContext(ctx)
@@ -558,6 +573,11 @@ func (r *termResolver) Progress(ctx context.Context, obj *model.Term) (*model.Te
 	}
 
 	return loader.GetTermProgress(ctx, [2]string{*obj.ID, *authedUser.ID})
+}
+
+// TopConfusionPairs is the resolver for the top_confusion_pairs field.
+func (r *termResolver) TopConfusionPairs(ctx context.Context, obj *model.Term, limit *int32) ([]*model.TermConfusionPair, error) {
+	panic(fmt.Errorf("not implemented: TopConfusionPairs - top_confusion_pairs"))
 }
 
 // Mutation returns MutationResolver implementation.
