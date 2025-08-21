@@ -272,6 +272,7 @@ type Loaders struct {
 	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
 	TermProgressLoader *dataloadgen.Loader[string, *model.TermProgress]
 	TermTopConfusionPairsLoader *dataloadgen.Loader[string, []*model.TermConfusionPair]
+	PracticeTestByStudysetIDLoader *dataloadgen.Loader[string, []*model.PracticeTest]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -285,6 +286,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 		TermsCountByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsCountByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
 		TermTopConfusionPairsLoader: dataloadgen.NewLoader(dr.getTermsTopConfusionPairs, dataloadgen.WithWait(time.Millisecond)),
+		PracticeTestByStudysetIDLoader: dataloadgen.NewLoader(dr.getPracticeTestsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
 
@@ -371,4 +373,14 @@ func GetTermTopConfusionPairs(ctx context.Context, termID string) ([]*model.Term
 func GetTermsTopConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, error) {
 	loaders := For(ctx)
 	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termIDs)
+}
+
+func getPracticeTestsByStudysetID(ctx context.Context, studysetID string) ([]*model.PracticeTest, error) {
+	loaders := For(ctx)
+	return loaders.TermTopConfusionPairsLoader.Load(ctx, studysetID)
+}
+
+func getPracticeTestsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.PracticeTest, error) {
+	loaders := For(ctx)
+	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, studysetIDs)
 }
