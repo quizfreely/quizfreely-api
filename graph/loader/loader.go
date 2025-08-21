@@ -45,6 +45,29 @@ ORDER BY input.og_order`,
 	return users, nil
 }
 
+func (dr *dataReader) getTermsByIDs(ctx context.Context, ids []string) ([]*model.Term, []error) {
+	var terms []*model.Term
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&terms,
+		`SELECT t.id, t.studyset_id, t.term, t.def, t.sort_order,
+	to_char(t.created_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as created_at,
+	to_char(t.updated_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as updated_at
+FROM unnest($1::uuid[]) WITH ORDINALITY AS input(id, og_order)
+LEFT JOIN terms t
+	ON t.id = input.id
+ORDER BY input.og_order`,
+		ids,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+	return terms, nil
+}
+
 func (dr *dataReader) getTermsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.Term, []error) {
 	var terms []*model.Term
 
@@ -202,6 +225,7 @@ ORDER BY input.og_order ASC, tcp.confused_count DESC`,
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
 	UserLoader *dataloadgen.Loader[string, *model.User]
+	TermByIDLoader *dataloadgen.Loader[string, *model.Term]
 	TermByStudysetIDLoader *dataloadgen.Loader[string, []*model.Term]
 	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
 	TermProgressLoader *dataloadgen.Loader[string, *model.TermProgress]
@@ -214,6 +238,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 	dr := &dataReader{db: db}
 	return &Loaders{
 		UserLoader: dataloadgen.NewLoader(dr.getUsers, dataloadgen.WithWait(time.Millisecond)),
+		TermByIDLoader: dataloadgen.NewLoader(dr.getTermsByIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermsCountByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsCountByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
@@ -246,6 +271,16 @@ func GetUser(ctx context.Context, userID string) (*model.User, error) {
 func GetUsers(ctx context.Context, userIDs []string) ([]*model.User, error) {
 	loaders := For(ctx)
 	return loaders.UserLoader.LoadAll(ctx, userIDs)
+}
+
+func GetTermByID(ctx context.Context, id string) (*model.Term, error) {
+	loaders := For(ctx)
+	return loaders.TermByStudysetIDLoader.Load(ctx, id)
+}
+
+func GetTermsByIDs(ctx context.Context, ids []string) ([]*model.Term, error) {
+	loaders := For(ctx)
+	return loaders.TermByStudysetIDLoader.LoadAll(ctx, ids)
 }
 
 // GetTermsByStudysetID returns a single studyset's terms efficiently
