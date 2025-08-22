@@ -105,7 +105,7 @@ check your environment variables`,
 	that's great cause we want to default to "" (blank)
 	cause BASE_PATH is prepended/before relative paths */
 
-	if basePath[len(basePath) - 1] == "/" {
+	if len(basePath) > 0 && basePath[len(basePath) - 1] == '/' {
 		/* if BASE_PATH ends with "/", remove it */
 		basePath = basePath[:(len(basePath) - 1)]
 	}
