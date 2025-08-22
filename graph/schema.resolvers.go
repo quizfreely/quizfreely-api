@@ -402,7 +402,12 @@ func (r *mutationResolver) RecordPracticeTest(ctx context.Context, input *model.
 		`INSERT INTO practice_tests
 	(timestamp, user_id, studyset_id, questions_correct, questions_total, questions)
 VALUES (now(), $1, $2, $3, $4, $5)
-RETURNING id, timestamp, user_id, studyset_id, questions_correct, questions_total, questions`,
+RETURNING
+	id,
+	to_char(timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as timestamp,
+	questions_correct,
+	questions_total,
+	questions`,
 		authedUser.ID,
 		input.StudysetID,
 		input.QuestionsCorrect,
