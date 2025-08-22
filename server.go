@@ -100,6 +100,16 @@ check your environment variables`,
 		)
 	}
 
+	basePath := os.Getenv("BASE_PATH")
+	/* os.Getenv returns "" when not set,
+	that's great cause we want to default to "" (blank)
+	cause BASE_PATH is prepended/before relative paths */
+
+	if basePath[len(basePath) - 1] == "/" {
+		/* if BASE_PATH ends with "/", remove it */
+		basePath = basePath[:(len(basePath) - 1)]
+	}
+
 	router.Group(func(r chi.Router) {
 		r.Use(authHandler.AuthMiddleware)
 
@@ -122,7 +132,7 @@ check your environment variables`,
 			"/graphiql",
 			playground.Handler(
 				"Quizfreely API GraphiQL",
-				"/graphql",
+				basePath + "/graphql",
 			),
 		)
 		r.Handle("/graphql", srv)
