@@ -256,7 +256,7 @@ ORDER BY input.og_order ASC, pt.timestamp DESC`,
 		}
     }
 
-    orderedPracticeTests := make([][]*model.PracticeTest, len(practiceTests))
+    orderedPracticeTests := make([][]*model.PracticeTest, len(studysetIDs))
     for i, id := range studysetIDs {
         orderedPracticeTests[i] = grouped[id]
     }
