@@ -378,7 +378,31 @@ DO UPDATE SET confused_count = confused_count + EXCLUDED.confused_count_increase
 
 // RecordPracticeTest is the resolver for the recordPracticeTest field.
 func (r *mutationResolver) RecordPracticeTest(ctx context.Context, input *model.PracticeTestInput) (*model.PracticeTest, error) {
-	panic(fmt.Errorf("not implemented: RecordPracticeTest - recordPracticeTest"))
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	var practiceTest model.PracticeTest
+	err := pgxscan.Select(
+		ctx,
+		r.DB,
+		&practiceTest,
+		`INSERT INTO practice_tests
+	(timestamp, user_id, studyset_id, questions_correct, questions_total, questions)
+VALUES (now(), $1, $2, $3, $4, $5)
+RETURNING id, timestamp, user_id, studyset_id, questions_correct, questions_total, questions`,
+		authedUser.ID,
+		input.StudysetID,
+		input.QuestionsCorrect,
+		input.QuestionsTotal,
+		input.Questions,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("database error in RecordPracticeTest: %w", err)
+	}
+
+	return &practiceTest, nil
 }
 
 // Authed is the resolver for the authed field.
