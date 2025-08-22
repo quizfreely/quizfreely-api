@@ -189,17 +189,25 @@ func (dr *dataReader) getTermsTopConfusionPairs(ctx context.Context, termIDs []s
 		ctx,
 		dr.db,
 		&confusionPairs,
-		`SELECT tcp.id,
-	tcp.term_id,
-    tcp.confused_term_id,
-    tcp.answered_with,
-    tcp.confused_count,
-	to_char(tcp.last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
-FROM unnest($1::uuid[]) WITH ORDINALITY AS input(term_id, og_order)
-LEFT JOIN term_confusion_pairs tcp
-	ON tcp.term_id = input.term_id
-	AND tcp.user_id = $2
-ORDER BY input.og_order ASC, tcp.confused_count DESC`,
+		`SELECT id,
+    term_id,
+    confused_term_id,
+    answered_with,
+    confused_count,
+    to_char(last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
+FROM (
+    SELECT tcp.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY tcp.term_id
+            ORDER BY tcp.confused_count DESC
+        ) AS rn
+    FROM unnest($1::uuid[]) WITH ORDINALITY AS input(term_id, og_order)
+    LEFT JOIN term_confusion_pairs tcp
+        ON tcp.term_id = input.term_id
+       AND tcp.user_id = $2
+) ranked
+WHERE rn <= 3
+ORDER BY term_id, confused_count DESC`,
 		termIDs,
 		authedUser.ID,
 	)
