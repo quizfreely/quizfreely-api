@@ -236,7 +236,7 @@ func (dr *dataReader) getPracticeTestsByStudysetIDs(ctx context.Context, studyse
 	pt.studyset_id,
     pt.questions_correct,
     pt.questions_total,
-    pt.questions,
+    pt.questions
 FROM unnest($1::uuid[]) WITH ORDINALITY AS input(studyset_id, og_order)
 LEFT JOIN practice_tests pt
 	ON pt.studyset_id = input.studyset_id
