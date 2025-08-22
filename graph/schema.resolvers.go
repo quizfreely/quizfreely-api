@@ -679,6 +679,16 @@ func (r *termResolver) TopConfusionPairs(ctx context.Context, obj *model.Term) (
 	return loader.GetTermTopConfusionPairs(ctx, *obj.ID)
 }
 
+// TopReverseConfusionPairs is the resolver for the top_reverse_confusion_pairs field.
+func (r *termResolver) TopReverseConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error) {
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil || authedUser.ID == nil || obj.ID == nil {
+		return nil, nil
+	}
+
+	return loader.GetTermTopReverseConfusionPairs(ctx, *obj.ID)
+}
+
 // ConfusedTerm is the resolver for the confused_term field.
 func (r *termConfusionPairResolver) ConfusedTerm(ctx context.Context, obj *model.TermConfusionPair) (*model.Term, error) {
 	return loader.GetTermByID(ctx, *obj.ConfusedTermID)

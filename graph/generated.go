@@ -111,14 +111,15 @@ type ComplexityRoot struct {
 	}
 
 	Term struct {
-		CreatedAt         func(childComplexity int) int
-		Def               func(childComplexity int) int
-		ID                func(childComplexity int) int
-		Progress          func(childComplexity int) int
-		SortOrder         func(childComplexity int) int
-		Term              func(childComplexity int) int
-		TopConfusionPairs func(childComplexity int) int
-		UpdatedAt         func(childComplexity int) int
+		CreatedAt                func(childComplexity int) int
+		Def                      func(childComplexity int) int
+		ID                       func(childComplexity int) int
+		Progress                 func(childComplexity int) int
+		SortOrder                func(childComplexity int) int
+		Term                     func(childComplexity int) int
+		TopConfusionPairs        func(childComplexity int) int
+		TopReverseConfusionPairs func(childComplexity int) int
+		UpdatedAt                func(childComplexity int) int
 	}
 
 	TermConfusionPair struct {
@@ -180,6 +181,7 @@ type StudysetResolver interface {
 type TermResolver interface {
 	Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error)
 	TopConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
+	TopReverseConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
 }
 type TermConfusionPairResolver interface {
 	ConfusedTerm(ctx context.Context, obj *model.TermConfusionPair) (*model.Term, error)
@@ -611,6 +613,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Term.TopConfusionPairs(childComplexity), true
+
+	case "Term.top_reverse_confusion_pairs":
+		if e.complexity.Term.TopReverseConfusionPairs == nil {
+			break
+		}
+
+		return e.complexity.Term.TopReverseConfusionPairs(childComplexity), true
 
 	case "Term.updated_at":
 		if e.complexity.Term.UpdatedAt == nil {
@@ -2764,6 +2773,8 @@ func (ec *executionContext) fieldContext_Question_term(_ context.Context, field 
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -2905,6 +2916,8 @@ func (ec *executionContext) fieldContext_Question_answered(_ context.Context, fi
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -3046,6 +3059,8 @@ func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Cont
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -3105,6 +3120,8 @@ func (ec *executionContext) fieldContext_Question_distractor_true_false(_ contex
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -3377,6 +3394,8 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -3768,6 +3787,59 @@ func (ec *executionContext) fieldContext_Term_top_confusion_pairs(_ context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Term_top_reverse_confusion_pairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Term().TopReverseConfusionPairs(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.TermConfusionPair)
+	fc.Result = res
+	return ec.marshalOTermConfusionPair2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Term_top_reverse_confusion_pairs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Term",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_TermConfusionPair_id(ctx, field)
+			case "confused_term":
+				return ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
+			case "answered_with":
+				return ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
+			case "confused_count":
+				return ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
+			case "last_confused_at":
+				return ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type TermConfusionPair", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Term_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Term_created_at(ctx, field)
 	if err != nil {
@@ -3939,6 +4011,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_confused_term(_ conte
 				return ec.fieldContext_Term_progress(ctx, field)
 			case "top_confusion_pairs":
 				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "top_reverse_confusion_pairs":
+				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Term_created_at(ctx, field)
 			case "updated_at":
@@ -7728,6 +7802,39 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Term_top_confusion_pairs(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "top_reverse_confusion_pairs":
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Term_top_reverse_confusion_pairs(ctx, field, obj)
 				return res
 			}
 
