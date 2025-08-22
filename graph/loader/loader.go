@@ -258,7 +258,7 @@ ORDER BY input.og_order ASC, pt.timestamp DESC`,
 
     orderedPracticeTests := make([][]*model.PracticeTest, len(practiceTests))
     for i, id := range studysetIDs {
-        orderedConfusionPairs[i] = grouped[id]
+        orderedPracticeTests[i] = grouped[id]
     }
 
 	return orderedPracticeTests, nil
@@ -375,12 +375,12 @@ func GetTermsTopConfusionPairs(ctx context.Context, termIDs []string) ([][]*mode
 	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, termIDs)
 }
 
-func getPracticeTestsByStudysetID(ctx context.Context, studysetID string) ([]*model.PracticeTest, error) {
+func GetPracticeTestsByStudysetID(ctx context.Context, studysetID string) ([]*model.PracticeTest, error) {
 	loaders := For(ctx)
-	return loaders.TermTopConfusionPairsLoader.Load(ctx, studysetID)
+	return loaders.PracticeTestByStudysetIDLoader.Load(ctx, studysetID)
 }
 
-func getPracticeTestsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.PracticeTest, error) {
+func GetPracticeTestsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.PracticeTest, error) {
 	loaders := For(ctx)
-	return loaders.TermTopConfusionPairsLoader.LoadAll(ctx, studysetIDs)
+	return loaders.PracticeTestByStudysetIDLoader.LoadAll(ctx, studysetIDs)
 }

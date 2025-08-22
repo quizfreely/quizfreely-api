@@ -338,6 +338,7 @@ func (r *mutationResolver) RecordConfusedTerms(ctx context.Context, confusedTerm
 
 	values := make([]interface{}, 0, len(confusedTerms)*5)
 	placeholders := make([]string, 0, len(confusedTerms))
+	placeholders = append(placeholders, *authedUser.ID)
 
 	for i, ct := range confusedTerms {
 		placeholders = append(
@@ -365,7 +366,7 @@ DO UPDATE SET confused_count = confused_count + EXCLUDED.confused_count_increase
 	last_confused_at = EXCLUDED.confused_at`,
 		strings.Join(placeholders, ","),
 	)
-	_, err := tx.Exec(ctx, sql, authedUser.ID, values...)
+	_, err := r.DB.Exec(ctx, sql, values...)
 	if err != nil {
 		success = false
 		return &success, fmt.Errorf("failed to insert/update confusion pairs: %w", err)

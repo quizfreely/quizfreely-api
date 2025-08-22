@@ -165,6 +165,8 @@ models:
         resolver: true
       terms_count:
         resolver: true
+      practice_tests:
+        resolver: true
   Term:
     fields:
       progress:
