@@ -395,7 +395,7 @@ func (r *mutationResolver) RecordPracticeTest(ctx context.Context, input *model.
 	}
 
 	var practiceTest model.PracticeTest
-	err := pgxscan.Select(
+	err := pgxscan.Get(
 		ctx,
 		r.DB,
 		&practiceTest,
