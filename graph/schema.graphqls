@@ -50,6 +50,7 @@ type Term {
     sort_order: Int
     progress: TermProgress
     top_confusion_pairs: [TermConfusionPair]
+    top_reverse_confusion_pairs: [TermConfusionPair]
     created_at: String
     updated_at: String
 }

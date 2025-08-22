@@ -230,6 +230,56 @@ ORDER BY term_id, confused_count DESC`,
 	return orderedConfusionPairs, nil
 }
 
+func (dr *dataReader) getTermsTopReverseConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, []error) {
+	authedUser := auth.AuthedUserContext(ctx)
+
+	var confusionPairs []*model.TermConfusionPair
+
+	err := pgxscan.Select(
+		ctx,
+		dr.db,
+		&confusionPairs,
+		`SELECT id,
+    term_id as confused_term_id,
+    confused_term_id as term_id,
+    answered_with,
+    confused_count,
+    to_char(last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
+FROM (
+    SELECT tcp.*,
+        ROW_NUMBER() OVER (
+            PARTITION BY tcp.confused_term_id
+            ORDER BY tcp.confused_count DESC
+        ) AS rn
+    FROM unnest($1::uuid[]) WITH ORDINALITY AS input(term_id, og_order)
+    LEFT JOIN term_confusion_pairs tcp
+        ON tcp.confused_term_id = input.term_id
+       AND tcp.user_id = $2
+) ranked
+WHERE rn <= 3
+ORDER BY term_id, confused_count DESC`,
+		termIDs,
+		authedUser.ID,
+	)
+	if err != nil {
+		return nil, []error{err}
+	}
+
+    grouped := make(map[string][]*model.TermConfusionPair)
+    for _, c := range confusionPairs {
+        if c.TermID != nil {
+			grouped[*c.TermID] = append(grouped[*c.TermID], c)
+		}
+    }
+
+    orderedConfusionPairs := make([][]*model.TermConfusionPair, len(termIDs))
+    for i, id := range termIDs {
+        orderedConfusionPairs[i] = grouped[id]
+    }
+
+	return orderedConfusionPairs, nil
+}
+
 func (dr *dataReader) getPracticeTestsByStudysetIDs(ctx context.Context, studysetIDs []string) ([][]*model.PracticeTest, []error) {
 	authedUser := auth.AuthedUserContext(ctx)
 
@@ -280,6 +330,7 @@ type Loaders struct {
 	TermsCountByStudysetIDLoader *dataloadgen.Loader[string, *int32]
 	TermProgressLoader *dataloadgen.Loader[string, *model.TermProgress]
 	TermTopConfusionPairsLoader *dataloadgen.Loader[string, []*model.TermConfusionPair]
+	TermTopReverseConfusionPairsLoader *dataloadgen.Loader[string, []*model.TermConfusionPair]
 	PracticeTestByStudysetIDLoader *dataloadgen.Loader[string, []*model.PracticeTest]
 }
 
@@ -294,6 +345,7 @@ func NewLoaders(db *pgxpool.Pool) *Loaders {
 		TermsCountByStudysetIDLoader: dataloadgen.NewLoader(dr.getTermsCountByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 		TermProgressLoader: dataloadgen.NewLoader(dr.getTermsProgress, dataloadgen.WithWait(time.Millisecond)),
 		TermTopConfusionPairsLoader: dataloadgen.NewLoader(dr.getTermsTopConfusionPairs, dataloadgen.WithWait(time.Millisecond)),
+		TermTopReverseConfusionPairsLoader: dataloadgen.NewLoader(dr.getTermsTopReverseConfusionPairs, dataloadgen.WithWait(time.Millisecond)),
 		PracticeTestByStudysetIDLoader: dataloadgen.NewLoader(dr.getPracticeTestsByStudysetIDs, dataloadgen.WithWait(time.Millisecond)),
 	}
 }
@@ -369,6 +421,18 @@ func GetTermProgress(ctx context.Context, termID string) (*model.TermProgress, e
 func GetTermsProgress(ctx context.Context, termIDs []string) ([]*model.TermProgress, error) {
 	loaders := For(ctx)
 	return loaders.TermProgressLoader.LoadAll(ctx, termIDs)
+}
+
+// GetTermTopReverseConfusionPairs returns a single term's confusion pairs
+func GetTermTopReverseConfusionPairs(ctx context.Context, termID string) ([]*model.TermConfusionPair, error) {
+	loaders := For(ctx)
+	return loaders.TermTopReverseConfusionPairsLoader.Load(ctx, termID)
+}
+
+// GetTermsTopReverseConfusionPairs returns many terms' confusion pairs
+func GetTermsTopReverseConfusionPairs(ctx context.Context, termIDs []string) ([][]*model.TermConfusionPair, error) {
+	loaders := For(ctx)
+	return loaders.TermTopReverseConfusionPairsLoader.LoadAll(ctx, termIDs)
 }
 
 // GetTermTopConfusionPairs returns a single term's confusion pairs
