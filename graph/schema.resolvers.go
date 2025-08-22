@@ -324,24 +324,55 @@ RETURNING id,
 
 // RecordConfusedTerms is the resolver for the recordConfusedTerms field.
 func (r *mutationResolver) RecordConfusedTerms(ctx context.Context, confusedTerms []*model.TermConfusionPairInput) (*bool, error) {
-	for _, confusionPair := range confusedTerms {
-
+	var success bool
+	authedUser := auth.AuthedUserContext(ctx)
+	if authedUser == nil {
+		success = false
+		return &success, fmt.Errorf("not authenticated")
 	}
-	if confusedTerms != nil && len(confusedTerms) > 0 {
-		values := make([]interface{}, 0, len(confusedTerms)*4)
-		placeholders := make([]string, 0, len(confusedTerms))
 
-		for i, t := range confusedTerms {
-			placeholders = append(placeholders, fmt.Sprintf("($%d,$%d,$%d,$%d)", i*4+1, i*4+2, i*4+3, i*4+4))
-			values = append(values, newStudyset.ID, t.Term, t.Def, t.SortOrder)
-		}
-
-		sql := fmt.Sprintf("INSERT INTO terms (studyset_id, term, def, sort_order) VALUES %s", strings.Join(placeholders, ","))
-		_, err := tx.Exec(ctx, sql, values...)
-		if err != nil {
-			return nil, fmt.Errorf("failed to insert terms: %w", err)
-		}
+	if confusedTerms == nil || len(confusedTerms) == 0 {
+		success = false
+		return &success, nil
 	}
+
+	values := make([]interface{}, 0, len(confusedTerms)*5)
+	placeholders := make([]string, 0, len(confusedTerms))
+
+	for i, ct := range confusedTerms {
+		placeholders = append(
+			placeholders,
+			fmt.Sprintf(
+				"($1,$%d,$%d,$%d,$%d,$%d)",
+				i*5+2, i*5+3, i*5+4, i*5+5, i*5+6,
+			),
+		)
+		values = append(
+			values,
+			ct.TermID,
+			ct.ConfusedTermID,
+			ct.AnsweredWith,
+			ct.ConfusedCountIncrease,
+			ct.ConfusedAt,
+		)
+	}
+
+	sql := fmt.Sprintf(`INSERT INTO term_confusion_pairs (
+	user_id, term_id, confused_term_id, answered_with, confused_count, last_confused_at
+) VALUES %s
+ON CONFLICT (user_id, term_id, confused_term_id, answered_with)
+DO UPDATE SET confused_count = confused_count + EXCLUDED.confused_count_increase,
+	last_confused_at = EXCLUDED.confused_at`,
+		strings.Join(placeholders, ","),
+	)
+	_, err := tx.Exec(ctx, sql, authedUser.ID, values...)
+	if err != nil {
+		success = false
+		return &success, fmt.Errorf("failed to insert/update confusion pairs: %w", err)
+	}
+
+	success = true
+	return &success, nil
 }
 
 // RecordPracticeTest is the resolver for the recordPracticeTest field.
