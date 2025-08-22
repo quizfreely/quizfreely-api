@@ -273,16 +273,20 @@ func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string
 	def_correct_count, def_incorrect_count
 ) VALUES (
     $1, $2,
-    $3, $3,
+	$3::timestamptz, $3::timestamptz,
     CASE WHEN $3 IS NOT NULL THEN 1 ELSE 0 END,
-    $4, $4,
+	$4::timestamptz, $4::timestamptz,
     CASE WHEN $4 IS NOT NULL THEN 1 ELSE 0 END,
     $5, $6,
 	COALESCE($7, 0), COALESCE($8, 0),
 	COALESCE($9, 0), COALESCE($10, 0)
 ) ON CONFLICT (term_id, user_id) DO UPDATE SET
-    term_last_reviewed_at = $3,
-    def_last_reviewed_at = $4,
+	term_last_reviewed_at = COALESCE(
+		$3::timestamptz, term_progress.term_last_reviewed_at
+	),
+	def_last_reviewed_at = COALESCE(
+		$4::timestamptz, term_progress.def_last_reviewed_at
+	),
     term_leitner_system_box = $5,
     def_leitner_system_box = $6,
     term_review_count = term_progress.term_review_count + 
@@ -296,10 +300,14 @@ func (r *mutationResolver) UpdateTermProgress(ctx context.Context, termID string
 	def_correct_count = term_progress.def_correct_count +
 		COALESCE($9, 0),
 	def_incorrect_count = term_progress.def_incorrect_count +
-		COALESCE($10, 0),
+		COALESCE($10, 0)
 RETURNING id,
-	term_first_reviewed_at, term_last_reviewed_at, term_review_count,
-	def_first_reviewed_at, def_last_reviewed_at, def_review_count,
+	to_char(term_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as term_first_reviewed_at,
+	to_char(term_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as term_last_reviewed_at,
+	term_review_count,
+	to_char(def_first_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_first_reviewed_at,
+	to_char(def_last_reviewed_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as def_last_reviewed_at,
+	def_review_count,
 	term_leitner_system_box, def_leitner_system_box,
 	term_correct_count, term_incorrect_count,
 	def_correct_count, def_incorrect_count`,
