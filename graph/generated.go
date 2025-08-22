@@ -88,13 +88,15 @@ type ComplexityRoot struct {
 	}
 
 	Question struct {
-		AnswerWith        func(childComplexity int) int
-		Answered          func(childComplexity int) int
-		AnsweredFrq       func(childComplexity int) int
-		AnsweredTrueFalse func(childComplexity int) int
-		DistractorsMcq    func(childComplexity int) int
-		Term              func(childComplexity int) int
-		Type              func(childComplexity int) int
+		AnswerWith          func(childComplexity int) int
+		Answered            func(childComplexity int) int
+		AnsweredFrq         func(childComplexity int) int
+		AnsweredTrueFalse   func(childComplexity int) int
+		Correct             func(childComplexity int) int
+		DistractorTrueFalse func(childComplexity int) int
+		DistractorsMcq      func(childComplexity int) int
+		Term                func(childComplexity int) int
+		Type                func(childComplexity int) int
 	}
 
 	Studyset struct {
@@ -469,6 +471,20 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.Question.AnsweredTrueFalse(childComplexity), true
+
+	case "Question.correct":
+		if e.complexity.Question.Correct == nil {
+			break
+		}
+
+		return e.complexity.Question.Correct(childComplexity), true
+
+	case "Question.distractor_true_false":
+		if e.complexity.Question.DistractorTrueFalse == nil {
+			break
+		}
+
+		return e.complexity.Question.DistractorTrueFalse(childComplexity), true
 
 	case "Question.distractors_mcq":
 		if e.complexity.Question.DistractorsMcq == nil {
@@ -2005,6 +2021,8 @@ func (ec *executionContext) fieldContext_PracticeTest_questions(_ context.Contex
 				return ec.fieldContext_Question_term(ctx, field)
 			case "answer_with":
 				return ec.fieldContext_Question_answer_with(ctx, field)
+			case "correct":
+				return ec.fieldContext_Question_correct(ctx, field)
 			case "answered":
 				return ec.fieldContext_Question_answered(ctx, field)
 			case "answered_true_false":
@@ -2013,6 +2031,8 @@ func (ec *executionContext) fieldContext_PracticeTest_questions(_ context.Contex
 				return ec.fieldContext_Question_answered_frq(ctx, field)
 			case "distractors_mcq":
 				return ec.fieldContext_Question_distractors_mcq(ctx, field)
+			case "distractor_true_false":
+				return ec.fieldContext_Question_distractor_true_false(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Question", field.Name)
 		},
@@ -2796,6 +2816,47 @@ func (ec *executionContext) fieldContext_Question_answer_with(_ context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Question_correct(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Correct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Question_answered(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Question_answered(ctx, field)
 	if err != nil {
@@ -2966,6 +3027,65 @@ func (ec *executionContext) _Question_distractors_mcq(ctx context.Context, field
 }
 
 func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Question",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sort_order":
+				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "top_confusion_pairs":
+				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Term_created_at(ctx, field)
+			case "updated_at":
+				return ec.fieldContext_Term_updated_at(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Question_distractor_true_false(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_distractor_true_false(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DistractorTrueFalse, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Question_distractor_true_false(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -6663,7 +6783,7 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "term", "answer_with", "answered", "answered_true_false", "answered_frq", "distractors_mcq"}
+	fieldsInOrder := [...]string{"type", "term", "answer_with", "correct", "answered", "answered_true_false", "answered_frq", "distractors_mcq", "distractor_true_false"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6691,6 +6811,13 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 				return it, err
 			}
 			it.AnswerWith = data
+		case "correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Correct = data
 		case "answered":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered"))
 			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
@@ -6719,6 +6846,13 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 				return it, err
 			}
 			it.DistractorsMcq = data
+		case "distractor_true_false":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractor_true_false"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DistractorTrueFalse = data
 		}
 	}
 
@@ -7323,6 +7457,8 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Question_term(ctx, field, obj)
 		case "answer_with":
 			out.Values[i] = ec._Question_answer_with(ctx, field, obj)
+		case "correct":
+			out.Values[i] = ec._Question_correct(ctx, field, obj)
 		case "answered":
 			out.Values[i] = ec._Question_answered(ctx, field, obj)
 		case "answered_true_false":
@@ -7331,6 +7467,8 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Question_answered_frq(ctx, field, obj)
 		case "distractors_mcq":
 			out.Values[i] = ec._Question_distractors_mcq(ctx, field, obj)
+		case "distractor_true_false":
+			out.Values[i] = ec._Question_distractor_true_false(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

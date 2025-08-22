@@ -122,10 +122,12 @@ type Question {
     type: QuestionType
     term: Term
     answer_with: AnswerWith
+    correct: Boolean
     answered: Term
     answered_true_false: Boolean
     answered_frq: String
     distractors_mcq: [Term]
+    distractor_true_false: Term
 }
 enum QuestionType {
     MCQ
@@ -144,8 +146,10 @@ input QuestionInput {
     type: QuestionType
     term: TermInput
     answer_with: AnswerWith
+    correct: Boolean
     answered: TermInput
     answered_true_false: Boolean
     answered_frq: String
     distractors_mcq: [TermInput]
+    distractor_true_false: TermInput
 }

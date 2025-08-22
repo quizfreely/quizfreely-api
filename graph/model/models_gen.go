@@ -30,23 +30,27 @@ type Query struct {
 }
 
 type Question struct {
-	Type              *QuestionType `json:"type,omitempty"`
-	Term              *Term         `json:"term,omitempty"`
-	AnswerWith        *AnswerWith   `json:"answer_with,omitempty"`
-	Answered          *Term         `json:"answered,omitempty"`
-	AnsweredTrueFalse *bool         `json:"answered_true_false,omitempty"`
-	AnsweredFrq       *string       `json:"answered_frq,omitempty"`
-	DistractorsMcq    []*Term       `json:"distractors_mcq,omitempty"`
+	Type                *QuestionType `json:"type,omitempty"`
+	Term                *Term         `json:"term,omitempty"`
+	AnswerWith          *AnswerWith   `json:"answer_with,omitempty"`
+	Correct             *bool         `json:"correct,omitempty"`
+	Answered            *Term         `json:"answered,omitempty"`
+	AnsweredTrueFalse   *bool         `json:"answered_true_false,omitempty"`
+	AnsweredFrq         *string       `json:"answered_frq,omitempty"`
+	DistractorsMcq      []*Term       `json:"distractors_mcq,omitempty"`
+	DistractorTrueFalse *Term         `json:"distractor_true_false,omitempty"`
 }
 
 type QuestionInput struct {
-	Type              *QuestionType `json:"type,omitempty"`
-	Term              *TermInput    `json:"term,omitempty"`
-	AnswerWith        *AnswerWith   `json:"answer_with,omitempty"`
-	Answered          *TermInput    `json:"answered,omitempty"`
-	AnsweredTrueFalse *bool         `json:"answered_true_false,omitempty"`
-	AnsweredFrq       *string       `json:"answered_frq,omitempty"`
-	DistractorsMcq    []*TermInput  `json:"distractors_mcq,omitempty"`
+	Type                *QuestionType `json:"type,omitempty"`
+	Term                *TermInput    `json:"term,omitempty"`
+	AnswerWith          *AnswerWith   `json:"answer_with,omitempty"`
+	Correct             *bool         `json:"correct,omitempty"`
+	Answered            *TermInput    `json:"answered,omitempty"`
+	AnsweredTrueFalse   *bool         `json:"answered_true_false,omitempty"`
+	AnsweredFrq         *string       `json:"answered_frq,omitempty"`
+	DistractorsMcq      []*TermInput  `json:"distractors_mcq,omitempty"`
+	DistractorTrueFalse *TermInput    `json:"distractor_true_false,omitempty"`
 }
 
 type StudysetInput struct {
