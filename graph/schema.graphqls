@@ -12,7 +12,7 @@ type Mutation {
     createStudyset(studyset: StudysetInput!, terms: [NewTermInput]): Studyset
     updateStudyset(id: ID!, studyset: StudysetInput, terms: [TermInput], newTerms: [NewTermInput], deleteTerms: [ID]): Studyset
     deleteStudyset(id: ID!): ID
-    updateUser(display_name: String): AuthedUser
+    updateUser(displayName: String): AuthedUser
     updateTermProgress(termId: ID!, progress: TermProgressInput!): TermProgress
     recordConfusedTerms(confusedTerms: [TermConfusionPairInput]): Boolean
     recordPracticeTest(input: PracticeTestInput): PracticeTest
@@ -20,14 +20,14 @@ type Mutation {
 type User {
     id: ID
     username: String
-    display_name: String
+    displayName: String
 }
 type AuthedUser {
     id: ID
     username: String
-    display_name: String
-    auth_type: AuthType
-    oauth_google_email: String
+    displayName: String
+    authType: AuthType
+    oauthGoogleEmail: String
 }
 enum AuthType {
     USERNAME_PASSWORD
@@ -37,22 +37,22 @@ type Studyset {
     id: ID
     title: String
     private: Boolean
-    updated_at: String
+    updatedAt: String
     user: User
     terms: [Term]
-    terms_count: Int
-    practice_tests: [PracticeTest]
+    termsCount: Int
+    practiceTests: [PracticeTest]
 }
 type Term {
     id: ID
     term: String
     def: String
-    sort_order: Int
+    sortOrder: Int
     progress: TermProgress
-    top_confusion_pairs: [TermConfusionPair]
-    top_reverse_confusion_pairs: [TermConfusionPair]
-    created_at: String
-    updated_at: String
+    topConfusionPairs: [TermConfusionPair]
+    topReverseConfusionPairs: [TermConfusionPair]
+    createdAt: String
+    updatedAt: String
 }
 input StudysetInput {
     title: String!
@@ -61,38 +61,38 @@ input StudysetInput {
 input NewTermInput {
     term: String
     def: String
-    sort_order: Int!
+    sortOrder: Int!
 }
 input TermInput {
     id: ID!
     term: String
     def: String
-    sort_order: Int
+    sortOrder: Int
 }
 type TermProgress {
     id: ID
-    term_first_reviewed_at: String
-    term_last_reviewed_at: String
-    term_review_count: Int
-    def_first_reviewed_at: String
-    def_last_reviewed_at: String
-    def_review_count: Int
-    term_correct_count: Int
-    term_incorrect_count: Int
-    def_correct_count: Int
-    def_incorrect_count: Int
-    term_leitner_system_box: Int
-    def_leitner_system_box: Int
+    termFirstReviewedAt: String
+    termLastReviewedAt: String
+    termReviewCount: Int
+    defFirstReviewedAt: String
+    defLastReviewedAt: String
+    defReviewCount: Int
+    termCorrectCount: Int
+    termIncorrectCount: Int
+    defCorrectCount: Int
+    defIncorrectCount: Int
+    termLeitnerSystemBox: Int
+    defLeitnerSystemBox: Int
 }
 input TermProgressInput {
-    term_reviewed_at: String
-    def_reviewed_at: String
-    term_leitner_system_box: Int
-    def_leitner_system_box: Int
-    term_correct_increase: Int
-    term_incorrect_increase: Int
-    def_correct_increase: Int
-    def_incorrect_increase: Int
+    termReviewedAt: String
+    defReviewedAt: String
+    termLeitnerSystemBox: Int
+    defLeitnerSystemBox: Int
+    termCorrectIncrease: Int
+    termIncorrectIncrease: Int
+    defCorrectIncrease: Int
+    defIncorrectIncrease: Int
 }
 enum AnswerWith {
     TERM
@@ -100,35 +100,35 @@ enum AnswerWith {
 }
 type TermConfusionPair {
     id: ID
-    confused_term: Term
-    answered_with: AnswerWith
-    confused_count: Int
-    last_confused_at: String
+    confusedTerm: Term
+    answeredWith: AnswerWith
+    confusedCount: Int
+    lastConfusedAt: String
 }
 input TermConfusionPairInput {
-    term_id: ID
-    confused_term_id: ID
-    answered_with: AnswerWith
-    confused_count_increase: Int
-    confused_at: String
+    termId: ID
+    confusedTermId: ID
+    answeredWith: AnswerWith
+    confusedCountIncrease: Int
+    confusedAt: String
 }
 type PracticeTest {
     id: ID
     timestamp: String
-    questions_correct: Int
-    questions_total: Int
+    questionsCorrect: Int
+    questionsTotal: Int
     questions: [Question]
 }
 type Question {
     type: QuestionType
     term: Term
-    answer_with: AnswerWith
+    answerWith: AnswerWith
     correct: Boolean
     answered: Term
-    answered_true_false: Boolean
-    answered_frq: String
-    distractors_mcq: [Term]
-    distractor_true_false: Term
+    answeredTrueFalse: Boolean
+    answeredFrq: String
+    distractorsMcq: [Term]
+    distractorTrueFalse: Term
 }
 enum QuestionType {
     MCQ
@@ -138,19 +138,19 @@ enum QuestionType {
 }
 input PracticeTestInput {
     timestamp: String
-    studyset_id: ID
-    questions_correct: Int
-    questions_total: Int
+    studysetId: ID
+    questionsCorrect: Int
+    questionsTotal: Int
     questions: [QuestionInput]
 }
 input QuestionInput {
     type: QuestionType
     term: TermInput
-    answer_with: AnswerWith
+    answerWith: AnswerWith
     correct: Boolean
     answered: TermInput
-    answered_true_false: Boolean
-    answered_frq: String
-    distractors_mcq: [TermInput]
-    distractor_true_false: TermInput
+    answeredTrueFalse: Boolean
+    answeredFrq: String
+    distractorsMcq: [TermInput]
+    distractorTrueFalse: TermInput
 }
