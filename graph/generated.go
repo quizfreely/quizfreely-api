@@ -43,6 +43,7 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Studyset() StudysetResolver
 	Term() TermResolver
+	TermConfusionPair() TermConfusionPairResolver
 }
 
 type DirectiveRoot struct {
@@ -181,6 +182,9 @@ type TermResolver interface {
 	Progress(ctx context.Context, obj *model.Term) (*model.TermProgress, error)
 	TopConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
 	TopReverseConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
+}
+type TermConfusionPairResolver interface {
+	ConfusedTerm(ctx context.Context, obj *model.TermConfusionPair) (*model.Term, error)
 }
 
 type executableSchema struct {
@@ -3973,7 +3977,7 @@ func (ec *executionContext) _TermConfusionPair_confusedTerm(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ConfusedTerm, nil
+		return ec.resolvers.TermConfusionPair().ConfusedTerm(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3991,8 +3995,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_confusedTerm(_ contex
 	fc = &graphql.FieldContext{
 		Object:     "TermConfusionPair",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -7895,7 +7899,38 @@ func (ec *executionContext) _TermConfusionPair(ctx context.Context, sel ast.Sele
 		case "id":
 			out.Values[i] = ec._TermConfusionPair_id(ctx, field, obj)
 		case "confusedTerm":
-			out.Values[i] = ec._TermConfusionPair_confusedTerm(ctx, field, obj)
+			field := field
+
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._TermConfusionPair_confusedTerm(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "answeredWith":
 			out.Values[i] = ec._TermConfusionPair_answeredWith(ctx, field, obj)
 		case "confusedCount":

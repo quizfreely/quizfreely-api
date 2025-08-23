@@ -163,21 +163,21 @@ models:
         resolver: true
       terms:
         resolver: true
-      terms_count:
+      termsCount:
         resolver: true
-      practice_tests:
+      practiceTests:
         resolver: true
   Term:
     fields:
       progress:
         resolver: true
-      top_confusion_pairs:
+      topConfusionPairs:
         resolver: true
-      top_reverse_confusion_pairs:
+      topReverseConfusionPairs:
         resolver: true
   TermConfusionPair:
     fields:
       term:
         resolver: true
-      confused_term:
+      confusedTerm:
         resolver: true
