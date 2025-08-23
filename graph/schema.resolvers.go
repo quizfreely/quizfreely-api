@@ -691,7 +691,7 @@ func (r *termResolver) TopReverseConfusionPairs(ctx context.Context, obj *model.
 
 // ConfusedTerm is the resolver for the confusedTerm field.
 func (r *termConfusionPairResolver) ConfusedTerm(ctx context.Context, obj *model.TermConfusionPair) (*model.Term, error) {
-	return loader.GetTermByID(ctx, obj.ConfusedTermID)
+	return loader.GetTermByID(ctx, *obj.ConfusedTermID)
 }
 
 // Mutation returns MutationResolver implementation.
