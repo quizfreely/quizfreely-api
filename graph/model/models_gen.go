@@ -15,14 +15,14 @@ type Mutation struct {
 type NewTermInput struct {
 	Term      *string `json:"term,omitempty"`
 	Def       *string `json:"def,omitempty"`
-	SortOrder int32   `json:"sort_order"`
+	SortOrder int32   `json:"sortOrder"`
 }
 
 type PracticeTestInput struct {
 	Timestamp        *string          `json:"timestamp,omitempty"`
-	StudysetID       *string          `json:"studyset_id,omitempty"`
-	QuestionsCorrect *int32           `json:"questions_correct,omitempty"`
-	QuestionsTotal   *int32           `json:"questions_total,omitempty"`
+	StudysetID       *string          `json:"studysetId,omitempty"`
+	QuestionsCorrect *int32           `json:"questionsCorrect,omitempty"`
+	QuestionsTotal   *int32           `json:"questionsTotal,omitempty"`
 	Questions        []*QuestionInput `json:"questions,omitempty"`
 }
 
@@ -32,25 +32,25 @@ type Query struct {
 type Question struct {
 	Type                *QuestionType `json:"type,omitempty"`
 	Term                *Term         `json:"term,omitempty"`
-	AnswerWith          *AnswerWith   `json:"answer_with,omitempty"`
+	AnswerWith          *AnswerWith   `json:"answerWith,omitempty"`
 	Correct             *bool         `json:"correct,omitempty"`
 	Answered            *Term         `json:"answered,omitempty"`
-	AnsweredTrueFalse   *bool         `json:"answered_true_false,omitempty"`
-	AnsweredFrq         *string       `json:"answered_frq,omitempty"`
-	DistractorsMcq      []*Term       `json:"distractors_mcq,omitempty"`
-	DistractorTrueFalse *Term         `json:"distractor_true_false,omitempty"`
+	AnsweredTrueFalse   *bool         `json:"answeredTrueFalse,omitempty"`
+	AnsweredFrq         *string       `json:"answeredFrq,omitempty"`
+	DistractorsMcq      []*Term       `json:"distractorsMcq,omitempty"`
+	DistractorTrueFalse *Term         `json:"distractorTrueFalse,omitempty"`
 }
 
 type QuestionInput struct {
 	Type                *QuestionType `json:"type,omitempty"`
 	Term                *TermInput    `json:"term,omitempty"`
-	AnswerWith          *AnswerWith   `json:"answer_with,omitempty"`
+	AnswerWith          *AnswerWith   `json:"answerWith,omitempty"`
 	Correct             *bool         `json:"correct,omitempty"`
 	Answered            *TermInput    `json:"answered,omitempty"`
-	AnsweredTrueFalse   *bool         `json:"answered_true_false,omitempty"`
-	AnsweredFrq         *string       `json:"answered_frq,omitempty"`
-	DistractorsMcq      []*TermInput  `json:"distractors_mcq,omitempty"`
-	DistractorTrueFalse *TermInput    `json:"distractor_true_false,omitempty"`
+	AnsweredTrueFalse   *bool         `json:"answeredTrueFalse,omitempty"`
+	AnsweredFrq         *string       `json:"answeredFrq,omitempty"`
+	DistractorsMcq      []*TermInput  `json:"distractorsMcq,omitempty"`
+	DistractorTrueFalse *TermInput    `json:"distractorTrueFalse,omitempty"`
 }
 
 type StudysetInput struct {
@@ -59,51 +59,51 @@ type StudysetInput struct {
 }
 
 type TermConfusionPairInput struct {
-	TermID                *string     `json:"term_id,omitempty"`
-	ConfusedTermID        *string     `json:"confused_term_id,omitempty"`
-	AnsweredWith          *AnswerWith `json:"answered_with,omitempty"`
-	ConfusedCountIncrease *int32      `json:"confused_count_increase,omitempty"`
-	ConfusedAt            *string     `json:"confused_at,omitempty"`
+	TermID                *string     `json:"termId,omitempty"`
+	ConfusedTermID        *string     `json:"confusedTermId,omitempty"`
+	AnsweredWith          *AnswerWith `json:"answeredWith,omitempty"`
+	ConfusedCountIncrease *int32      `json:"confusedCountIncrease,omitempty"`
+	ConfusedAt            *string     `json:"confusedAt,omitempty"`
 }
 
 type TermInput struct {
 	ID        string  `json:"id"`
 	Term      *string `json:"term,omitempty"`
 	Def       *string `json:"def,omitempty"`
-	SortOrder *int32  `json:"sort_order,omitempty"`
+	SortOrder *int32  `json:"sortOrder,omitempty"`
 }
 
 type TermProgress struct {
 	ID                   *string `json:"id,omitempty"`
-	TermFirstReviewedAt  *string `json:"term_first_reviewed_at,omitempty"`
-	TermLastReviewedAt   *string `json:"term_last_reviewed_at,omitempty"`
-	TermReviewCount      *int32  `json:"term_review_count,omitempty"`
-	DefFirstReviewedAt   *string `json:"def_first_reviewed_at,omitempty"`
-	DefLastReviewedAt    *string `json:"def_last_reviewed_at,omitempty"`
-	DefReviewCount       *int32  `json:"def_review_count,omitempty"`
-	TermCorrectCount     *int32  `json:"term_correct_count,omitempty"`
-	TermIncorrectCount   *int32  `json:"term_incorrect_count,omitempty"`
-	DefCorrectCount      *int32  `json:"def_correct_count,omitempty"`
-	DefIncorrectCount    *int32  `json:"def_incorrect_count,omitempty"`
-	TermLeitnerSystemBox *int32  `json:"term_leitner_system_box,omitempty"`
-	DefLeitnerSystemBox  *int32  `json:"def_leitner_system_box,omitempty"`
+	TermFirstReviewedAt  *string `json:"termFirstReviewedAt,omitempty"`
+	TermLastReviewedAt   *string `json:"termLastReviewedAt,omitempty"`
+	TermReviewCount      *int32  `json:"termReviewCount,omitempty"`
+	DefFirstReviewedAt   *string `json:"defFirstReviewedAt,omitempty"`
+	DefLastReviewedAt    *string `json:"defLastReviewedAt,omitempty"`
+	DefReviewCount       *int32  `json:"defReviewCount,omitempty"`
+	TermCorrectCount     *int32  `json:"termCorrectCount,omitempty"`
+	TermIncorrectCount   *int32  `json:"termIncorrectCount,omitempty"`
+	DefCorrectCount      *int32  `json:"defCorrectCount,omitempty"`
+	DefIncorrectCount    *int32  `json:"defIncorrectCount,omitempty"`
+	TermLeitnerSystemBox *int32  `json:"termLeitnerSystemBox,omitempty"`
+	DefLeitnerSystemBox  *int32  `json:"defLeitnerSystemBox,omitempty"`
 }
 
 type TermProgressInput struct {
-	TermReviewedAt        *string `json:"term_reviewed_at,omitempty"`
-	DefReviewedAt         *string `json:"def_reviewed_at,omitempty"`
-	TermLeitnerSystemBox  *int32  `json:"term_leitner_system_box,omitempty"`
-	DefLeitnerSystemBox   *int32  `json:"def_leitner_system_box,omitempty"`
-	TermCorrectIncrease   *int32  `json:"term_correct_increase,omitempty"`
-	TermIncorrectIncrease *int32  `json:"term_incorrect_increase,omitempty"`
-	DefCorrectIncrease    *int32  `json:"def_correct_increase,omitempty"`
-	DefIncorrectIncrease  *int32  `json:"def_incorrect_increase,omitempty"`
+	TermReviewedAt        *string `json:"termReviewedAt,omitempty"`
+	DefReviewedAt         *string `json:"defReviewedAt,omitempty"`
+	TermLeitnerSystemBox  *int32  `json:"termLeitnerSystemBox,omitempty"`
+	DefLeitnerSystemBox   *int32  `json:"defLeitnerSystemBox,omitempty"`
+	TermCorrectIncrease   *int32  `json:"termCorrectIncrease,omitempty"`
+	TermIncorrectIncrease *int32  `json:"termIncorrectIncrease,omitempty"`
+	DefCorrectIncrease    *int32  `json:"defCorrectIncrease,omitempty"`
+	DefIncorrectIncrease  *int32  `json:"defIncorrectIncrease,omitempty"`
 }
 
 type User struct {
 	ID          *string `json:"id,omitempty"`
 	Username    *string `json:"username,omitempty"`
-	DisplayName *string `json:"display_name,omitempty"`
+	DisplayName *string `json:"displayName,omitempty"`
 }
 
 type AnswerWith string

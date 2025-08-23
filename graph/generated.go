@@ -43,7 +43,6 @@ type ResolverRoot interface {
 	Query() QueryResolver
 	Studyset() StudysetResolver
 	Term() TermResolver
-	TermConfusionPair() TermConfusionPairResolver
 }
 
 type DirectiveRoot struct {
@@ -183,9 +182,6 @@ type TermResolver interface {
 	TopConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
 	TopReverseConfusionPairs(ctx context.Context, obj *model.Term) ([]*model.TermConfusionPair, error)
 }
-type TermConfusionPairResolver interface {
-	ConfusedTerm(ctx context.Context, obj *model.TermConfusionPair) (*model.Term, error)
-}
 
 type executableSchema struct {
 	schema     *ast.Schema
@@ -206,14 +202,14 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 	_ = ec
 	switch typeName + "." + field {
 
-	case "AuthedUser.auth_type":
+	case "AuthedUser.authType":
 		if e.complexity.AuthedUser.AuthType == nil {
 			break
 		}
 
 		return e.complexity.AuthedUser.AuthType(childComplexity), true
 
-	case "AuthedUser.display_name":
+	case "AuthedUser.displayName":
 		if e.complexity.AuthedUser.DisplayName == nil {
 			break
 		}
@@ -227,7 +223,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.AuthedUser.ID(childComplexity), true
 
-	case "AuthedUser.oauth_google_email":
+	case "AuthedUser.oauthGoogleEmail":
 		if e.complexity.AuthedUser.OauthGoogleEmail == nil {
 			break
 		}
@@ -323,7 +319,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateUser(childComplexity, args["display_name"].(*string)), true
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["displayName"].(*string)), true
 
 	case "PracticeTest.id":
 		if e.complexity.PracticeTest.ID == nil {
@@ -339,14 +335,14 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.PracticeTest.Questions(childComplexity), true
 
-	case "PracticeTest.questions_correct":
+	case "PracticeTest.questionsCorrect":
 		if e.complexity.PracticeTest.QuestionsCorrect == nil {
 			break
 		}
 
 		return e.complexity.PracticeTest.QuestionsCorrect(childComplexity), true
 
-	case "PracticeTest.questions_total":
+	case "PracticeTest.questionsTotal":
 		if e.complexity.PracticeTest.QuestionsTotal == nil {
 			break
 		}
@@ -446,7 +442,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
-	case "Question.answer_with":
+	case "Question.answerWith":
 		if e.complexity.Question.AnswerWith == nil {
 			break
 		}
@@ -460,14 +456,14 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Question.Answered(childComplexity), true
 
-	case "Question.answered_frq":
+	case "Question.answeredFrq":
 		if e.complexity.Question.AnsweredFrq == nil {
 			break
 		}
 
 		return e.complexity.Question.AnsweredFrq(childComplexity), true
 
-	case "Question.answered_true_false":
+	case "Question.answeredTrueFalse":
 		if e.complexity.Question.AnsweredTrueFalse == nil {
 			break
 		}
@@ -481,14 +477,14 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Question.Correct(childComplexity), true
 
-	case "Question.distractor_true_false":
+	case "Question.distractorTrueFalse":
 		if e.complexity.Question.DistractorTrueFalse == nil {
 			break
 		}
 
 		return e.complexity.Question.DistractorTrueFalse(childComplexity), true
 
-	case "Question.distractors_mcq":
+	case "Question.distractorsMcq":
 		if e.complexity.Question.DistractorsMcq == nil {
 			break
 		}
@@ -516,7 +512,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.ID(childComplexity), true
 
-	case "Studyset.practice_tests":
+	case "Studyset.practiceTests":
 		if e.complexity.Studyset.PracticeTests == nil {
 			break
 		}
@@ -537,7 +533,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.Terms(childComplexity), true
 
-	case "Studyset.terms_count":
+	case "Studyset.termsCount":
 		if e.complexity.Studyset.TermsCount == nil {
 			break
 		}
@@ -551,7 +547,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.Title(childComplexity), true
 
-	case "Studyset.updated_at":
+	case "Studyset.updatedAt":
 		if e.complexity.Studyset.UpdatedAt == nil {
 			break
 		}
@@ -565,7 +561,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Studyset.User(childComplexity), true
 
-	case "Term.created_at":
+	case "Term.createdAt":
 		if e.complexity.Term.CreatedAt == nil {
 			break
 		}
@@ -593,7 +589,7 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Term.Progress(childComplexity), true
 
-	case "Term.sort_order":
+	case "Term.sortOrder":
 		if e.complexity.Term.SortOrder == nil {
 			break
 		}
@@ -607,42 +603,42 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Term.Term(childComplexity), true
 
-	case "Term.top_confusion_pairs":
+	case "Term.topConfusionPairs":
 		if e.complexity.Term.TopConfusionPairs == nil {
 			break
 		}
 
 		return e.complexity.Term.TopConfusionPairs(childComplexity), true
 
-	case "Term.top_reverse_confusion_pairs":
+	case "Term.topReverseConfusionPairs":
 		if e.complexity.Term.TopReverseConfusionPairs == nil {
 			break
 		}
 
 		return e.complexity.Term.TopReverseConfusionPairs(childComplexity), true
 
-	case "Term.updated_at":
+	case "Term.updatedAt":
 		if e.complexity.Term.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Term.UpdatedAt(childComplexity), true
 
-	case "TermConfusionPair.answered_with":
+	case "TermConfusionPair.answeredWith":
 		if e.complexity.TermConfusionPair.AnsweredWith == nil {
 			break
 		}
 
 		return e.complexity.TermConfusionPair.AnsweredWith(childComplexity), true
 
-	case "TermConfusionPair.confused_count":
+	case "TermConfusionPair.confusedCount":
 		if e.complexity.TermConfusionPair.ConfusedCount == nil {
 			break
 		}
 
 		return e.complexity.TermConfusionPair.ConfusedCount(childComplexity), true
 
-	case "TermConfusionPair.confused_term":
+	case "TermConfusionPair.confusedTerm":
 		if e.complexity.TermConfusionPair.ConfusedTerm == nil {
 			break
 		}
@@ -656,49 +652,49 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.TermConfusionPair.ID(childComplexity), true
 
-	case "TermConfusionPair.last_confused_at":
+	case "TermConfusionPair.lastConfusedAt":
 		if e.complexity.TermConfusionPair.LastConfusedAt == nil {
 			break
 		}
 
 		return e.complexity.TermConfusionPair.LastConfusedAt(childComplexity), true
 
-	case "TermProgress.def_correct_count":
+	case "TermProgress.defCorrectCount":
 		if e.complexity.TermProgress.DefCorrectCount == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefCorrectCount(childComplexity), true
 
-	case "TermProgress.def_first_reviewed_at":
+	case "TermProgress.defFirstReviewedAt":
 		if e.complexity.TermProgress.DefFirstReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefFirstReviewedAt(childComplexity), true
 
-	case "TermProgress.def_incorrect_count":
+	case "TermProgress.defIncorrectCount":
 		if e.complexity.TermProgress.DefIncorrectCount == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefIncorrectCount(childComplexity), true
 
-	case "TermProgress.def_last_reviewed_at":
+	case "TermProgress.defLastReviewedAt":
 		if e.complexity.TermProgress.DefLastReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefLastReviewedAt(childComplexity), true
 
-	case "TermProgress.def_leitner_system_box":
+	case "TermProgress.defLeitnerSystemBox":
 		if e.complexity.TermProgress.DefLeitnerSystemBox == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.DefLeitnerSystemBox(childComplexity), true
 
-	case "TermProgress.def_review_count":
+	case "TermProgress.defReviewCount":
 		if e.complexity.TermProgress.DefReviewCount == nil {
 			break
 		}
@@ -712,49 +708,49 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.TermProgress.ID(childComplexity), true
 
-	case "TermProgress.term_correct_count":
+	case "TermProgress.termCorrectCount":
 		if e.complexity.TermProgress.TermCorrectCount == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermCorrectCount(childComplexity), true
 
-	case "TermProgress.term_first_reviewed_at":
+	case "TermProgress.termFirstReviewedAt":
 		if e.complexity.TermProgress.TermFirstReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermFirstReviewedAt(childComplexity), true
 
-	case "TermProgress.term_incorrect_count":
+	case "TermProgress.termIncorrectCount":
 		if e.complexity.TermProgress.TermIncorrectCount == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermIncorrectCount(childComplexity), true
 
-	case "TermProgress.term_last_reviewed_at":
+	case "TermProgress.termLastReviewedAt":
 		if e.complexity.TermProgress.TermLastReviewedAt == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermLastReviewedAt(childComplexity), true
 
-	case "TermProgress.term_leitner_system_box":
+	case "TermProgress.termLeitnerSystemBox":
 		if e.complexity.TermProgress.TermLeitnerSystemBox == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermLeitnerSystemBox(childComplexity), true
 
-	case "TermProgress.term_review_count":
+	case "TermProgress.termReviewCount":
 		if e.complexity.TermProgress.TermReviewCount == nil {
 			break
 		}
 
 		return e.complexity.TermProgress.TermReviewCount(childComplexity), true
 
-	case "User.display_name":
+	case "User.displayName":
 		if e.complexity.User.DisplayName == nil {
 			break
 		}
@@ -1005,11 +1001,11 @@ func (ec *executionContext) field_Mutation_updateTermProgress_args(ctx context.C
 func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
-	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "display_name", ec.unmarshalOString2ᚖstring)
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "displayName", ec.unmarshalOString2ᚖstring)
 	if err != nil {
 		return nil, err
 	}
-	args["display_name"] = arg0
+	args["displayName"] = arg0
 	return args, nil
 }
 
@@ -1249,8 +1245,8 @@ func (ec *executionContext) fieldContext_AuthedUser_username(_ context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _AuthedUser_display_name(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AuthedUser_display_name(ctx, field)
+func (ec *executionContext) _AuthedUser_displayName(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthedUser_displayName(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1277,7 +1273,7 @@ func (ec *executionContext) _AuthedUser_display_name(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AuthedUser_display_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AuthedUser_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AuthedUser",
 		Field:      field,
@@ -1290,8 +1286,8 @@ func (ec *executionContext) fieldContext_AuthedUser_display_name(_ context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _AuthedUser_auth_type(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AuthedUser_auth_type(ctx, field)
+func (ec *executionContext) _AuthedUser_authType(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthedUser_authType(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1318,7 +1314,7 @@ func (ec *executionContext) _AuthedUser_auth_type(ctx context.Context, field gra
 	return ec.marshalOAuthType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAuthType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AuthedUser_auth_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AuthedUser_authType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AuthedUser",
 		Field:      field,
@@ -1331,8 +1327,8 @@ func (ec *executionContext) fieldContext_AuthedUser_auth_type(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _AuthedUser_oauth_google_email(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_AuthedUser_oauth_google_email(ctx, field)
+func (ec *executionContext) _AuthedUser_oauthGoogleEmail(ctx context.Context, field graphql.CollectedField, obj *model.AuthedUser) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AuthedUser_oauthGoogleEmail(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1359,7 +1355,7 @@ func (ec *executionContext) _AuthedUser_oauth_google_email(ctx context.Context, 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_AuthedUser_oauth_google_email(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_AuthedUser_oauthGoogleEmail(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "AuthedUser",
 		Field:      field,
@@ -1414,16 +1410,16 @@ func (ec *executionContext) fieldContext_Mutation_createStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1484,16 +1480,16 @@ func (ec *executionContext) fieldContext_Mutation_updateStudyset(ctx context.Con
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -1578,7 +1574,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["display_name"].(*string))
+		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["displayName"].(*string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1604,12 +1600,12 @@ func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context
 				return ec.fieldContext_AuthedUser_id(ctx, field)
 			case "username":
 				return ec.fieldContext_AuthedUser_username(ctx, field)
-			case "display_name":
-				return ec.fieldContext_AuthedUser_display_name(ctx, field)
-			case "auth_type":
-				return ec.fieldContext_AuthedUser_auth_type(ctx, field)
-			case "oauth_google_email":
-				return ec.fieldContext_AuthedUser_oauth_google_email(ctx, field)
+			case "displayName":
+				return ec.fieldContext_AuthedUser_displayName(ctx, field)
+			case "authType":
+				return ec.fieldContext_AuthedUser_authType(ctx, field)
+			case "oauthGoogleEmail":
+				return ec.fieldContext_AuthedUser_oauthGoogleEmail(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AuthedUser", field.Name)
 		},
@@ -1666,30 +1662,30 @@ func (ec *executionContext) fieldContext_Mutation_updateTermProgress(ctx context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TermProgress_id(ctx, field)
-			case "term_first_reviewed_at":
-				return ec.fieldContext_TermProgress_term_first_reviewed_at(ctx, field)
-			case "term_last_reviewed_at":
-				return ec.fieldContext_TermProgress_term_last_reviewed_at(ctx, field)
-			case "term_review_count":
-				return ec.fieldContext_TermProgress_term_review_count(ctx, field)
-			case "def_first_reviewed_at":
-				return ec.fieldContext_TermProgress_def_first_reviewed_at(ctx, field)
-			case "def_last_reviewed_at":
-				return ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
-			case "def_review_count":
-				return ec.fieldContext_TermProgress_def_review_count(ctx, field)
-			case "term_correct_count":
-				return ec.fieldContext_TermProgress_term_correct_count(ctx, field)
-			case "term_incorrect_count":
-				return ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
-			case "def_correct_count":
-				return ec.fieldContext_TermProgress_def_correct_count(ctx, field)
-			case "def_incorrect_count":
-				return ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
-			case "term_leitner_system_box":
-				return ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
-			case "def_leitner_system_box":
-				return ec.fieldContext_TermProgress_def_leitner_system_box(ctx, field)
+			case "termFirstReviewedAt":
+				return ec.fieldContext_TermProgress_termFirstReviewedAt(ctx, field)
+			case "termLastReviewedAt":
+				return ec.fieldContext_TermProgress_termLastReviewedAt(ctx, field)
+			case "termReviewCount":
+				return ec.fieldContext_TermProgress_termReviewCount(ctx, field)
+			case "defFirstReviewedAt":
+				return ec.fieldContext_TermProgress_defFirstReviewedAt(ctx, field)
+			case "defLastReviewedAt":
+				return ec.fieldContext_TermProgress_defLastReviewedAt(ctx, field)
+			case "defReviewCount":
+				return ec.fieldContext_TermProgress_defReviewCount(ctx, field)
+			case "termCorrectCount":
+				return ec.fieldContext_TermProgress_termCorrectCount(ctx, field)
+			case "termIncorrectCount":
+				return ec.fieldContext_TermProgress_termIncorrectCount(ctx, field)
+			case "defCorrectCount":
+				return ec.fieldContext_TermProgress_defCorrectCount(ctx, field)
+			case "defIncorrectCount":
+				return ec.fieldContext_TermProgress_defIncorrectCount(ctx, field)
+			case "termLeitnerSystemBox":
+				return ec.fieldContext_TermProgress_termLeitnerSystemBox(ctx, field)
+			case "defLeitnerSystemBox":
+				return ec.fieldContext_TermProgress_defLeitnerSystemBox(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TermProgress", field.Name)
 		},
@@ -1800,10 +1796,10 @@ func (ec *executionContext) fieldContext_Mutation_recordPracticeTest(ctx context
 				return ec.fieldContext_PracticeTest_id(ctx, field)
 			case "timestamp":
 				return ec.fieldContext_PracticeTest_timestamp(ctx, field)
-			case "questions_correct":
-				return ec.fieldContext_PracticeTest_questions_correct(ctx, field)
-			case "questions_total":
-				return ec.fieldContext_PracticeTest_questions_total(ctx, field)
+			case "questionsCorrect":
+				return ec.fieldContext_PracticeTest_questionsCorrect(ctx, field)
+			case "questionsTotal":
+				return ec.fieldContext_PracticeTest_questionsTotal(ctx, field)
 			case "questions":
 				return ec.fieldContext_PracticeTest_questions(ctx, field)
 			}
@@ -1906,8 +1902,8 @@ func (ec *executionContext) fieldContext_PracticeTest_timestamp(_ context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _PracticeTest_questions_correct(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PracticeTest_questions_correct(ctx, field)
+func (ec *executionContext) _PracticeTest_questionsCorrect(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_questionsCorrect(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1934,7 +1930,7 @@ func (ec *executionContext) _PracticeTest_questions_correct(ctx context.Context,
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PracticeTest_questions_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PracticeTest_questionsCorrect(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PracticeTest",
 		Field:      field,
@@ -1947,8 +1943,8 @@ func (ec *executionContext) fieldContext_PracticeTest_questions_correct(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _PracticeTest_questions_total(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PracticeTest_questions_total(ctx, field)
+func (ec *executionContext) _PracticeTest_questionsTotal(ctx context.Context, field graphql.CollectedField, obj *model.PracticeTest) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PracticeTest_questionsTotal(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1975,7 +1971,7 @@ func (ec *executionContext) _PracticeTest_questions_total(ctx context.Context, f
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PracticeTest_questions_total(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PracticeTest_questionsTotal(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PracticeTest",
 		Field:      field,
@@ -2028,20 +2024,20 @@ func (ec *executionContext) fieldContext_PracticeTest_questions(_ context.Contex
 				return ec.fieldContext_Question_type(ctx, field)
 			case "term":
 				return ec.fieldContext_Question_term(ctx, field)
-			case "answer_with":
-				return ec.fieldContext_Question_answer_with(ctx, field)
+			case "answerWith":
+				return ec.fieldContext_Question_answerWith(ctx, field)
 			case "correct":
 				return ec.fieldContext_Question_correct(ctx, field)
 			case "answered":
 				return ec.fieldContext_Question_answered(ctx, field)
-			case "answered_true_false":
-				return ec.fieldContext_Question_answered_true_false(ctx, field)
-			case "answered_frq":
-				return ec.fieldContext_Question_answered_frq(ctx, field)
-			case "distractors_mcq":
-				return ec.fieldContext_Question_distractors_mcq(ctx, field)
-			case "distractor_true_false":
-				return ec.fieldContext_Question_distractor_true_false(ctx, field)
+			case "answeredTrueFalse":
+				return ec.fieldContext_Question_answeredTrueFalse(ctx, field)
+			case "answeredFrq":
+				return ec.fieldContext_Question_answeredFrq(ctx, field)
+			case "distractorsMcq":
+				return ec.fieldContext_Question_distractorsMcq(ctx, field)
+			case "distractorTrueFalse":
+				return ec.fieldContext_Question_distractorTrueFalse(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Question", field.Name)
 		},
@@ -2130,12 +2126,12 @@ func (ec *executionContext) fieldContext_Query_authedUser(_ context.Context, fie
 				return ec.fieldContext_AuthedUser_id(ctx, field)
 			case "username":
 				return ec.fieldContext_AuthedUser_username(ctx, field)
-			case "display_name":
-				return ec.fieldContext_AuthedUser_display_name(ctx, field)
-			case "auth_type":
-				return ec.fieldContext_AuthedUser_auth_type(ctx, field)
-			case "oauth_google_email":
-				return ec.fieldContext_AuthedUser_oauth_google_email(ctx, field)
+			case "displayName":
+				return ec.fieldContext_AuthedUser_displayName(ctx, field)
+			case "authType":
+				return ec.fieldContext_AuthedUser_authType(ctx, field)
+			case "oauthGoogleEmail":
+				return ec.fieldContext_AuthedUser_oauthGoogleEmail(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type AuthedUser", field.Name)
 		},
@@ -2185,16 +2181,16 @@ func (ec *executionContext) fieldContext_Query_studyset(ctx context.Context, fie
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2253,8 +2249,8 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 				return ec.fieldContext_User_id(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
-			case "display_name":
-				return ec.fieldContext_User_display_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_User_displayName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -2315,16 +2311,16 @@ func (ec *executionContext) fieldContext_Query_featuredStudysets(ctx context.Con
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2385,16 +2381,16 @@ func (ec *executionContext) fieldContext_Query_recentStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2455,16 +2451,16 @@ func (ec *executionContext) fieldContext_Query_searchStudysets(ctx context.Conte
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2525,16 +2521,16 @@ func (ec *executionContext) fieldContext_Query_myStudysets(ctx context.Context, 
 				return ec.fieldContext_Studyset_title(ctx, field)
 			case "private":
 				return ec.fieldContext_Studyset_private(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Studyset_updated_at(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Studyset_updatedAt(ctx, field)
 			case "user":
 				return ec.fieldContext_Studyset_user(ctx, field)
 			case "terms":
 				return ec.fieldContext_Studyset_terms(ctx, field)
-			case "terms_count":
-				return ec.fieldContext_Studyset_terms_count(ctx, field)
-			case "practice_tests":
-				return ec.fieldContext_Studyset_practice_tests(ctx, field)
+			case "termsCount":
+				return ec.fieldContext_Studyset_termsCount(ctx, field)
+			case "practiceTests":
+				return ec.fieldContext_Studyset_practiceTests(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Studyset", field.Name)
 		},
@@ -2767,18 +2763,18 @@ func (ec *executionContext) fieldContext_Question_term(_ context.Context, field 
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -2786,8 +2782,8 @@ func (ec *executionContext) fieldContext_Question_term(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_answer_with(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answer_with(ctx, field)
+func (ec *executionContext) _Question_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answerWith(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2814,7 +2810,7 @@ func (ec *executionContext) _Question_answer_with(ctx context.Context, field gra
 	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_answer_with(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -2910,18 +2906,18 @@ func (ec *executionContext) fieldContext_Question_answered(_ context.Context, fi
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -2929,8 +2925,8 @@ func (ec *executionContext) fieldContext_Question_answered(_ context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_answered_true_false(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answered_true_false(ctx, field)
+func (ec *executionContext) _Question_answeredTrueFalse(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answeredTrueFalse(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2957,7 +2953,7 @@ func (ec *executionContext) _Question_answered_true_false(ctx context.Context, f
 	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_answered_true_false(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_answeredTrueFalse(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -2970,8 +2966,8 @@ func (ec *executionContext) fieldContext_Question_answered_true_false(_ context.
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_answered_frq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answered_frq(ctx, field)
+func (ec *executionContext) _Question_answeredFrq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_answeredFrq(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2998,7 +2994,7 @@ func (ec *executionContext) _Question_answered_frq(ctx context.Context, field gr
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_answered_frq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_answeredFrq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -3011,8 +3007,8 @@ func (ec *executionContext) fieldContext_Question_answered_frq(_ context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_distractors_mcq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_distractors_mcq(ctx, field)
+func (ec *executionContext) _Question_distractorsMcq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_distractorsMcq(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3039,7 +3035,7 @@ func (ec *executionContext) _Question_distractors_mcq(ctx context.Context, field
 	return ec.marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_distractorsMcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -3053,18 +3049,18 @@ func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Cont
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -3072,8 +3068,8 @@ func (ec *executionContext) fieldContext_Question_distractors_mcq(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_distractor_true_false(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_distractor_true_false(ctx, field)
+func (ec *executionContext) _Question_distractorTrueFalse(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_distractorTrueFalse(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3100,7 +3096,7 @@ func (ec *executionContext) _Question_distractor_true_false(ctx context.Context,
 	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_distractor_true_false(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_distractorTrueFalse(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -3114,18 +3110,18 @@ func (ec *executionContext) fieldContext_Question_distractor_true_false(_ contex
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -3256,8 +3252,8 @@ func (ec *executionContext) fieldContext_Studyset_private(_ context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Studyset_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_updated_at(ctx, field)
+func (ec *executionContext) _Studyset_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3284,7 +3280,7 @@ func (ec *executionContext) _Studyset_updated_at(ctx context.Context, field grap
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studyset_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studyset_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
@@ -3337,8 +3333,8 @@ func (ec *executionContext) fieldContext_Studyset_user(_ context.Context, field 
 				return ec.fieldContext_User_id(ctx, field)
 			case "username":
 				return ec.fieldContext_User_username(ctx, field)
-			case "display_name":
-				return ec.fieldContext_User_display_name(ctx, field)
+			case "displayName":
+				return ec.fieldContext_User_displayName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -3388,18 +3384,18 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -3407,8 +3403,8 @@ func (ec *executionContext) fieldContext_Studyset_terms(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Studyset_terms_count(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_terms_count(ctx, field)
+func (ec *executionContext) _Studyset_termsCount(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_termsCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3435,7 +3431,7 @@ func (ec *executionContext) _Studyset_terms_count(ctx context.Context, field gra
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studyset_termsCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
@@ -3448,8 +3444,8 @@ func (ec *executionContext) fieldContext_Studyset_terms_count(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Studyset_practice_tests(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Studyset_practice_tests(ctx, field)
+func (ec *executionContext) _Studyset_practiceTests(ctx context.Context, field graphql.CollectedField, obj *model.Studyset) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Studyset_practiceTests(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3476,7 +3472,7 @@ func (ec *executionContext) _Studyset_practice_tests(ctx context.Context, field 
 	return ec.marshalOPracticeTest2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐPracticeTest(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Studyset_practice_tests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Studyset_practiceTests(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Studyset",
 		Field:      field,
@@ -3488,10 +3484,10 @@ func (ec *executionContext) fieldContext_Studyset_practice_tests(_ context.Conte
 				return ec.fieldContext_PracticeTest_id(ctx, field)
 			case "timestamp":
 				return ec.fieldContext_PracticeTest_timestamp(ctx, field)
-			case "questions_correct":
-				return ec.fieldContext_PracticeTest_questions_correct(ctx, field)
-			case "questions_total":
-				return ec.fieldContext_PracticeTest_questions_total(ctx, field)
+			case "questionsCorrect":
+				return ec.fieldContext_PracticeTest_questionsCorrect(ctx, field)
+			case "questionsTotal":
+				return ec.fieldContext_PracticeTest_questionsTotal(ctx, field)
 			case "questions":
 				return ec.fieldContext_PracticeTest_questions(ctx, field)
 			}
@@ -3624,8 +3620,8 @@ func (ec *executionContext) fieldContext_Term_def(_ context.Context, field graph
 	return fc, nil
 }
 
-func (ec *executionContext) _Term_sort_order(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Term_sort_order(ctx, field)
+func (ec *executionContext) _Term_sortOrder(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_sortOrder(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3652,7 +3648,7 @@ func (ec *executionContext) _Term_sort_order(ctx context.Context, field graphql.
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Term_sort_order(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_sortOrder(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
 		Field:      field,
@@ -3703,30 +3699,30 @@ func (ec *executionContext) fieldContext_Term_progress(_ context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TermProgress_id(ctx, field)
-			case "term_first_reviewed_at":
-				return ec.fieldContext_TermProgress_term_first_reviewed_at(ctx, field)
-			case "term_last_reviewed_at":
-				return ec.fieldContext_TermProgress_term_last_reviewed_at(ctx, field)
-			case "term_review_count":
-				return ec.fieldContext_TermProgress_term_review_count(ctx, field)
-			case "def_first_reviewed_at":
-				return ec.fieldContext_TermProgress_def_first_reviewed_at(ctx, field)
-			case "def_last_reviewed_at":
-				return ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
-			case "def_review_count":
-				return ec.fieldContext_TermProgress_def_review_count(ctx, field)
-			case "term_correct_count":
-				return ec.fieldContext_TermProgress_term_correct_count(ctx, field)
-			case "term_incorrect_count":
-				return ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
-			case "def_correct_count":
-				return ec.fieldContext_TermProgress_def_correct_count(ctx, field)
-			case "def_incorrect_count":
-				return ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
-			case "term_leitner_system_box":
-				return ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
-			case "def_leitner_system_box":
-				return ec.fieldContext_TermProgress_def_leitner_system_box(ctx, field)
+			case "termFirstReviewedAt":
+				return ec.fieldContext_TermProgress_termFirstReviewedAt(ctx, field)
+			case "termLastReviewedAt":
+				return ec.fieldContext_TermProgress_termLastReviewedAt(ctx, field)
+			case "termReviewCount":
+				return ec.fieldContext_TermProgress_termReviewCount(ctx, field)
+			case "defFirstReviewedAt":
+				return ec.fieldContext_TermProgress_defFirstReviewedAt(ctx, field)
+			case "defLastReviewedAt":
+				return ec.fieldContext_TermProgress_defLastReviewedAt(ctx, field)
+			case "defReviewCount":
+				return ec.fieldContext_TermProgress_defReviewCount(ctx, field)
+			case "termCorrectCount":
+				return ec.fieldContext_TermProgress_termCorrectCount(ctx, field)
+			case "termIncorrectCount":
+				return ec.fieldContext_TermProgress_termIncorrectCount(ctx, field)
+			case "defCorrectCount":
+				return ec.fieldContext_TermProgress_defCorrectCount(ctx, field)
+			case "defIncorrectCount":
+				return ec.fieldContext_TermProgress_defIncorrectCount(ctx, field)
+			case "termLeitnerSystemBox":
+				return ec.fieldContext_TermProgress_termLeitnerSystemBox(ctx, field)
+			case "defLeitnerSystemBox":
+				return ec.fieldContext_TermProgress_defLeitnerSystemBox(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TermProgress", field.Name)
 		},
@@ -3734,8 +3730,8 @@ func (ec *executionContext) fieldContext_Term_progress(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Term_top_confusion_pairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Term_top_confusion_pairs(ctx, field)
+func (ec *executionContext) _Term_topConfusionPairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_topConfusionPairs(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3762,7 +3758,7 @@ func (ec *executionContext) _Term_top_confusion_pairs(ctx context.Context, field
 	return ec.marshalOTermConfusionPair2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Term_top_confusion_pairs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_topConfusionPairs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
 		Field:      field,
@@ -3772,14 +3768,14 @@ func (ec *executionContext) fieldContext_Term_top_confusion_pairs(_ context.Cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TermConfusionPair_id(ctx, field)
-			case "confused_term":
-				return ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
-			case "answered_with":
-				return ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
-			case "confused_count":
-				return ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
-			case "last_confused_at":
-				return ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+			case "confusedTerm":
+				return ec.fieldContext_TermConfusionPair_confusedTerm(ctx, field)
+			case "answeredWith":
+				return ec.fieldContext_TermConfusionPair_answeredWith(ctx, field)
+			case "confusedCount":
+				return ec.fieldContext_TermConfusionPair_confusedCount(ctx, field)
+			case "lastConfusedAt":
+				return ec.fieldContext_TermConfusionPair_lastConfusedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TermConfusionPair", field.Name)
 		},
@@ -3787,8 +3783,8 @@ func (ec *executionContext) fieldContext_Term_top_confusion_pairs(_ context.Cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Term_top_reverse_confusion_pairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
+func (ec *executionContext) _Term_topReverseConfusionPairs(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3815,7 +3811,7 @@ func (ec *executionContext) _Term_top_reverse_confusion_pairs(ctx context.Contex
 	return ec.marshalOTermConfusionPair2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermConfusionPair(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Term_top_reverse_confusion_pairs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_topReverseConfusionPairs(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
 		Field:      field,
@@ -3825,14 +3821,14 @@ func (ec *executionContext) fieldContext_Term_top_reverse_confusion_pairs(_ cont
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_TermConfusionPair_id(ctx, field)
-			case "confused_term":
-				return ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
-			case "answered_with":
-				return ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
-			case "confused_count":
-				return ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
-			case "last_confused_at":
-				return ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+			case "confusedTerm":
+				return ec.fieldContext_TermConfusionPair_confusedTerm(ctx, field)
+			case "answeredWith":
+				return ec.fieldContext_TermConfusionPair_answeredWith(ctx, field)
+			case "confusedCount":
+				return ec.fieldContext_TermConfusionPair_confusedCount(ctx, field)
+			case "lastConfusedAt":
+				return ec.fieldContext_TermConfusionPair_lastConfusedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TermConfusionPair", field.Name)
 		},
@@ -3840,8 +3836,8 @@ func (ec *executionContext) fieldContext_Term_top_reverse_confusion_pairs(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _Term_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Term_created_at(ctx, field)
+func (ec *executionContext) _Term_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_createdAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3868,7 +3864,7 @@ func (ec *executionContext) _Term_created_at(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Term_created_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
 		Field:      field,
@@ -3881,8 +3877,8 @@ func (ec *executionContext) fieldContext_Term_created_at(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Term_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Term_updated_at(ctx, field)
+func (ec *executionContext) _Term_updatedAt(ctx context.Context, field graphql.CollectedField, obj *model.Term) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Term_updatedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3909,7 +3905,7 @@ func (ec *executionContext) _Term_updated_at(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Term_updated_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Term_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Term",
 		Field:      field,
@@ -3963,8 +3959,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_id(_ context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _TermConfusionPair_confused_term(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermConfusionPair_confused_term(ctx, field)
+func (ec *executionContext) _TermConfusionPair_confusedTerm(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_confusedTerm(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3977,7 +3973,7 @@ func (ec *executionContext) _TermConfusionPair_confused_term(ctx context.Context
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.TermConfusionPair().ConfusedTerm(rctx, obj)
+		return obj.ConfusedTerm, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3991,12 +3987,12 @@ func (ec *executionContext) _TermConfusionPair_confused_term(ctx context.Context
 	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermConfusionPair_confused_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermConfusionPair_confusedTerm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermConfusionPair",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
@@ -4005,18 +4001,18 @@ func (ec *executionContext) fieldContext_TermConfusionPair_confused_term(_ conte
 				return ec.fieldContext_Term_term(ctx, field)
 			case "def":
 				return ec.fieldContext_Term_def(ctx, field)
-			case "sort_order":
-				return ec.fieldContext_Term_sort_order(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
 			case "progress":
 				return ec.fieldContext_Term_progress(ctx, field)
-			case "top_confusion_pairs":
-				return ec.fieldContext_Term_top_confusion_pairs(ctx, field)
-			case "top_reverse_confusion_pairs":
-				return ec.fieldContext_Term_top_reverse_confusion_pairs(ctx, field)
-			case "created_at":
-				return ec.fieldContext_Term_created_at(ctx, field)
-			case "updated_at":
-				return ec.fieldContext_Term_updated_at(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
@@ -4024,8 +4020,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_confused_term(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _TermConfusionPair_answered_with(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermConfusionPair_answered_with(ctx, field)
+func (ec *executionContext) _TermConfusionPair_answeredWith(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_answeredWith(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4052,7 +4048,7 @@ func (ec *executionContext) _TermConfusionPair_answered_with(ctx context.Context
 	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermConfusionPair_answered_with(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermConfusionPair_answeredWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermConfusionPair",
 		Field:      field,
@@ -4065,8 +4061,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_answered_with(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _TermConfusionPair_confused_count(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermConfusionPair_confused_count(ctx, field)
+func (ec *executionContext) _TermConfusionPair_confusedCount(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_confusedCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4093,7 +4089,7 @@ func (ec *executionContext) _TermConfusionPair_confused_count(ctx context.Contex
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermConfusionPair_confused_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermConfusionPair_confusedCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermConfusionPair",
 		Field:      field,
@@ -4106,8 +4102,8 @@ func (ec *executionContext) fieldContext_TermConfusionPair_confused_count(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _TermConfusionPair_last_confused_at(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermConfusionPair_last_confused_at(ctx, field)
+func (ec *executionContext) _TermConfusionPair_lastConfusedAt(ctx context.Context, field graphql.CollectedField, obj *model.TermConfusionPair) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermConfusionPair_lastConfusedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4134,7 +4130,7 @@ func (ec *executionContext) _TermConfusionPair_last_confused_at(ctx context.Cont
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermConfusionPair_last_confused_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermConfusionPair_lastConfusedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermConfusionPair",
 		Field:      field,
@@ -4188,8 +4184,8 @@ func (ec *executionContext) fieldContext_TermProgress_id(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_first_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_first_reviewed_at(ctx, field)
+func (ec *executionContext) _TermProgress_termFirstReviewedAt(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termFirstReviewedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4216,7 +4212,7 @@ func (ec *executionContext) _TermProgress_term_first_reviewed_at(ctx context.Con
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_first_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termFirstReviewedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4229,8 +4225,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_first_reviewed_at(_ c
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_last_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_last_reviewed_at(ctx, field)
+func (ec *executionContext) _TermProgress_termLastReviewedAt(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termLastReviewedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4257,7 +4253,7 @@ func (ec *executionContext) _TermProgress_term_last_reviewed_at(ctx context.Cont
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_last_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termLastReviewedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4270,8 +4266,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_last_reviewed_at(_ co
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_review_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_review_count(ctx, field)
+func (ec *executionContext) _TermProgress_termReviewCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termReviewCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4298,7 +4294,7 @@ func (ec *executionContext) _TermProgress_term_review_count(ctx context.Context,
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_review_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termReviewCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4311,8 +4307,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_review_count(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_first_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_first_reviewed_at(ctx, field)
+func (ec *executionContext) _TermProgress_defFirstReviewedAt(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defFirstReviewedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4339,7 +4335,7 @@ func (ec *executionContext) _TermProgress_def_first_reviewed_at(ctx context.Cont
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_first_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defFirstReviewedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4352,8 +4348,8 @@ func (ec *executionContext) fieldContext_TermProgress_def_first_reviewed_at(_ co
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_last_reviewed_at(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_last_reviewed_at(ctx, field)
+func (ec *executionContext) _TermProgress_defLastReviewedAt(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defLastReviewedAt(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4380,7 +4376,7 @@ func (ec *executionContext) _TermProgress_def_last_reviewed_at(ctx context.Conte
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_last_reviewed_at(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defLastReviewedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4393,8 +4389,8 @@ func (ec *executionContext) fieldContext_TermProgress_def_last_reviewed_at(_ con
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_review_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_review_count(ctx, field)
+func (ec *executionContext) _TermProgress_defReviewCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defReviewCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4421,7 +4417,7 @@ func (ec *executionContext) _TermProgress_def_review_count(ctx context.Context, 
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_review_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defReviewCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4434,8 +4430,8 @@ func (ec *executionContext) fieldContext_TermProgress_def_review_count(_ context
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_correct_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_correct_count(ctx, field)
+func (ec *executionContext) _TermProgress_termCorrectCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termCorrectCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4462,7 +4458,7 @@ func (ec *executionContext) _TermProgress_term_correct_count(ctx context.Context
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_correct_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termCorrectCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4475,8 +4471,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_correct_count(_ conte
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_incorrect_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_incorrect_count(ctx, field)
+func (ec *executionContext) _TermProgress_termIncorrectCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termIncorrectCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4503,7 +4499,7 @@ func (ec *executionContext) _TermProgress_term_incorrect_count(ctx context.Conte
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_incorrect_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termIncorrectCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4516,8 +4512,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_incorrect_count(_ con
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_correct_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_correct_count(ctx, field)
+func (ec *executionContext) _TermProgress_defCorrectCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defCorrectCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4544,7 +4540,7 @@ func (ec *executionContext) _TermProgress_def_correct_count(ctx context.Context,
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_correct_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defCorrectCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4557,8 +4553,8 @@ func (ec *executionContext) fieldContext_TermProgress_def_correct_count(_ contex
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_incorrect_count(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_incorrect_count(ctx, field)
+func (ec *executionContext) _TermProgress_defIncorrectCount(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defIncorrectCount(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4585,7 +4581,7 @@ func (ec *executionContext) _TermProgress_def_incorrect_count(ctx context.Contex
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_incorrect_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defIncorrectCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4598,8 +4594,8 @@ func (ec *executionContext) fieldContext_TermProgress_def_incorrect_count(_ cont
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_term_leitner_system_box(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_term_leitner_system_box(ctx, field)
+func (ec *executionContext) _TermProgress_termLeitnerSystemBox(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_termLeitnerSystemBox(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4626,7 +4622,7 @@ func (ec *executionContext) _TermProgress_term_leitner_system_box(ctx context.Co
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_term_leitner_system_box(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_termLeitnerSystemBox(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4639,8 +4635,8 @@ func (ec *executionContext) fieldContext_TermProgress_term_leitner_system_box(_ 
 	return fc, nil
 }
 
-func (ec *executionContext) _TermProgress_def_leitner_system_box(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TermProgress_def_leitner_system_box(ctx, field)
+func (ec *executionContext) _TermProgress_defLeitnerSystemBox(ctx context.Context, field graphql.CollectedField, obj *model.TermProgress) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TermProgress_defLeitnerSystemBox(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4667,7 +4663,7 @@ func (ec *executionContext) _TermProgress_def_leitner_system_box(ctx context.Con
 	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TermProgress_def_leitner_system_box(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TermProgress_defLeitnerSystemBox(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TermProgress",
 		Field:      field,
@@ -4762,8 +4758,8 @@ func (ec *executionContext) fieldContext_User_username(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _User_display_name(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_User_display_name(ctx, field)
+func (ec *executionContext) _User_displayName(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_displayName(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4790,7 +4786,7 @@ func (ec *executionContext) _User_display_name(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_User_display_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_User_displayName(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
 		Field:      field,
@@ -6761,7 +6757,7 @@ func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term", "def", "sort_order"}
+	fieldsInOrder := [...]string{"term", "def", "sortOrder"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6782,8 +6778,8 @@ func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj 
 				return it, err
 			}
 			it.Def = data
-		case "sort_order":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+		case "sortOrder":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortOrder"))
 			data, err := ec.unmarshalNInt2int32(ctx, v)
 			if err != nil {
 				return it, err
@@ -6802,7 +6798,7 @@ func (ec *executionContext) unmarshalInputPracticeTestInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"timestamp", "studyset_id", "questions_correct", "questions_total", "questions"}
+	fieldsInOrder := [...]string{"timestamp", "studysetId", "questionsCorrect", "questionsTotal", "questions"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6816,22 +6812,22 @@ func (ec *executionContext) unmarshalInputPracticeTestInput(ctx context.Context,
 				return it, err
 			}
 			it.Timestamp = data
-		case "studyset_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studyset_id"))
+		case "studysetId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("studysetId"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.StudysetID = data
-		case "questions_correct":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions_correct"))
+		case "questionsCorrect":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questionsCorrect"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.QuestionsCorrect = data
-		case "questions_total":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questions_total"))
+		case "questionsTotal":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questionsTotal"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
@@ -6857,7 +6853,7 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "term", "answer_with", "correct", "answered", "answered_true_false", "answered_frq", "distractors_mcq", "distractor_true_false"}
+	fieldsInOrder := [...]string{"type", "term", "answerWith", "correct", "answered", "answeredTrueFalse", "answeredFrq", "distractorsMcq", "distractorTrueFalse"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6878,8 +6874,8 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Term = data
-		case "answer_with":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answer_with"))
+		case "answerWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
 			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
 			if err != nil {
 				return it, err
@@ -6899,29 +6895,29 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 				return it, err
 			}
 			it.Answered = data
-		case "answered_true_false":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_true_false"))
+		case "answeredTrueFalse":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredTrueFalse"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.AnsweredTrueFalse = data
-		case "answered_frq":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_frq"))
+		case "answeredFrq":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredFrq"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.AnsweredFrq = data
-		case "distractors_mcq":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractors_mcq"))
+		case "distractorsMcq":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractorsMcq"))
 			data, err := ec.unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.DistractorsMcq = data
-		case "distractor_true_false":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractor_true_false"))
+		case "distractorTrueFalse":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractorTrueFalse"))
 			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
 			if err != nil {
 				return it, err
@@ -6974,43 +6970,43 @@ func (ec *executionContext) unmarshalInputTermConfusionPairInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term_id", "confused_term_id", "answered_with", "confused_count_increase", "confused_at"}
+	fieldsInOrder := [...]string{"termId", "confusedTermId", "answeredWith", "confusedCountIncrease", "confusedAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "term_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_id"))
+		case "termId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("termId"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TermID = data
-		case "confused_term_id":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_term_id"))
+		case "confusedTermId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confusedTermId"))
 			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ConfusedTermID = data
-		case "answered_with":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered_with"))
+		case "answeredWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredWith"))
 			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.AnsweredWith = data
-		case "confused_count_increase":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_count_increase"))
+		case "confusedCountIncrease":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confusedCountIncrease"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.ConfusedCountIncrease = data
-		case "confused_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confused_at"))
+		case "confusedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("confusedAt"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
@@ -7029,7 +7025,7 @@ func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "term", "def", "sort_order"}
+	fieldsInOrder := [...]string{"id", "term", "def", "sortOrder"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7057,8 +7053,8 @@ func (ec *executionContext) unmarshalInputTermInput(ctx context.Context, obj any
 				return it, err
 			}
 			it.Def = data
-		case "sort_order":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort_order"))
+		case "sortOrder":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sortOrder"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
@@ -7077,64 +7073,64 @@ func (ec *executionContext) unmarshalInputTermProgressInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term_reviewed_at", "def_reviewed_at", "term_leitner_system_box", "def_leitner_system_box", "term_correct_increase", "term_incorrect_increase", "def_correct_increase", "def_incorrect_increase"}
+	fieldsInOrder := [...]string{"termReviewedAt", "defReviewedAt", "termLeitnerSystemBox", "defLeitnerSystemBox", "termCorrectIncrease", "termIncorrectIncrease", "defCorrectIncrease", "defIncorrectIncrease"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "term_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_reviewed_at"))
+		case "termReviewedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("termReviewedAt"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TermReviewedAt = data
-		case "def_reviewed_at":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_reviewed_at"))
+		case "defReviewedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("defReviewedAt"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.DefReviewedAt = data
-		case "term_leitner_system_box":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_leitner_system_box"))
+		case "termLeitnerSystemBox":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("termLeitnerSystemBox"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TermLeitnerSystemBox = data
-		case "def_leitner_system_box":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_leitner_system_box"))
+		case "defLeitnerSystemBox":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("defLeitnerSystemBox"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.DefLeitnerSystemBox = data
-		case "term_correct_increase":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_correct_increase"))
+		case "termCorrectIncrease":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("termCorrectIncrease"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TermCorrectIncrease = data
-		case "term_incorrect_increase":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term_incorrect_increase"))
+		case "termIncorrectIncrease":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("termIncorrectIncrease"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.TermIncorrectIncrease = data
-		case "def_correct_increase":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_correct_increase"))
+		case "defCorrectIncrease":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("defCorrectIncrease"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.DefCorrectIncrease = data
-		case "def_incorrect_increase":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("def_incorrect_increase"))
+		case "defIncorrectIncrease":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("defIncorrectIncrease"))
 			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
 			if err != nil {
 				return it, err
@@ -7169,12 +7165,12 @@ func (ec *executionContext) _AuthedUser(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._AuthedUser_id(ctx, field, obj)
 		case "username":
 			out.Values[i] = ec._AuthedUser_username(ctx, field, obj)
-		case "display_name":
-			out.Values[i] = ec._AuthedUser_display_name(ctx, field, obj)
-		case "auth_type":
-			out.Values[i] = ec._AuthedUser_auth_type(ctx, field, obj)
-		case "oauth_google_email":
-			out.Values[i] = ec._AuthedUser_oauth_google_email(ctx, field, obj)
+		case "displayName":
+			out.Values[i] = ec._AuthedUser_displayName(ctx, field, obj)
+		case "authType":
+			out.Values[i] = ec._AuthedUser_authType(ctx, field, obj)
+		case "oauthGoogleEmail":
+			out.Values[i] = ec._AuthedUser_oauthGoogleEmail(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7283,10 +7279,10 @@ func (ec *executionContext) _PracticeTest(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._PracticeTest_id(ctx, field, obj)
 		case "timestamp":
 			out.Values[i] = ec._PracticeTest_timestamp(ctx, field, obj)
-		case "questions_correct":
-			out.Values[i] = ec._PracticeTest_questions_correct(ctx, field, obj)
-		case "questions_total":
-			out.Values[i] = ec._PracticeTest_questions_total(ctx, field, obj)
+		case "questionsCorrect":
+			out.Values[i] = ec._PracticeTest_questionsCorrect(ctx, field, obj)
+		case "questionsTotal":
+			out.Values[i] = ec._PracticeTest_questionsTotal(ctx, field, obj)
 		case "questions":
 			out.Values[i] = ec._PracticeTest_questions(ctx, field, obj)
 		default:
@@ -7529,20 +7525,20 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Question_type(ctx, field, obj)
 		case "term":
 			out.Values[i] = ec._Question_term(ctx, field, obj)
-		case "answer_with":
-			out.Values[i] = ec._Question_answer_with(ctx, field, obj)
+		case "answerWith":
+			out.Values[i] = ec._Question_answerWith(ctx, field, obj)
 		case "correct":
 			out.Values[i] = ec._Question_correct(ctx, field, obj)
 		case "answered":
 			out.Values[i] = ec._Question_answered(ctx, field, obj)
-		case "answered_true_false":
-			out.Values[i] = ec._Question_answered_true_false(ctx, field, obj)
-		case "answered_frq":
-			out.Values[i] = ec._Question_answered_frq(ctx, field, obj)
-		case "distractors_mcq":
-			out.Values[i] = ec._Question_distractors_mcq(ctx, field, obj)
-		case "distractor_true_false":
-			out.Values[i] = ec._Question_distractor_true_false(ctx, field, obj)
+		case "answeredTrueFalse":
+			out.Values[i] = ec._Question_answeredTrueFalse(ctx, field, obj)
+		case "answeredFrq":
+			out.Values[i] = ec._Question_answeredFrq(ctx, field, obj)
+		case "distractorsMcq":
+			out.Values[i] = ec._Question_distractorsMcq(ctx, field, obj)
+		case "distractorTrueFalse":
+			out.Values[i] = ec._Question_distractorTrueFalse(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7583,8 +7579,8 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			out.Values[i] = ec._Studyset_title(ctx, field, obj)
 		case "private":
 			out.Values[i] = ec._Studyset_private(ctx, field, obj)
-		case "updated_at":
-			out.Values[i] = ec._Studyset_updated_at(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._Studyset_updatedAt(ctx, field, obj)
 		case "user":
 			field := field
 
@@ -7651,7 +7647,7 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "terms_count":
+		case "termsCount":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -7660,7 +7656,7 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Studyset_terms_count(ctx, field, obj)
+				res = ec._Studyset_termsCount(ctx, field, obj)
 				return res
 			}
 
@@ -7684,7 +7680,7 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "practice_tests":
+		case "practiceTests":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -7693,7 +7689,7 @@ func (ec *executionContext) _Studyset(ctx context.Context, sel ast.SelectionSet,
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Studyset_practice_tests(ctx, field, obj)
+				res = ec._Studyset_practiceTests(ctx, field, obj)
 				return res
 			}
 
@@ -7757,8 +7753,8 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Term_term(ctx, field, obj)
 		case "def":
 			out.Values[i] = ec._Term_def(ctx, field, obj)
-		case "sort_order":
-			out.Values[i] = ec._Term_sort_order(ctx, field, obj)
+		case "sortOrder":
+			out.Values[i] = ec._Term_sortOrder(ctx, field, obj)
 		case "progress":
 			field := field
 
@@ -7792,7 +7788,7 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "top_confusion_pairs":
+		case "topConfusionPairs":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -7801,7 +7797,7 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Term_top_confusion_pairs(ctx, field, obj)
+				res = ec._Term_topConfusionPairs(ctx, field, obj)
 				return res
 			}
 
@@ -7825,7 +7821,7 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "top_reverse_confusion_pairs":
+		case "topReverseConfusionPairs":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -7834,7 +7830,7 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Term_top_reverse_confusion_pairs(ctx, field, obj)
+				res = ec._Term_topReverseConfusionPairs(ctx, field, obj)
 				return res
 			}
 
@@ -7858,10 +7854,10 @@ func (ec *executionContext) _Term(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "created_at":
-			out.Values[i] = ec._Term_created_at(ctx, field, obj)
-		case "updated_at":
-			out.Values[i] = ec._Term_updated_at(ctx, field, obj)
+		case "createdAt":
+			out.Values[i] = ec._Term_createdAt(ctx, field, obj)
+		case "updatedAt":
+			out.Values[i] = ec._Term_updatedAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7898,45 +7894,14 @@ func (ec *executionContext) _TermConfusionPair(ctx context.Context, sel ast.Sele
 			out.Values[i] = graphql.MarshalString("TermConfusionPair")
 		case "id":
 			out.Values[i] = ec._TermConfusionPair_id(ctx, field, obj)
-		case "confused_term":
-			field := field
-
-			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._TermConfusionPair_confused_term(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "answered_with":
-			out.Values[i] = ec._TermConfusionPair_answered_with(ctx, field, obj)
-		case "confused_count":
-			out.Values[i] = ec._TermConfusionPair_confused_count(ctx, field, obj)
-		case "last_confused_at":
-			out.Values[i] = ec._TermConfusionPair_last_confused_at(ctx, field, obj)
+		case "confusedTerm":
+			out.Values[i] = ec._TermConfusionPair_confusedTerm(ctx, field, obj)
+		case "answeredWith":
+			out.Values[i] = ec._TermConfusionPair_answeredWith(ctx, field, obj)
+		case "confusedCount":
+			out.Values[i] = ec._TermConfusionPair_confusedCount(ctx, field, obj)
+		case "lastConfusedAt":
+			out.Values[i] = ec._TermConfusionPair_lastConfusedAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7973,30 +7938,30 @@ func (ec *executionContext) _TermProgress(ctx context.Context, sel ast.Selection
 			out.Values[i] = graphql.MarshalString("TermProgress")
 		case "id":
 			out.Values[i] = ec._TermProgress_id(ctx, field, obj)
-		case "term_first_reviewed_at":
-			out.Values[i] = ec._TermProgress_term_first_reviewed_at(ctx, field, obj)
-		case "term_last_reviewed_at":
-			out.Values[i] = ec._TermProgress_term_last_reviewed_at(ctx, field, obj)
-		case "term_review_count":
-			out.Values[i] = ec._TermProgress_term_review_count(ctx, field, obj)
-		case "def_first_reviewed_at":
-			out.Values[i] = ec._TermProgress_def_first_reviewed_at(ctx, field, obj)
-		case "def_last_reviewed_at":
-			out.Values[i] = ec._TermProgress_def_last_reviewed_at(ctx, field, obj)
-		case "def_review_count":
-			out.Values[i] = ec._TermProgress_def_review_count(ctx, field, obj)
-		case "term_correct_count":
-			out.Values[i] = ec._TermProgress_term_correct_count(ctx, field, obj)
-		case "term_incorrect_count":
-			out.Values[i] = ec._TermProgress_term_incorrect_count(ctx, field, obj)
-		case "def_correct_count":
-			out.Values[i] = ec._TermProgress_def_correct_count(ctx, field, obj)
-		case "def_incorrect_count":
-			out.Values[i] = ec._TermProgress_def_incorrect_count(ctx, field, obj)
-		case "term_leitner_system_box":
-			out.Values[i] = ec._TermProgress_term_leitner_system_box(ctx, field, obj)
-		case "def_leitner_system_box":
-			out.Values[i] = ec._TermProgress_def_leitner_system_box(ctx, field, obj)
+		case "termFirstReviewedAt":
+			out.Values[i] = ec._TermProgress_termFirstReviewedAt(ctx, field, obj)
+		case "termLastReviewedAt":
+			out.Values[i] = ec._TermProgress_termLastReviewedAt(ctx, field, obj)
+		case "termReviewCount":
+			out.Values[i] = ec._TermProgress_termReviewCount(ctx, field, obj)
+		case "defFirstReviewedAt":
+			out.Values[i] = ec._TermProgress_defFirstReviewedAt(ctx, field, obj)
+		case "defLastReviewedAt":
+			out.Values[i] = ec._TermProgress_defLastReviewedAt(ctx, field, obj)
+		case "defReviewCount":
+			out.Values[i] = ec._TermProgress_defReviewCount(ctx, field, obj)
+		case "termCorrectCount":
+			out.Values[i] = ec._TermProgress_termCorrectCount(ctx, field, obj)
+		case "termIncorrectCount":
+			out.Values[i] = ec._TermProgress_termIncorrectCount(ctx, field, obj)
+		case "defCorrectCount":
+			out.Values[i] = ec._TermProgress_defCorrectCount(ctx, field, obj)
+		case "defIncorrectCount":
+			out.Values[i] = ec._TermProgress_defIncorrectCount(ctx, field, obj)
+		case "termLeitnerSystemBox":
+			out.Values[i] = ec._TermProgress_termLeitnerSystemBox(ctx, field, obj)
+		case "defLeitnerSystemBox":
+			out.Values[i] = ec._TermProgress_defLeitnerSystemBox(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8035,8 +8000,8 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._User_id(ctx, field, obj)
 		case "username":
 			out.Values[i] = ec._User_username(ctx, field, obj)
-		case "display_name":
-			out.Values[i] = ec._User_display_name(ctx, field, obj)
+		case "displayName":
+			out.Values[i] = ec._User_displayName(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
