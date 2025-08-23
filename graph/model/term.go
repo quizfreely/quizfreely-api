@@ -5,8 +5,8 @@ type Term struct {
 	Term      *string       `json:"term,omitempty"`
 	Def       *string       `json:"def,omitempty"`
 	StudysetID *string
-	SortOrder *int32        `json:"sort_order,omitempty"`
+	SortOrder *int32        `json:"sortOrder,omitempty"`
 	Progress  *TermProgress `json:"progress,omitempty"`
-	CreatedAt *string       `json:"created_at,omitempty"`
-	UpdatedAt *string       `json:"updated_at,omitempty"`
+	CreatedAt *string       `json:"createdAt,omitempty"`
+	UpdatedAt *string       `json:"updatedAt,omitempty"`
 }
