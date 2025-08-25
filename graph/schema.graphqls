@@ -133,28 +133,28 @@ type Question {
     frq: FRQ
 }
 type MCQ {
-    term: TermInput
+    term: Term
     answerWith: AnswerWith
     correct: Boolean
-    answeredTerm: TermInput
-    distractors: [TermInput]
+    answeredTerm: Term
+    distractors: [Term]
 }
 type TrueFalseQuestion {
-    term: TermInput
+    term: Term
     answerWith: AnswerWith
     correct: Boolean
     answeredBool: Boolean
-    distractor: TermInput
+    distractor: Term
 }
 type MatchQuestion {
-    term: TermInput
+    term: Term
     answerWith: AnswerWith
     correct: Boolean
-    answeredTerm: TermInput
+    answeredTerm: Term
     group: Int
 }
 type FRQ {
-    term: TermInput
+    term: Term
     answerWith: AnswerWith
     correct: Boolean
     answeredString: String

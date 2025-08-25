@@ -9,6 +9,52 @@ import (
 	"strconv"
 )
 
+type Frq struct {
+	Term           *Term       `json:"term,omitempty"`
+	AnswerWith     *AnswerWith `json:"answerWith,omitempty"`
+	Correct        *bool       `json:"correct,omitempty"`
+	AnsweredString *string     `json:"answeredString,omitempty"`
+}
+
+type FRQInput struct {
+	Term           *TermInput  `json:"term,omitempty"`
+	AnswerWith     *AnswerWith `json:"answerWith,omitempty"`
+	Correct        *bool       `json:"correct,omitempty"`
+	AnsweredString *string     `json:"answeredString,omitempty"`
+}
+
+type Mcq struct {
+	Term         *Term       `json:"term,omitempty"`
+	AnswerWith   *AnswerWith `json:"answerWith,omitempty"`
+	Correct      *bool       `json:"correct,omitempty"`
+	AnsweredTerm *Term       `json:"answeredTerm,omitempty"`
+	Distractors  []*Term     `json:"distractors,omitempty"`
+}
+
+type MCQInput struct {
+	Term         *TermInput   `json:"term,omitempty"`
+	AnswerWith   *AnswerWith  `json:"answerWith,omitempty"`
+	Correct      *bool        `json:"correct,omitempty"`
+	AnsweredTerm *TermInput   `json:"answeredTerm,omitempty"`
+	Distractors  []*TermInput `json:"distractors,omitempty"`
+}
+
+type MatchQuestion struct {
+	Term         *Term       `json:"term,omitempty"`
+	AnswerWith   *AnswerWith `json:"answerWith,omitempty"`
+	Correct      *bool       `json:"correct,omitempty"`
+	AnsweredTerm *Term       `json:"answeredTerm,omitempty"`
+	Group        *int32      `json:"group,omitempty"`
+}
+
+type MatchQuestionInput struct {
+	Term         *TermInput  `json:"term,omitempty"`
+	AnswerWith   *AnswerWith `json:"answerWith,omitempty"`
+	Correct      *bool       `json:"correct,omitempty"`
+	AnsweredTerm *TermInput  `json:"answeredTerm,omitempty"`
+	Group        *int32      `json:"group,omitempty"`
+}
+
 type Mutation struct {
 }
 
@@ -30,27 +76,19 @@ type Query struct {
 }
 
 type Question struct {
-	Type                *QuestionType `json:"type,omitempty"`
-	Term                *Term         `json:"term,omitempty"`
-	AnswerWith          *AnswerWith   `json:"answerWith,omitempty"`
-	Correct             *bool         `json:"correct,omitempty"`
-	Answered            *Term         `json:"answered,omitempty"`
-	AnsweredTrueFalse   *bool         `json:"answeredTrueFalse,omitempty"`
-	AnsweredFrq         *string       `json:"answeredFrq,omitempty"`
-	DistractorsMcq      []*Term       `json:"distractorsMcq,omitempty"`
-	DistractorTrueFalse *Term         `json:"distractorTrueFalse,omitempty"`
+	QuestionType       *QuestionType      `json:"questionType,omitempty"`
+	Mcq                *Mcq               `json:"mcq,omitempty"`
+	TrueFalseQuestion  *TrueFalseQuestion `json:"trueFalseQuestion,omitempty"`
+	MatchQuestionInput *MatchQuestion     `json:"matchQuestionInput,omitempty"`
+	Frq                *Frq               `json:"frq,omitempty"`
 }
 
 type QuestionInput struct {
-	Type                *QuestionType `json:"type,omitempty"`
-	Term                *TermInput    `json:"term,omitempty"`
-	AnswerWith          *AnswerWith   `json:"answerWith,omitempty"`
-	Correct             *bool         `json:"correct,omitempty"`
-	Answered            *TermInput    `json:"answered,omitempty"`
-	AnsweredTrueFalse   *bool         `json:"answeredTrueFalse,omitempty"`
-	AnsweredFrq         *string       `json:"answeredFrq,omitempty"`
-	DistractorsMcq      []*TermInput  `json:"distractorsMcq,omitempty"`
-	DistractorTrueFalse *TermInput    `json:"distractorTrueFalse,omitempty"`
+	QuestionType           *QuestionType           `json:"questionType,omitempty"`
+	McqInput               *MCQInput               `json:"mcqInput,omitempty"`
+	TrueFalseQuestionInput *TrueFalseQuestionInput `json:"trueFalseQuestionInput,omitempty"`
+	MatchQuestionInput     *MatchQuestionInput     `json:"matchQuestionInput,omitempty"`
+	FrqInput               *FRQInput               `json:"frqInput,omitempty"`
 }
 
 type StudysetInput struct {
@@ -98,6 +136,22 @@ type TermProgressInput struct {
 	TermIncorrectIncrease *int32  `json:"termIncorrectIncrease,omitempty"`
 	DefCorrectIncrease    *int32  `json:"defCorrectIncrease,omitempty"`
 	DefIncorrectIncrease  *int32  `json:"defIncorrectIncrease,omitempty"`
+}
+
+type TrueFalseQuestion struct {
+	Term         *Term       `json:"term,omitempty"`
+	AnswerWith   *AnswerWith `json:"answerWith,omitempty"`
+	Correct      *bool       `json:"correct,omitempty"`
+	AnsweredBool *bool       `json:"answeredBool,omitempty"`
+	Distractor   *Term       `json:"distractor,omitempty"`
+}
+
+type TrueFalseQuestionInput struct {
+	Term         *TermInput  `json:"term,omitempty"`
+	AnswerWith   *AnswerWith `json:"answerWith,omitempty"`
+	Correct      *bool       `json:"correct,omitempty"`
+	AnsweredBool *bool       `json:"answeredBool,omitempty"`
+	Distractor   *TermInput  `json:"distractor,omitempty"`
 }
 
 type User struct {

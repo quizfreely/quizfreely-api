@@ -58,6 +58,29 @@ type ComplexityRoot struct {
 		Username         func(childComplexity int) int
 	}
 
+	FRQ struct {
+		AnswerWith     func(childComplexity int) int
+		AnsweredString func(childComplexity int) int
+		Correct        func(childComplexity int) int
+		Term           func(childComplexity int) int
+	}
+
+	MCQ struct {
+		AnswerWith   func(childComplexity int) int
+		AnsweredTerm func(childComplexity int) int
+		Correct      func(childComplexity int) int
+		Distractors  func(childComplexity int) int
+		Term         func(childComplexity int) int
+	}
+
+	MatchQuestion struct {
+		AnswerWith   func(childComplexity int) int
+		AnsweredTerm func(childComplexity int) int
+		Correct      func(childComplexity int) int
+		Group        func(childComplexity int) int
+		Term         func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateStudyset      func(childComplexity int, studyset model.StudysetInput, terms []*model.NewTermInput) int
 		DeleteStudyset      func(childComplexity int, id string) int
@@ -88,15 +111,11 @@ type ComplexityRoot struct {
 	}
 
 	Question struct {
-		AnswerWith          func(childComplexity int) int
-		Answered            func(childComplexity int) int
-		AnsweredFrq         func(childComplexity int) int
-		AnsweredTrueFalse   func(childComplexity int) int
-		Correct             func(childComplexity int) int
-		DistractorTrueFalse func(childComplexity int) int
-		DistractorsMcq      func(childComplexity int) int
-		Term                func(childComplexity int) int
-		Type                func(childComplexity int) int
+		Frq                func(childComplexity int) int
+		MatchQuestionInput func(childComplexity int) int
+		Mcq                func(childComplexity int) int
+		QuestionType       func(childComplexity int) int
+		TrueFalseQuestion  func(childComplexity int) int
 	}
 
 	Studyset struct {
@@ -144,6 +163,14 @@ type ComplexityRoot struct {
 		TermLastReviewedAt   func(childComplexity int) int
 		TermLeitnerSystemBox func(childComplexity int) int
 		TermReviewCount      func(childComplexity int) int
+	}
+
+	TrueFalseQuestion struct {
+		AnswerWith   func(childComplexity int) int
+		AnsweredBool func(childComplexity int) int
+		Correct      func(childComplexity int) int
+		Distractor   func(childComplexity int) int
+		Term         func(childComplexity int) int
 	}
 
 	User struct {
@@ -240,6 +267,104 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.AuthedUser.Username(childComplexity), true
+
+	case "FRQ.answerWith":
+		if e.complexity.FRQ.AnswerWith == nil {
+			break
+		}
+
+		return e.complexity.FRQ.AnswerWith(childComplexity), true
+
+	case "FRQ.answeredString":
+		if e.complexity.FRQ.AnsweredString == nil {
+			break
+		}
+
+		return e.complexity.FRQ.AnsweredString(childComplexity), true
+
+	case "FRQ.correct":
+		if e.complexity.FRQ.Correct == nil {
+			break
+		}
+
+		return e.complexity.FRQ.Correct(childComplexity), true
+
+	case "FRQ.term":
+		if e.complexity.FRQ.Term == nil {
+			break
+		}
+
+		return e.complexity.FRQ.Term(childComplexity), true
+
+	case "MCQ.answerWith":
+		if e.complexity.MCQ.AnswerWith == nil {
+			break
+		}
+
+		return e.complexity.MCQ.AnswerWith(childComplexity), true
+
+	case "MCQ.answeredTerm":
+		if e.complexity.MCQ.AnsweredTerm == nil {
+			break
+		}
+
+		return e.complexity.MCQ.AnsweredTerm(childComplexity), true
+
+	case "MCQ.correct":
+		if e.complexity.MCQ.Correct == nil {
+			break
+		}
+
+		return e.complexity.MCQ.Correct(childComplexity), true
+
+	case "MCQ.distractors":
+		if e.complexity.MCQ.Distractors == nil {
+			break
+		}
+
+		return e.complexity.MCQ.Distractors(childComplexity), true
+
+	case "MCQ.term":
+		if e.complexity.MCQ.Term == nil {
+			break
+		}
+
+		return e.complexity.MCQ.Term(childComplexity), true
+
+	case "MatchQuestion.answerWith":
+		if e.complexity.MatchQuestion.AnswerWith == nil {
+			break
+		}
+
+		return e.complexity.MatchQuestion.AnswerWith(childComplexity), true
+
+	case "MatchQuestion.answeredTerm":
+		if e.complexity.MatchQuestion.AnsweredTerm == nil {
+			break
+		}
+
+		return e.complexity.MatchQuestion.AnsweredTerm(childComplexity), true
+
+	case "MatchQuestion.correct":
+		if e.complexity.MatchQuestion.Correct == nil {
+			break
+		}
+
+		return e.complexity.MatchQuestion.Correct(childComplexity), true
+
+	case "MatchQuestion.group":
+		if e.complexity.MatchQuestion.Group == nil {
+			break
+		}
+
+		return e.complexity.MatchQuestion.Group(childComplexity), true
+
+	case "MatchQuestion.term":
+		if e.complexity.MatchQuestion.Term == nil {
+			break
+		}
+
+		return e.complexity.MatchQuestion.Term(childComplexity), true
 
 	case "Mutation.createStudyset":
 		if e.complexity.Mutation.CreateStudyset == nil {
@@ -446,68 +571,40 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.Query.User(childComplexity, args["id"].(string)), true
 
-	case "Question.answerWith":
-		if e.complexity.Question.AnswerWith == nil {
+	case "Question.frq":
+		if e.complexity.Question.Frq == nil {
 			break
 		}
 
-		return e.complexity.Question.AnswerWith(childComplexity), true
+		return e.complexity.Question.Frq(childComplexity), true
 
-	case "Question.answered":
-		if e.complexity.Question.Answered == nil {
+	case "Question.matchQuestionInput":
+		if e.complexity.Question.MatchQuestionInput == nil {
 			break
 		}
 
-		return e.complexity.Question.Answered(childComplexity), true
+		return e.complexity.Question.MatchQuestionInput(childComplexity), true
 
-	case "Question.answeredFrq":
-		if e.complexity.Question.AnsweredFrq == nil {
+	case "Question.mcq":
+		if e.complexity.Question.Mcq == nil {
 			break
 		}
 
-		return e.complexity.Question.AnsweredFrq(childComplexity), true
+		return e.complexity.Question.Mcq(childComplexity), true
 
-	case "Question.answeredTrueFalse":
-		if e.complexity.Question.AnsweredTrueFalse == nil {
+	case "Question.questionType":
+		if e.complexity.Question.QuestionType == nil {
 			break
 		}
 
-		return e.complexity.Question.AnsweredTrueFalse(childComplexity), true
+		return e.complexity.Question.QuestionType(childComplexity), true
 
-	case "Question.correct":
-		if e.complexity.Question.Correct == nil {
+	case "Question.trueFalseQuestion":
+		if e.complexity.Question.TrueFalseQuestion == nil {
 			break
 		}
 
-		return e.complexity.Question.Correct(childComplexity), true
-
-	case "Question.distractorTrueFalse":
-		if e.complexity.Question.DistractorTrueFalse == nil {
-			break
-		}
-
-		return e.complexity.Question.DistractorTrueFalse(childComplexity), true
-
-	case "Question.distractorsMcq":
-		if e.complexity.Question.DistractorsMcq == nil {
-			break
-		}
-
-		return e.complexity.Question.DistractorsMcq(childComplexity), true
-
-	case "Question.term":
-		if e.complexity.Question.Term == nil {
-			break
-		}
-
-		return e.complexity.Question.Term(childComplexity), true
-
-	case "Question.type":
-		if e.complexity.Question.Type == nil {
-			break
-		}
-
-		return e.complexity.Question.Type(childComplexity), true
+		return e.complexity.Question.TrueFalseQuestion(childComplexity), true
 
 	case "Studyset.id":
 		if e.complexity.Studyset.ID == nil {
@@ -754,6 +851,41 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.complexity.TermProgress.TermReviewCount(childComplexity), true
 
+	case "TrueFalseQuestion.answerWith":
+		if e.complexity.TrueFalseQuestion.AnswerWith == nil {
+			break
+		}
+
+		return e.complexity.TrueFalseQuestion.AnswerWith(childComplexity), true
+
+	case "TrueFalseQuestion.answeredBool":
+		if e.complexity.TrueFalseQuestion.AnsweredBool == nil {
+			break
+		}
+
+		return e.complexity.TrueFalseQuestion.AnsweredBool(childComplexity), true
+
+	case "TrueFalseQuestion.correct":
+		if e.complexity.TrueFalseQuestion.Correct == nil {
+			break
+		}
+
+		return e.complexity.TrueFalseQuestion.Correct(childComplexity), true
+
+	case "TrueFalseQuestion.distractor":
+		if e.complexity.TrueFalseQuestion.Distractor == nil {
+			break
+		}
+
+		return e.complexity.TrueFalseQuestion.Distractor(childComplexity), true
+
+	case "TrueFalseQuestion.term":
+		if e.complexity.TrueFalseQuestion.Term == nil {
+			break
+		}
+
+		return e.complexity.TrueFalseQuestion.Term(childComplexity), true
+
 	case "User.displayName":
 		if e.complexity.User.DisplayName == nil {
 			break
@@ -783,6 +915,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputFRQInput,
+		ec.unmarshalInputMCQInput,
+		ec.unmarshalInputMatchQuestionInput,
 		ec.unmarshalInputNewTermInput,
 		ec.unmarshalInputPracticeTestInput,
 		ec.unmarshalInputQuestionInput,
@@ -790,6 +925,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTermConfusionPairInput,
 		ec.unmarshalInputTermInput,
 		ec.unmarshalInputTermProgressInput,
+		ec.unmarshalInputTrueFalseQuestionInput,
 	)
 	first := true
 
@@ -1367,6 +1503,700 @@ func (ec *executionContext) fieldContext_AuthedUser_oauthGoogleEmail(_ context.C
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FRQ_term(ctx context.Context, field graphql.CollectedField, obj *model.Frq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FRQ_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FRQ_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FRQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FRQ_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.Frq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FRQ_answerWith(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FRQ_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FRQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FRQ_correct(ctx context.Context, field graphql.CollectedField, obj *model.Frq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FRQ_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Correct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FRQ_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FRQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FRQ_answeredString(ctx context.Context, field graphql.CollectedField, obj *model.Frq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FRQ_answeredString(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredString, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FRQ_answeredString(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FRQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCQ_term(ctx context.Context, field graphql.CollectedField, obj *model.Mcq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MCQ_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MCQ_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCQ_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.Mcq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MCQ_answerWith(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MCQ_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCQ_correct(ctx context.Context, field graphql.CollectedField, obj *model.Mcq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MCQ_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Correct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MCQ_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCQ_answeredTerm(ctx context.Context, field graphql.CollectedField, obj *model.Mcq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MCQ_answeredTerm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredTerm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MCQ_answeredTerm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MCQ_distractors(ctx context.Context, field graphql.CollectedField, obj *model.Mcq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MCQ_distractors(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Distractors, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MCQ_distractors(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MCQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchQuestion_term(ctx context.Context, field graphql.CollectedField, obj *model.MatchQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchQuestion_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchQuestion_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchQuestion_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.MatchQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchQuestion_answerWith(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchQuestion_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchQuestion_correct(ctx context.Context, field graphql.CollectedField, obj *model.MatchQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchQuestion_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Correct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchQuestion_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchQuestion_answeredTerm(ctx context.Context, field graphql.CollectedField, obj *model.MatchQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchQuestion_answeredTerm(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredTerm, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchQuestion_answeredTerm(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MatchQuestion_group(ctx context.Context, field graphql.CollectedField, obj *model.MatchQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MatchQuestion_group(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Group, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int32)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MatchQuestion_group(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MatchQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2024,24 +2854,16 @@ func (ec *executionContext) fieldContext_PracticeTest_questions(_ context.Contex
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "type":
-				return ec.fieldContext_Question_type(ctx, field)
-			case "term":
-				return ec.fieldContext_Question_term(ctx, field)
-			case "answerWith":
-				return ec.fieldContext_Question_answerWith(ctx, field)
-			case "correct":
-				return ec.fieldContext_Question_correct(ctx, field)
-			case "answered":
-				return ec.fieldContext_Question_answered(ctx, field)
-			case "answeredTrueFalse":
-				return ec.fieldContext_Question_answeredTrueFalse(ctx, field)
-			case "answeredFrq":
-				return ec.fieldContext_Question_answeredFrq(ctx, field)
-			case "distractorsMcq":
-				return ec.fieldContext_Question_distractorsMcq(ctx, field)
-			case "distractorTrueFalse":
-				return ec.fieldContext_Question_distractorTrueFalse(ctx, field)
+			case "questionType":
+				return ec.fieldContext_Question_questionType(ctx, field)
+			case "mcq":
+				return ec.fieldContext_Question_mcq(ctx, field)
+			case "trueFalseQuestion":
+				return ec.fieldContext_Question_trueFalseQuestion(ctx, field)
+			case "matchQuestionInput":
+				return ec.fieldContext_Question_matchQuestionInput(ctx, field)
+			case "frq":
+				return ec.fieldContext_Question_frq(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Question", field.Name)
 		},
@@ -2684,8 +3506,8 @@ func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_type(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_type(ctx, field)
+func (ec *executionContext) _Question_questionType(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_questionType(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2698,7 +3520,7 @@ func (ec *executionContext) _Question_type(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Type, nil
+		return obj.QuestionType, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2712,7 +3534,7 @@ func (ec *executionContext) _Question_type(ctx context.Context, field graphql.Co
 	return ec.marshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_questionType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -2725,8 +3547,8 @@ func (ec *executionContext) fieldContext_Question_type(_ context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_term(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_term(ctx, field)
+func (ec *executionContext) _Question_mcq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_mcq(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2739,7 +3561,7 @@ func (ec *executionContext) _Question_term(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Term, nil
+		return obj.Mcq, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2748,12 +3570,12 @@ func (ec *executionContext) _Question_term(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Term)
+	res := resTmp.(*model.Mcq)
 	fc.Result = res
-	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+	return ec.marshalOMCQ2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMcq(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_mcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -2761,33 +3583,25 @@ func (ec *executionContext) fieldContext_Question_term(_ context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Term_id(ctx, field)
 			case "term":
-				return ec.fieldContext_Term_term(ctx, field)
-			case "def":
-				return ec.fieldContext_Term_def(ctx, field)
-			case "sortOrder":
-				return ec.fieldContext_Term_sortOrder(ctx, field)
-			case "progress":
-				return ec.fieldContext_Term_progress(ctx, field)
-			case "topConfusionPairs":
-				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
-			case "topReverseConfusionPairs":
-				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Term_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Term_updatedAt(ctx, field)
+				return ec.fieldContext_MCQ_term(ctx, field)
+			case "answerWith":
+				return ec.fieldContext_MCQ_answerWith(ctx, field)
+			case "correct":
+				return ec.fieldContext_MCQ_correct(ctx, field)
+			case "answeredTerm":
+				return ec.fieldContext_MCQ_answeredTerm(ctx, field)
+			case "distractors":
+				return ec.fieldContext_MCQ_distractors(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MCQ", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answerWith(ctx, field)
+func (ec *executionContext) _Question_trueFalseQuestion(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_trueFalseQuestion(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2800,7 +3614,7 @@ func (ec *executionContext) _Question_answerWith(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AnswerWith, nil
+		return obj.TrueFalseQuestion, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2809,94 +3623,12 @@ func (ec *executionContext) _Question_answerWith(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.AnswerWith)
+	res := resTmp.(*model.TrueFalseQuestion)
 	fc.Result = res
-	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+	return ec.marshalOTrueFalseQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTrueFalseQuestion(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Question",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type AnswerWith does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Question_correct(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_correct(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Correct, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Question_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Question",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Question_answered(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answered(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Answered, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Term)
-	fc.Result = res
-	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Question_answered(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_trueFalseQuestion(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -2904,33 +3636,25 @@ func (ec *executionContext) fieldContext_Question_answered(_ context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Term_id(ctx, field)
 			case "term":
-				return ec.fieldContext_Term_term(ctx, field)
-			case "def":
-				return ec.fieldContext_Term_def(ctx, field)
-			case "sortOrder":
-				return ec.fieldContext_Term_sortOrder(ctx, field)
-			case "progress":
-				return ec.fieldContext_Term_progress(ctx, field)
-			case "topConfusionPairs":
-				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
-			case "topReverseConfusionPairs":
-				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Term_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Term_updatedAt(ctx, field)
+				return ec.fieldContext_TrueFalseQuestion_term(ctx, field)
+			case "answerWith":
+				return ec.fieldContext_TrueFalseQuestion_answerWith(ctx, field)
+			case "correct":
+				return ec.fieldContext_TrueFalseQuestion_correct(ctx, field)
+			case "answeredBool":
+				return ec.fieldContext_TrueFalseQuestion_answeredBool(ctx, field)
+			case "distractor":
+				return ec.fieldContext_TrueFalseQuestion_distractor(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type TrueFalseQuestion", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_answeredTrueFalse(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answeredTrueFalse(ctx, field)
+func (ec *executionContext) _Question_matchQuestionInput(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_matchQuestionInput(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2943,7 +3667,7 @@ func (ec *executionContext) _Question_answeredTrueFalse(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AnsweredTrueFalse, nil
+		return obj.MatchQuestionInput, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2952,94 +3676,12 @@ func (ec *executionContext) _Question_answeredTrueFalse(ctx context.Context, fie
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*model.MatchQuestion)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOMatchQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMatchQuestion(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_answeredTrueFalse(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Question",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Boolean does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Question_answeredFrq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_answeredFrq(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AnsweredFrq, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Question_answeredFrq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Question",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Question_distractorsMcq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_distractorsMcq(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DistractorsMcq, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Term)
-	fc.Result = res
-	return ec.marshalOTerm2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Question_distractorsMcq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_matchQuestionInput(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -3047,33 +3689,25 @@ func (ec *executionContext) fieldContext_Question_distractorsMcq(_ context.Conte
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Term_id(ctx, field)
 			case "term":
-				return ec.fieldContext_Term_term(ctx, field)
-			case "def":
-				return ec.fieldContext_Term_def(ctx, field)
-			case "sortOrder":
-				return ec.fieldContext_Term_sortOrder(ctx, field)
-			case "progress":
-				return ec.fieldContext_Term_progress(ctx, field)
-			case "topConfusionPairs":
-				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
-			case "topReverseConfusionPairs":
-				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Term_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Term_updatedAt(ctx, field)
+				return ec.fieldContext_MatchQuestion_term(ctx, field)
+			case "answerWith":
+				return ec.fieldContext_MatchQuestion_answerWith(ctx, field)
+			case "correct":
+				return ec.fieldContext_MatchQuestion_correct(ctx, field)
+			case "answeredTerm":
+				return ec.fieldContext_MatchQuestion_answeredTerm(ctx, field)
+			case "group":
+				return ec.fieldContext_MatchQuestion_group(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MatchQuestion", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Question_distractorTrueFalse(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Question_distractorTrueFalse(ctx, field)
+func (ec *executionContext) _Question_frq(ctx context.Context, field graphql.CollectedField, obj *model.Question) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Question_frq(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3086,7 +3720,7 @@ func (ec *executionContext) _Question_distractorTrueFalse(ctx context.Context, f
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DistractorTrueFalse, nil
+		return obj.Frq, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3095,12 +3729,12 @@ func (ec *executionContext) _Question_distractorTrueFalse(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Term)
+	res := resTmp.(*model.Frq)
 	fc.Result = res
-	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+	return ec.marshalOFRQ2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐFrq(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Question_distractorTrueFalse(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Question_frq(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Question",
 		Field:      field,
@@ -3108,26 +3742,16 @@ func (ec *executionContext) fieldContext_Question_distractorTrueFalse(_ context.
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Term_id(ctx, field)
 			case "term":
-				return ec.fieldContext_Term_term(ctx, field)
-			case "def":
-				return ec.fieldContext_Term_def(ctx, field)
-			case "sortOrder":
-				return ec.fieldContext_Term_sortOrder(ctx, field)
-			case "progress":
-				return ec.fieldContext_Term_progress(ctx, field)
-			case "topConfusionPairs":
-				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
-			case "topReverseConfusionPairs":
-				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Term_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Term_updatedAt(ctx, field)
+				return ec.fieldContext_FRQ_term(ctx, field)
+			case "answerWith":
+				return ec.fieldContext_FRQ_answerWith(ctx, field)
+			case "correct":
+				return ec.fieldContext_FRQ_correct(ctx, field)
+			case "answeredString":
+				return ec.fieldContext_FRQ_answeredString(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type FRQ", field.Name)
 		},
 	}
 	return fc, nil
@@ -4675,6 +5299,251 @@ func (ec *executionContext) fieldContext_TermProgress_defLeitnerSystemBox(_ cont
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrueFalseQuestion_term(ctx context.Context, field graphql.CollectedField, obj *model.TrueFalseQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrueFalseQuestion_term(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Term, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrueFalseQuestion_term(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrueFalseQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrueFalseQuestion_answerWith(ctx context.Context, field graphql.CollectedField, obj *model.TrueFalseQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrueFalseQuestion_answerWith(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnswerWith, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.AnswerWith)
+	fc.Result = res
+	return ec.marshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrueFalseQuestion_answerWith(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrueFalseQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type AnswerWith does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrueFalseQuestion_correct(ctx context.Context, field graphql.CollectedField, obj *model.TrueFalseQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrueFalseQuestion_correct(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Correct, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrueFalseQuestion_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrueFalseQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrueFalseQuestion_answeredBool(ctx context.Context, field graphql.CollectedField, obj *model.TrueFalseQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrueFalseQuestion_answeredBool(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AnsweredBool, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrueFalseQuestion_answeredBool(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrueFalseQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _TrueFalseQuestion_distractor(ctx context.Context, field graphql.CollectedField, obj *model.TrueFalseQuestion) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TrueFalseQuestion_distractor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Distractor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Term)
+	fc.Result = res
+	return ec.marshalOTerm2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTerm(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_TrueFalseQuestion_distractor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "TrueFalseQuestion",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Term_id(ctx, field)
+			case "term":
+				return ec.fieldContext_Term_term(ctx, field)
+			case "def":
+				return ec.fieldContext_Term_def(ctx, field)
+			case "sortOrder":
+				return ec.fieldContext_Term_sortOrder(ctx, field)
+			case "progress":
+				return ec.fieldContext_Term_progress(ctx, field)
+			case "topConfusionPairs":
+				return ec.fieldContext_Term_topConfusionPairs(ctx, field)
+			case "topReverseConfusionPairs":
+				return ec.fieldContext_Term_topReverseConfusionPairs(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Term_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Term_updatedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Term", field.Name)
 		},
 	}
 	return fc, nil
@@ -6754,6 +7623,164 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputFRQInput(ctx context.Context, obj any) (model.FRQInput, error) {
+	var it model.FRQInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "answerWith", "correct", "answeredString"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "answerWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnswerWith = data
+		case "correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Correct = data
+		case "answeredString":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredString"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredString = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMCQInput(ctx context.Context, obj any) (model.MCQInput, error) {
+	var it model.MCQInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "answerWith", "correct", "answeredTerm", "distractors"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "answerWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnswerWith = data
+		case "correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Correct = data
+		case "answeredTerm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredTerm"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredTerm = data
+		case "distractors":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractors"))
+			data, err := ec.unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Distractors = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMatchQuestionInput(ctx context.Context, obj any) (model.MatchQuestionInput, error) {
+	var it model.MatchQuestionInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "answerWith", "correct", "answeredTerm", "group"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "answerWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnswerWith = data
+		case "correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Correct = data
+		case "answeredTerm":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredTerm"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredTerm = data
+		case "group":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("group"))
+			data, err := ec.unmarshalOInt2ᚖint32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Group = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewTermInput(ctx context.Context, obj any) (model.NewTermInput, error) {
 	var it model.NewTermInput
 	asMap := map[string]any{}
@@ -6857,76 +7884,48 @@ func (ec *executionContext) unmarshalInputQuestionInput(ctx context.Context, obj
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"type", "term", "answerWith", "correct", "answered", "answeredTrueFalse", "answeredFrq", "distractorsMcq", "distractorTrueFalse"}
+	fieldsInOrder := [...]string{"questionType", "mcqInput", "trueFalseQuestionInput", "matchQuestionInput", "frqInput"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "type":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+		case "questionType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("questionType"))
 			data, err := ec.unmarshalOQuestionType2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐQuestionType(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Type = data
-		case "term":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
-			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			it.QuestionType = data
+		case "mcqInput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("mcqInput"))
+			data, err := ec.unmarshalOMCQInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMCQInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Term = data
-		case "answerWith":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
-			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			it.McqInput = data
+		case "trueFalseQuestionInput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("trueFalseQuestionInput"))
+			data, err := ec.unmarshalOTrueFalseQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTrueFalseQuestionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AnswerWith = data
-		case "correct":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.TrueFalseQuestionInput = data
+		case "matchQuestionInput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("matchQuestionInput"))
+			data, err := ec.unmarshalOMatchQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMatchQuestionInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Correct = data
-		case "answered":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answered"))
-			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			it.MatchQuestionInput = data
+		case "frqInput":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("frqInput"))
+			data, err := ec.unmarshalOFRQInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐFRQInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Answered = data
-		case "answeredTrueFalse":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredTrueFalse"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AnsweredTrueFalse = data
-		case "answeredFrq":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredFrq"))
-			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AnsweredFrq = data
-		case "distractorsMcq":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractorsMcq"))
-			data, err := ec.unmarshalOTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistractorsMcq = data
-		case "distractorTrueFalse":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractorTrueFalse"))
-			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DistractorTrueFalse = data
+			it.FrqInput = data
 		}
 	}
 
@@ -7146,6 +8145,61 @@ func (ec *executionContext) unmarshalInputTermProgressInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTrueFalseQuestionInput(ctx context.Context, obj any) (model.TrueFalseQuestionInput, error) {
+	var it model.TrueFalseQuestionInput
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"term", "answerWith", "correct", "answeredBool", "distractor"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "term":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Term = data
+		case "answerWith":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answerWith"))
+			data, err := ec.unmarshalOAnswerWith2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐAnswerWith(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnswerWith = data
+		case "correct":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("correct"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Correct = data
+		case "answeredBool":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredBool"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AnsweredBool = data
+		case "distractor":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("distractor"))
+			data, err := ec.unmarshalOTermInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTermInput(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Distractor = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -7175,6 +8229,136 @@ func (ec *executionContext) _AuthedUser(ctx context.Context, sel ast.SelectionSe
 			out.Values[i] = ec._AuthedUser_authType(ctx, field, obj)
 		case "oauthGoogleEmail":
 			out.Values[i] = ec._AuthedUser_oauthGoogleEmail(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var fRQImplementors = []string{"FRQ"}
+
+func (ec *executionContext) _FRQ(ctx context.Context, sel ast.SelectionSet, obj *model.Frq) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, fRQImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FRQ")
+		case "term":
+			out.Values[i] = ec._FRQ_term(ctx, field, obj)
+		case "answerWith":
+			out.Values[i] = ec._FRQ_answerWith(ctx, field, obj)
+		case "correct":
+			out.Values[i] = ec._FRQ_correct(ctx, field, obj)
+		case "answeredString":
+			out.Values[i] = ec._FRQ_answeredString(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var mCQImplementors = []string{"MCQ"}
+
+func (ec *executionContext) _MCQ(ctx context.Context, sel ast.SelectionSet, obj *model.Mcq) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mCQImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MCQ")
+		case "term":
+			out.Values[i] = ec._MCQ_term(ctx, field, obj)
+		case "answerWith":
+			out.Values[i] = ec._MCQ_answerWith(ctx, field, obj)
+		case "correct":
+			out.Values[i] = ec._MCQ_correct(ctx, field, obj)
+		case "answeredTerm":
+			out.Values[i] = ec._MCQ_answeredTerm(ctx, field, obj)
+		case "distractors":
+			out.Values[i] = ec._MCQ_distractors(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var matchQuestionImplementors = []string{"MatchQuestion"}
+
+func (ec *executionContext) _MatchQuestion(ctx context.Context, sel ast.SelectionSet, obj *model.MatchQuestion) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, matchQuestionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MatchQuestion")
+		case "term":
+			out.Values[i] = ec._MatchQuestion_term(ctx, field, obj)
+		case "answerWith":
+			out.Values[i] = ec._MatchQuestion_answerWith(ctx, field, obj)
+		case "correct":
+			out.Values[i] = ec._MatchQuestion_correct(ctx, field, obj)
+		case "answeredTerm":
+			out.Values[i] = ec._MatchQuestion_answeredTerm(ctx, field, obj)
+		case "group":
+			out.Values[i] = ec._MatchQuestion_group(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7525,24 +8709,16 @@ func (ec *executionContext) _Question(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Question")
-		case "type":
-			out.Values[i] = ec._Question_type(ctx, field, obj)
-		case "term":
-			out.Values[i] = ec._Question_term(ctx, field, obj)
-		case "answerWith":
-			out.Values[i] = ec._Question_answerWith(ctx, field, obj)
-		case "correct":
-			out.Values[i] = ec._Question_correct(ctx, field, obj)
-		case "answered":
-			out.Values[i] = ec._Question_answered(ctx, field, obj)
-		case "answeredTrueFalse":
-			out.Values[i] = ec._Question_answeredTrueFalse(ctx, field, obj)
-		case "answeredFrq":
-			out.Values[i] = ec._Question_answeredFrq(ctx, field, obj)
-		case "distractorsMcq":
-			out.Values[i] = ec._Question_distractorsMcq(ctx, field, obj)
-		case "distractorTrueFalse":
-			out.Values[i] = ec._Question_distractorTrueFalse(ctx, field, obj)
+		case "questionType":
+			out.Values[i] = ec._Question_questionType(ctx, field, obj)
+		case "mcq":
+			out.Values[i] = ec._Question_mcq(ctx, field, obj)
+		case "trueFalseQuestion":
+			out.Values[i] = ec._Question_trueFalseQuestion(ctx, field, obj)
+		case "matchQuestionInput":
+			out.Values[i] = ec._Question_matchQuestionInput(ctx, field, obj)
+		case "frq":
+			out.Values[i] = ec._Question_frq(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7997,6 +9173,50 @@ func (ec *executionContext) _TermProgress(ctx context.Context, sel ast.Selection
 			out.Values[i] = ec._TermProgress_termLeitnerSystemBox(ctx, field, obj)
 		case "defLeitnerSystemBox":
 			out.Values[i] = ec._TermProgress_defLeitnerSystemBox(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var trueFalseQuestionImplementors = []string{"TrueFalseQuestion"}
+
+func (ec *executionContext) _TrueFalseQuestion(ctx context.Context, sel ast.SelectionSet, obj *model.TrueFalseQuestion) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, trueFalseQuestionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("TrueFalseQuestion")
+		case "term":
+			out.Values[i] = ec._TrueFalseQuestion_term(ctx, field, obj)
+		case "answerWith":
+			out.Values[i] = ec._TrueFalseQuestion_answerWith(ctx, field, obj)
+		case "correct":
+			out.Values[i] = ec._TrueFalseQuestion_correct(ctx, field, obj)
+		case "answeredBool":
+			out.Values[i] = ec._TrueFalseQuestion_answeredBool(ctx, field, obj)
+		case "distractor":
+			out.Values[i] = ec._TrueFalseQuestion_distractor(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8791,6 +10011,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) marshalOFRQ2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐFrq(ctx context.Context, sel ast.SelectionSet, v *model.Frq) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FRQ(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFRQInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐFRQInput(ctx context.Context, v any) (*model.FRQInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFRQInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
 	if v == nil {
 		return nil, nil
@@ -8855,6 +10090,36 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	_ = ctx
 	res := graphql.MarshalInt32(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOMCQ2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMcq(ctx context.Context, sel ast.SelectionSet, v *model.Mcq) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MCQ(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMCQInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMCQInput(ctx context.Context, v any) (*model.MCQInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMCQInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMatchQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMatchQuestion(ctx context.Context, sel ast.SelectionSet, v *model.MatchQuestion) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MatchQuestion(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMatchQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐMatchQuestionInput(ctx context.Context, v any) (*model.MatchQuestionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMatchQuestionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalONewTermInput2ᚕᚖquizfreelyᚋapiᚋgraphᚋmodelᚐNewTermInput(ctx context.Context, v any) ([]*model.NewTermInput, error) {
@@ -9256,6 +10521,21 @@ func (ec *executionContext) marshalOTermProgress2ᚖquizfreelyᚋapiᚋgraphᚋm
 		return graphql.Null
 	}
 	return ec._TermProgress(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOTrueFalseQuestion2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTrueFalseQuestion(ctx context.Context, sel ast.SelectionSet, v *model.TrueFalseQuestion) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._TrueFalseQuestion(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTrueFalseQuestionInput2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐTrueFalseQuestionInput(ctx context.Context, v any) (*model.TrueFalseQuestionInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputTrueFalseQuestionInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOUser2ᚖquizfreelyᚋapiᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
