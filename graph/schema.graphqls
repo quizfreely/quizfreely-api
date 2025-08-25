@@ -119,22 +119,45 @@ type PracticeTest {
     questionsTotal: Int
     questions: [Question]
 }
-type Question {
-    type: QuestionType
-    term: Term
-    answerWith: AnswerWith
-    correct: Boolean
-    answered: Term
-    answeredTrueFalse: Boolean
-    answeredFrq: String
-    distractorsMcq: [Term]
-    distractorTrueFalse: Term
-}
 enum QuestionType {
     MCQ
     TRUE_FALSE
     MATCH
     FRQ
+}
+type Question {
+    questionType: QuestionType
+    mcq: MCQ
+    trueFalseQuestion: TrueFalseQuestion
+    matchQuestionInput: MatchQuestion
+    frq: FRQ
+}
+type MCQ {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredTerm: TermInput
+    distractors: [TermInput]
+}
+type TrueFalseQuestion {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredBool: Boolean
+    distractor: TermInput
+}
+type MatchQuestion {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredTerm: TermInput
+    group: Int
+}
+type FRQ {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredString: String
 }
 input PracticeTestInput {
     timestamp: String
@@ -144,13 +167,36 @@ input PracticeTestInput {
     questions: [QuestionInput]
 }
 input QuestionInput {
-    type: QuestionType
+    questionType: QuestionType
+    mcqInput: MCQInput
+    trueFalseQuestionInput: TrueFalseQuestionInput
+    matchQuestionInput: MatchQuestionInput
+    frqInput: FRQInput
+}
+input MCQInput {
     term: TermInput
     answerWith: AnswerWith
     correct: Boolean
-    answered: TermInput
-    answeredTrueFalse: Boolean
-    answeredFrq: String
-    distractorsMcq: [TermInput]
-    distractorTrueFalse: TermInput
+    answeredTerm: TermInput
+    distractors: [TermInput]
+}
+input TrueFalseQuestionInput {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredBool: Boolean
+    distractor: TermInput
+}
+input MatchQuestionInput {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredTerm: TermInput
+    group: Int
+}
+input FRQInput {
+    term: TermInput
+    answerWith: AnswerWith
+    correct: Boolean
+    answeredString: String
 }
