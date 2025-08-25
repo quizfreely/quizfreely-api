@@ -1,4 +1,4 @@
-package model
+// NOTE: filename can't be `practice_test.go` because that ends with `_test.go`
 
 type PracticeTest struct {
 	ID               *string     `json:"id,omitempty"`
