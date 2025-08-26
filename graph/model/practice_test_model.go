@@ -1,5 +1,7 @@
 // NOTE: filename can't be `practice_test.go` because that ends with `_test.go`
 
+package model
+
 type PracticeTest struct {
 	ID               *string     `json:"id,omitempty"`
 	StudysetID       *string     `json:"studysetId,omitempty"`
