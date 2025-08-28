@@ -240,8 +240,8 @@ func (dr *dataReader) getTermsTopReverseConfusionPairs(ctx context.Context, term
 		dr.db,
 		&confusionPairs,
 		`SELECT id,
-    term_id as confused_term_id,
-    confused_term_id as term_id,
+    term_id,
+    confused_term_id,
     answered_with,
     confused_count,
     to_char(last_confused_at, 'YYYY-MM-DD"T"HH24:MI:SS.MSTZH:TZM') as last_confused_at
@@ -257,7 +257,7 @@ FROM (
        AND tcp.user_id = $2
 ) ranked
 WHERE rn <= 3
-ORDER BY term_id, confused_count DESC`,
+ORDER BY confused_term_id, confused_count DESC`,
 		termIDs,
 		authedUser.ID,
 	)
@@ -267,8 +267,8 @@ ORDER BY term_id, confused_count DESC`,
 
     grouped := make(map[string][]*model.TermConfusionPair)
     for _, c := range confusionPairs {
-        if c.TermID != nil {
-			grouped[*c.TermID] = append(grouped[*c.TermID], c)
+        if c.ConfusedTermID != nil {
+			grouped[*c.ConfusedTermID] = append(grouped[*c.ConfusedTermID], c)
 		}
     }
 
