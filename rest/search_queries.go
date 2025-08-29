@@ -91,7 +91,6 @@ func (rh *RESTHandler) GetSearchQueries(w http.ResponseWriter, r *http.Request) 
 	inputQuery := spaceRegex.ReplaceAllString(rawQuery, " ")
 	inputQuery = strings.ReplaceAll(inputQuery, "&", "and")
 	inputQuery = removeRegex.ReplaceAllString(inputQuery, "")
-	log.Info().Msg(inputQuery)
 
 	var searchQueries []*model.SearchQuery
 	var err error
