@@ -59,10 +59,11 @@ type ComplexityRoot struct {
 	}
 
 	FRQ struct {
-		AnswerWith     func(childComplexity int) int
-		AnsweredString func(childComplexity int) int
-		Correct        func(childComplexity int) int
-		Term           func(childComplexity int) int
+		AnswerWith        func(childComplexity int) int
+		AnsweredString    func(childComplexity int) int
+		Correct           func(childComplexity int) int
+		Term              func(childComplexity int) int
+		UserMarkedCorrect func(childComplexity int) int
 	}
 
 	MCQ struct {
@@ -297,6 +298,13 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.complexity.FRQ.Term(childComplexity), true
+
+	case "FRQ.userMarkedCorrect":
+		if e.complexity.FRQ.UserMarkedCorrect == nil {
+			break
+		}
+
+		return e.complexity.FRQ.UserMarkedCorrect(childComplexity), true
 
 	case "MCQ.answerWith":
 		if e.complexity.MCQ.AnswerWith == nil {
@@ -1648,6 +1656,47 @@ func (ec *executionContext) _FRQ_correct(ctx context.Context, field graphql.Coll
 }
 
 func (ec *executionContext) fieldContext_FRQ_correct(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FRQ",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FRQ_userMarkedCorrect(ctx context.Context, field graphql.CollectedField, obj *model.Frq) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FRQ_userMarkedCorrect(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (any, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UserMarkedCorrect, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FRQ_userMarkedCorrect(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "FRQ",
 		Field:      field,
@@ -3757,6 +3806,8 @@ func (ec *executionContext) fieldContext_Question_frq(_ context.Context, field g
 				return ec.fieldContext_FRQ_answerWith(ctx, field)
 			case "correct":
 				return ec.fieldContext_FRQ_correct(ctx, field)
+			case "userMarkedCorrect":
+				return ec.fieldContext_FRQ_userMarkedCorrect(ctx, field)
 			case "answeredString":
 				return ec.fieldContext_FRQ_answeredString(ctx, field)
 			}
@@ -7704,7 +7755,7 @@ func (ec *executionContext) unmarshalInputFRQInput(ctx context.Context, obj any)
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"term", "answerWith", "correct", "answeredString"}
+	fieldsInOrder := [...]string{"term", "answerWith", "correct", "userMarkedCorrect", "answeredString"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -7732,6 +7783,13 @@ func (ec *executionContext) unmarshalInputFRQInput(ctx context.Context, obj any)
 				return it, err
 			}
 			it.Correct = data
+		case "userMarkedCorrect":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userMarkedCorrect"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UserMarkedCorrect = data
 		case "answeredString":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("answeredString"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -8343,6 +8401,8 @@ func (ec *executionContext) _FRQ(ctx context.Context, sel ast.SelectionSet, obj 
 			out.Values[i] = ec._FRQ_answerWith(ctx, field, obj)
 		case "correct":
 			out.Values[i] = ec._FRQ_correct(ctx, field, obj)
+		case "userMarkedCorrect":
+			out.Values[i] = ec._FRQ_userMarkedCorrect(ctx, field, obj)
 		case "answeredString":
 			out.Values[i] = ec._FRQ_answeredString(ctx, field, obj)
 		default:

@@ -10,17 +10,19 @@ import (
 )
 
 type Frq struct {
-	Term           *Term       `json:"term,omitempty"`
-	AnswerWith     *AnswerWith `json:"answerWith,omitempty"`
-	Correct        *bool       `json:"correct,omitempty"`
-	AnsweredString *string     `json:"answeredString,omitempty"`
+	Term              *Term       `json:"term,omitempty"`
+	AnswerWith        *AnswerWith `json:"answerWith,omitempty"`
+	Correct           *bool       `json:"correct,omitempty"`
+	UserMarkedCorrect *bool       `json:"userMarkedCorrect,omitempty"`
+	AnsweredString    *string     `json:"answeredString,omitempty"`
 }
 
 type FRQInput struct {
-	Term           *TermInput  `json:"term,omitempty"`
-	AnswerWith     *AnswerWith `json:"answerWith,omitempty"`
-	Correct        *bool       `json:"correct,omitempty"`
-	AnsweredString *string     `json:"answeredString,omitempty"`
+	Term              *TermInput  `json:"term,omitempty"`
+	AnswerWith        *AnswerWith `json:"answerWith,omitempty"`
+	Correct           *bool       `json:"correct,omitempty"`
+	UserMarkedCorrect *bool       `json:"userMarkedCorrect,omitempty"`
+	AnsweredString    *string     `json:"answeredString,omitempty"`
 }
 
 type Mcq struct {
