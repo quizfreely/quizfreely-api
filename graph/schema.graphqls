@@ -158,6 +158,7 @@ type FRQ {
     term: Term
     answerWith: AnswerWith
     correct: Boolean
+    userMarkedCorrect: Boolean
     answeredString: String
 }
 input PracticeTestInput {
@@ -199,5 +200,6 @@ input FRQInput {
     term: TermInput
     answerWith: AnswerWith
     correct: Boolean
+    userMarkedCorrect: Boolean
     answeredString: String
 }
